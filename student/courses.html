@@ -1,1 +1,2337 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<meta
+    name="theme-color"
+    content="#0d6035"
+>
+
+<title>mNEET-Pro | Courses</title>
+
+
+<!-- =====================================================
+     FIREBASE
+===================================================== -->
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+
+<style>
+
+/* =====================================================
+   RESET
+===================================================== */
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+
+html{
+    scroll-behavior:smooth;
+}
+
+
+body{
+
+    min-height:100vh;
+
+    padding-bottom:82px;
+
+    background:#f4f7f5;
+
+    color:#17221a;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+}
+
+
+button,
+select,
+input{
+
+    font-family:inherit;
+
+}
+
+
+button{
+
+    -webkit-tap-highlight-color:transparent;
+
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.header{
+
+    position:sticky;
+
+    top:0;
+
+    z-index:100;
+
+    height:68px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:0 15px;
+
+    background:#fff;
+
+    border-bottom:1px solid #e0e7e2;
+
+    box-shadow:
+        0 4px 15px rgba(0,0,0,.05);
+
+}
+
+
+.header-left{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:11px;
+
+}
+
+
+.back-btn{
+
+    width:42px;
+
+    height:42px;
+
+    border:0;
+
+    border-radius:12px;
+
+    background:#eef6f0;
+
+    color:#0d6035;
+
+    font-size:22px;
+
+    cursor:pointer;
+
+}
+
+
+.header-title{
+
+    font-size:17px;
+
+    font-weight:900;
+
+    color:#0d6035;
+
+}
+
+
+.notification-btn{
+
+    position:relative;
+
+    width:42px;
+
+    height:42px;
+
+    border:0;
+
+    border-radius:12px;
+
+    background:#eef6f0;
+
+    color:#0d6035;
+
+    font-size:20px;
+
+    cursor:pointer;
+
+}
+
+
+.badge{
+
+    position:absolute;
+
+    top:3px;
+
+    right:3px;
+
+    min-width:17px;
+
+    height:17px;
+
+    padding:0 4px;
+
+    display:none;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:20px;
+
+    background:#e53935;
+
+    color:#fff;
+
+    font-size:9px;
+
+    font-weight:900;
+
+}
+
+
+/* =====================================================
+   MAIN
+===================================================== */
+
+.main{
+
+    width:100%;
+
+    max-width:1100px;
+
+    margin:auto;
+
+    padding:20px 15px 30px;
+
+}
+
+
+/* =====================================================
+   PAGE TITLE
+===================================================== */
+
+.page-title{
+
+    margin-bottom:18px;
+
+}
+
+
+.page-title h1{
+
+    font-size:24px;
+
+    font-weight:900;
+
+}
+
+
+.page-title p{
+
+    margin-top:5px;
+
+    font-size:11px;
+
+    color:#748078;
+
+    line-height:1.5;
+
+}
+
+
+/* =====================================================
+   USER BAR
+===================================================== */
+
+.user-bar{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:11px;
+
+    margin-bottom:18px;
+
+    padding:13px;
+
+    border:1px solid #dfe7e1;
+
+    border-radius:15px;
+
+    background:#fff;
+
+}
+
+
+.avatar{
+
+    width:42px;
+
+    height:42px;
+
+    flex-shrink:0;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:50%;
+
+    background:#e8f5e9;
+
+    color:#0d6035;
+
+    font-weight:900;
+
+}
+
+
+.user-info{
+
+    min-width:0;
+
+}
+
+
+.user-name{
+
+    font-size:13px;
+
+    font-weight:900;
+
+}
+
+
+.user-email{
+
+    margin-top:3px;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+    white-space:nowrap;
+
+    font-size:9px;
+
+    color:#7b857f;
+
+}
+
+
+/* =====================================================
+   COURSE GRID
+===================================================== */
+
+.course-grid{
+
+    display:grid;
+
+    grid-template-columns:
+        1fr;
+
+    gap:15px;
+
+}
+
+
+/* =====================================================
+   COURSE CARD
+===================================================== */
+
+.course-card{
+
+    position:relative;
+
+    overflow:hidden;
+
+    border:1px solid #dfe7e1;
+
+    border-radius:18px;
+
+    background:#fff;
+
+    box-shadow:
+        0 5px 18px rgba(0,0,0,.05);
+
+}
+
+
+.course-top{
+
+    position:relative;
+
+    min-height:145px;
+
+    padding:18px;
+
+    display:flex;
+
+    align-items:flex-end;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0b572f,
+            #198754
+        );
+
+    color:#fff;
+
+}
+
+
+.course-top::after{
+
+    content:"";
+
+    position:absolute;
+
+    width:150px;
+
+    height:150px;
+
+    right:-55px;
+
+    top:-65px;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.08);
+
+}
+
+
+.course-icon{
+
+    position:absolute;
+
+    right:18px;
+
+    bottom:17px;
+
+    width:52px;
+
+    height:52px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:15px;
+
+    background:rgba(255,255,255,.15);
+
+    border:1px solid rgba(255,255,255,.25);
+
+    font-size:25px;
+
+}
+
+
+.course-category{
+
+    margin-bottom:6px;
+
+    font-size:9px;
+
+    font-weight:800;
+
+    opacity:.8;
+
+    text-transform:uppercase;
+
+}
+
+
+.course-title{
+
+    max-width:70%;
+
+    font-size:20px;
+
+    font-weight:900;
+
+    line-height:1.2;
+
+}
+
+
+.course-body{
+
+    padding:17px;
+
+}
+
+
+.course-description{
+
+    min-height:40px;
+
+    font-size:11px;
+
+    line-height:1.55;
+
+    color:#707b74;
+
+}
+
+
+.course-meta{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:8px;
+
+    margin-top:15px;
+
+}
+
+
+.meta{
+
+    padding:9px 5px;
+
+    text-align:center;
+
+    border-radius:10px;
+
+    background:#f5f8f6;
+
+}
+
+
+.meta-value{
+
+    font-size:13px;
+
+    font-weight:900;
+
+    color:#0d6035;
+
+}
+
+
+.meta-label{
+
+    margin-top:3px;
+
+    font-size:8px;
+
+    color:#7b857f;
+
+}
+
+
+.price-row{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:10px;
+
+    margin-top:17px;
+
+    padding-top:14px;
+
+    border-top:1px solid #edf1ee;
+
+}
+
+
+.price-label{
+
+    font-size:9px;
+
+    color:#7b857f;
+
+}
+
+
+.price{
+
+    margin-top:2px;
+
+    font-size:20px;
+
+    font-weight:900;
+
+    color:#0d6035;
+
+}
+
+
+.course-button{
+
+    min-width:135px;
+
+    height:43px;
+
+    border:0;
+
+    border-radius:11px;
+
+    background:#0d6035;
+
+    color:white;
+
+    font-size:11px;
+
+    font-weight:900;
+
+    cursor:pointer;
+
+}
+
+
+.course-button:disabled{
+
+    opacity:.6;
+
+    cursor:not-allowed;
+
+}
+
+
+/* =====================================================
+   PURCHASED
+===================================================== */
+
+.purchased-badge{
+
+    position:absolute;
+
+    top:12px;
+
+    right:12px;
+
+    z-index:5;
+
+    padding:6px 9px;
+
+    border-radius:20px;
+
+    background:#e8f5e9;
+
+    color:#176b3c;
+
+    font-size:8px;
+
+    font-weight:900;
+
+}
+
+
+.purchased-button{
+
+    background:#198754;
+
+}
+
+
+/* =====================================================
+   EMPTY
+===================================================== */
+
+.empty{
+
+    padding:45px 20px;
+
+    text-align:center;
+
+    border:1px dashed #cbd7ce;
+
+    border-radius:18px;
+
+    background:#fff;
+
+}
+
+
+.empty-icon{
+
+    font-size:38px;
+
+}
+
+
+.empty h3{
+
+    margin-top:10px;
+
+    font-size:16px;
+
+}
+
+
+.empty p{
+
+    margin-top:5px;
+
+    font-size:10px;
+
+    color:#7b857f;
+
+}
+
+
+/* =====================================================
+   LOADING
+===================================================== */
+
+.loading{
+
+    padding:45px 20px;
+
+    text-align:center;
+
+    color:#708078;
+
+}
+
+
+.spinner{
+
+    width:34px;
+
+    height:34px;
+
+    margin:0 auto 12px;
+
+    border:4px solid #dce9df;
+
+    border-top-color:#0d6035;
+
+    border-radius:50%;
+
+    animation:spin .8s linear infinite;
+
+}
+
+
+@keyframes spin{
+
+    to{
+        transform:rotate(360deg);
+    }
+
+}
+
+
+/* =====================================================
+   NOTIFICATION PANEL
+===================================================== */
+
+.notification-panel{
+
+    position:fixed;
+
+    top:73px;
+
+    right:14px;
+
+    z-index:150;
+
+    width:330px;
+
+    max-width:
+        calc(100vw - 28px);
+
+    max-height:70vh;
+
+    overflow:auto;
+
+    display:none;
+
+    border:1px solid #dfe7e1;
+
+    border-radius:17px;
+
+    background:#fff;
+
+    box-shadow:
+        0 15px 40px rgba(0,0,0,.16);
+
+}
+
+
+.notification-panel.active{
+
+    display:block;
+
+}
+
+
+.notification-head{
+
+    position:sticky;
+
+    top:0;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:14px;
+
+    background:#fff;
+
+    border-bottom:1px solid #edf1ee;
+
+}
+
+
+.notification-head strong{
+
+    font-size:13px;
+
+}
+
+
+.notification-close{
+
+    border:0;
+
+    background:transparent;
+
+    font-size:19px;
+
+    cursor:pointer;
+
+}
+
+
+.notification-item{
+
+    padding:13px 14px;
+
+    border-bottom:1px solid #edf1ee;
+
+}
+
+
+.notification-title{
+
+    font-size:11px;
+
+    font-weight:900;
+
+}
+
+
+.notification-text{
+
+    margin-top:4px;
+
+    font-size:9px;
+
+    line-height:1.5;
+
+    color:#748078;
+
+}
+
+
+.notification-empty{
+
+    padding:30px 15px;
+
+    text-align:center;
+
+    font-size:10px;
+
+    color:#7b857f;
+
+}
+
+
+/* =====================================================
+   BOTTOM NAV
+===================================================== */
+
+.bottom-nav{
+
+    position:fixed;
+
+    left:0;
+
+    right:0;
+
+    bottom:0;
+
+    z-index:120;
+
+    height:70px;
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(4,1fr);
+
+    background:#fff;
+
+    border-top:1px solid #dfe7e1;
+
+    box-shadow:
+        0 -5px 20px rgba(0,0,0,.06);
+
+}
+
+
+.nav-item{
+
+    border:0;
+
+    background:#fff;
+
+    color:#7b857f;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:4px;
+
+    font-size:9px;
+
+    font-weight:800;
+
+    cursor:pointer;
+
+}
+
+
+.nav-item.active{
+
+    color:#0d6035;
+
+}
+
+
+.nav-icon{
+
+    font-size:20px;
+
+}
+
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+.toast{
+
+    position:fixed;
+
+    left:50%;
+
+    bottom:87px;
+
+    z-index:600;
+
+    transform:
+        translate(-50%,20px);
+
+    width:
+        calc(100% - 30px);
+
+    max-width:400px;
+
+    padding:13px 15px;
+
+    border-radius:12px;
+
+    background:#17221a;
+
+    color:#fff;
+
+    text-align:center;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    opacity:0;
+
+    pointer-events:none;
+
+    transition:
+        .25s ease;
+
+}
+
+
+.toast.show{
+
+    opacity:1;
+
+    transform:
+        translate(-50%,0);
+
+}
+
+
+/* =====================================================
+   DESKTOP
+===================================================== */
+
+@media(min-width:700px){
+
+    .course-grid{
+
+        grid-template-columns:
+            repeat(2,1fr);
+
+    }
+
+}
+
+
+@media(min-width:1050px){
+
+    .course-grid{
+
+        grid-template-columns:
+            repeat(3,1fr);
+
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header class="header">
+
+
+    <div class="header-left">
+
+        <button
+            class="back-btn"
+            onclick="goDashboard()"
+        >
+            ←
+        </button>
+
+
+        <div class="header-title">
+            My Courses
+        </div>
+
+    </div>
+
+
+    <button
+        id="notificationButton"
+        class="notification-btn"
+    >
+
+        🔔
+
+        <span
+            id="notificationBadge"
+            class="badge"
+        >
+            0
+        </span>
+
+    </button>
+
+</header>
+
+
+<!-- =====================================================
+     NOTIFICATION
+===================================================== -->
+
+<div
+    id="notificationPanel"
+    class="notification-panel"
+>
+
+    <div class="notification-head">
+
+        <strong>
+            Notifications
+        </strong>
+
+        <button
+            id="notificationClose"
+            class="notification-close"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+    <div id="notificationList">
+
+        <div class="notification-empty">
+            Loading...
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<main class="main">
+
+
+    <!-- PAGE TITLE -->
+
+    <section class="page-title">
+
+        <h1>
+            Choose Your Course
+        </h1>
+
+        <p>
+            Select a course to start your NEET Biology preparation.
+        </p>
+
+    </section>
+
+
+    <!-- USER -->
+
+    <section class="user-bar">
+
+        <div
+            id="avatar"
+            class="avatar"
+        >
+            M
+        </div>
+
+
+        <div class="user-info">
+
+            <div
+                id="studentName"
+                class="user-name"
+            >
+                Student
+            </div>
+
+            <div
+                id="studentEmail"
+                class="user-email"
+            >
+                Loading...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- COURSES -->
+
+    <section
+        id="courseContainer"
+        class="course-grid"
+    >
+
+        <div class="loading">
+
+            <div class="spinner"></div>
+
+            Loading courses...
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+<!-- =====================================================
+     BOTTOM NAVIGATION
+===================================================== -->
+
+<nav class="bottom-nav">
+
+
+    <button
+        class="nav-item"
+        onclick="goDashboard()"
+    >
+
+        <span class="nav-icon">
+            🏠
+        </span>
+
+        Home
+
+    </button>
+
+
+    <button
+        class="nav-item active"
+        onclick="goCourses()"
+    >
+
+        <span class="nav-icon">
+            📚
+        </span>
+
+        Courses
+
+    </button>
+
+
+    <button
+        class="nav-item"
+        onclick="goPractice()"
+    >
+
+        <span class="nav-icon">
+            📝
+        </span>
+
+        Practice
+
+    </button>
+
+
+    <button
+        class="nav-item"
+        onclick="goProfile()"
+    >
+
+        <span class="nav-icon">
+            👤
+        </span>
+
+        Profile
+
+    </button>
+
+</nav>
+
+
+<!-- =====================================================
+     TOAST
+===================================================== -->
+
+<div
+    id="toast"
+    class="toast"
+></div>
+
+
+<script>
+
+/* =====================================================
+   FIREBASE CONFIG
+===================================================== */
+
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyApQOM_mtFZ16RiNJEaIUhb4iYFBIBRK58",
+
+    authDomain:
+        "mneet-spark.firebaseapp.com",
+
+    databaseURL:
+        "https://mneet-spark-default-rtdb.firebaseio.com",
+
+    projectId:
+        "mneet-spark",
+
+    storageBucket:
+        "mneet-spark.firebasestorage.app",
+
+    messagingSenderId:
+        "252201633700",
+
+    appId:
+        "1:252201633700:web:1a1e7a2cff1f0b168ea331"
+
+};
+
+
+/* =====================================================
+   INITIALIZE FIREBASE
+===================================================== */
+
+if(!firebase.apps.length){
+
+    firebase.initializeApp(
+        firebaseConfig
+    );
+
+}
+
+
+const auth =
+    firebase.auth();
+
+
+const db =
+    firebase.firestore();
+
+
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+let currentUser = null;
+
+let studentData = {};
+
+let allCourses = [];
+
+
+/* =====================================================
+   AUTH
+===================================================== */
+
+auth.onAuthStateChanged(
+    async function(user){
+
+        if(!user){
+
+            window.location.replace(
+                "index.html"
+            );
+
+            return;
+
+        }
+
+
+        currentUser = user;
+
+
+        await loadStudent();
+
+        await loadCourses();
+
+        await loadNotifications();
+
+    }
+);
+
+
+/* =====================================================
+   LOAD STUDENT
+===================================================== */
+
+async function loadStudent(){
+
+    try{
+
+        const doc =
+            await db
+                .collection("students")
+                .doc(currentUser.uid)
+                .get();
+
+
+        if(doc.exists){
+
+            studentData =
+                doc.data() || {};
+
+        }
+
+
+        const name =
+            studentData.name ||
+            currentUser.displayName ||
+            "Student";
+
+
+        const email =
+            studentData.email ||
+            currentUser.email ||
+            "";
+
+
+        document
+            .getElementById("studentName")
+            .textContent =
+                name;
+
+
+        document
+            .getElementById("studentEmail")
+            .textContent =
+                email;
+
+
+        document
+            .getElementById("avatar")
+            .textContent =
+                name
+                    .charAt(0)
+                    .toUpperCase();
+
+
+    }catch(error){
+
+        console.error(
+            "Student error:",
+            error
+        );
+
+
+        document
+            .getElementById("studentName")
+            .textContent =
+                currentUser.displayName ||
+                "Student";
+
+
+        document
+            .getElementById("studentEmail")
+            .textContent =
+                currentUser.email ||
+                "";
+
+    }
+
+}
+
+
+/* =====================================================
+   LOAD COURSES
+===================================================== */
+
+async function loadCourses(){
+
+    const container =
+        document.getElementById(
+            "courseContainer"
+        );
+
+
+    container.innerHTML =
+        `
+        <div class="loading">
+
+            <div class="spinner"></div>
+
+            Loading courses...
+
+        </div>
+        `;
+
+
+    try{
+
+        const snapshot =
+            await db
+                .collection("courses")
+                .get();
+
+
+        allCourses = [];
+
+
+        snapshot.forEach(
+            function(doc){
+
+                allCourses.push({
+
+                    id:
+                        doc.id,
+
+                    data:
+                        doc.data() || {}
+
+                });
+
+            }
+        );
+
+
+        if(!allCourses.length){
+
+            showEmpty();
+
+            return;
+
+        }
+
+
+        /*
+         * Get student's purchases.
+         *
+         * Supported structure:
+         *
+         * purchases/{uid}
+         *
+         * {
+         *    courseId: true
+         * }
+         *
+         */
+
+
+        let purchases = {};
+
+
+        try{
+
+            const purchaseDoc =
+                await db
+                    .collection("purchases")
+                    .doc(currentUser.uid)
+                    .get();
+
+
+            if(purchaseDoc.exists){
+
+                purchases =
+                    purchaseDoc.data() || {};
+
+            }
+
+        }catch(purchaseError){
+
+            console.warn(
+                "Purchase document unavailable:",
+                purchaseError
+            );
+
+        }
+
+
+        renderCourses(
+            purchases
+        );
+
+
+    }catch(error){
+
+        console.error(
+            "Course error:",
+            error
+        );
+
+
+        container.innerHTML =
+            `
+            <div class="empty">
+
+                <div class="empty-icon">
+                    ⚠️
+                </div>
+
+                <h3>
+                    Courses could not be loaded
+                </h3>
+
+                <p>
+                    Please check your Firebase Firestore setup and try again.
+                </p>
+
+            </div>
+            `;
+
+    }
+
+}
+
+
+/* =====================================================
+   RENDER COURSES
+===================================================== */
+
+function renderCourses(
+    purchases
+){
+
+    const container =
+        document.getElementById(
+            "courseContainer"
+        );
+
+
+    container.innerHTML = "";
+
+
+    allCourses.forEach(
+        function(course){
+
+            const data =
+                course.data;
+
+
+            const purchased =
+                purchases[
+                    course.id
+                ] === true;
+
+
+            const title =
+                data.title ||
+                data.name ||
+                "NEET Biology Course";
+
+
+            const description =
+                data.description ||
+                "Complete NEET Biology preparation with chapter-wise learning and practice.";
+
+
+            const price =
+                data.price != null
+                    ? data.price
+                    : 0;
+
+
+            const chapters =
+                data.chaptersCount != null
+                    ? data.chaptersCount
+                    : "—";
+
+
+            const questions =
+                data.questionsCount != null
+                    ? data.questionsCount
+                    : "—";
+
+
+            const type =
+                data.type ||
+                "Biology";
+
+
+            const card =
+                document.createElement(
+                    "article"
+                );
+
+
+            card.className =
+                "course-card";
+
+
+            card.innerHTML =
+                `
+
+                ${
+                    purchased
+                    ?
+                    `
+                    <div class="purchased-badge">
+                        ✓ PURCHASED
+                    </div>
+                    `
+                    :
+                    ""
+                }
+
+
+                <div class="course-top">
+
+                    <div>
+
+                        <div class="course-category">
+                            ${escapeHtml(type)}
+                        </div>
+
+                        <div class="course-title">
+                            ${escapeHtml(title)}
+                        </div>
+
+                    </div>
+
+
+                    <div class="course-icon">
+                        🧬
+                    </div>
+
+                </div>
+
+
+                <div class="course-body">
+
+
+                    <div class="course-description">
+                        ${escapeHtml(description)}
+                    </div>
+
+
+                    <div class="course-meta">
+
+
+                        <div class="meta">
+
+                            <div class="meta-value">
+                                ${escapeHtml(chapters)}
+                            </div>
+
+                            <div class="meta-label">
+                                Chapters
+                            </div>
+
+                        </div>
+
+
+                        <div class="meta">
+
+                            <div class="meta-value">
+                                ${escapeHtml(questions)}
+                            </div>
+
+                            <div class="meta-label">
+                                Questions
+                            </div>
+
+                        </div>
+
+
+                        <div class="meta">
+
+                            <div class="meta-value">
+                                24/7
+                            </div>
+
+                            <div class="meta-label">
+                                Access
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="price-row">
+
+
+                        <div>
+
+                            <div class="price-label">
+                                Course Price
+                            </div>
+
+                            <div class="price">
+                                ₹${escapeHtml(price)}
+                            </div>
+
+                        </div>
+
+
+                        ${
+                            purchased
+                            ?
+                            `
+                            <button
+                                class="course-button purchased-button"
+                                onclick="startCourse('${escapeAttribute(course.id)}')"
+                            >
+                                Start Course
+                            </button>
+                            `
+                            :
+                            `
+                            <button
+                                class="course-button"
+                                onclick="buyCourse('${escapeAttribute(course.id)}')"
+                            >
+                                Buy Course
+                            </button>
+                            `
+                        }
+
+
+                    </div>
+
+
+                </div>
+
+                `;
+
+
+            container.appendChild(
+                card
+            );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   BUY COURSE
+===================================================== */
+
+async function buyCourse(
+    courseId
+){
+
+    if(!currentUser){
+
+        return;
+
+    }
+
+
+    const course =
+        allCourses.find(
+            function(item){
+
+                return item.id ===
+                    courseId;
+
+            }
+        );
+
+
+    if(!course){
+
+        showToast(
+            "Course পাওয়া যায়নি।"
+        );
+
+        return;
+
+    }
+
+
+    const data =
+        course.data;
+
+
+    const title =
+        data.title ||
+        data.name ||
+        "Course";
+
+
+    const price =
+        data.price != null
+            ? data.price
+            : 0;
+
+
+    /*
+     * IMPORTANT:
+     *
+     * Real payment gateway will be
+     * connected later.
+     *
+     * For now this button only
+     * shows the purchase flow.
+     */
+
+
+    const confirmed =
+        confirm(
+            title +
+            "\n\nPrice: ₹" +
+            price +
+            "\n\nPurchase system/payment gateway এখনো connected নয়.\n\nContinue করতে চান?"
+        );
+
+
+    if(!confirmed){
+
+        return;
+
+    }
+
+
+    showToast(
+        "Payment system will be connected next."
+    );
+
+}
+
+
+/* =====================================================
+   START COURSE
+===================================================== */
+
+async function startCourse(
+    courseId
+){
+
+    if(!currentUser){
+
+        return;
+
+    }
+
+
+    try{
+
+        /*
+         * Verify purchase again
+         */
+
+        const purchaseDoc =
+            await db
+                .collection("purchases")
+                .doc(currentUser.uid)
+                .get();
+
+
+        const purchases =
+            purchaseDoc.exists
+                ? purchaseDoc.data() || {}
+                : {};
+
+
+        if(
+            purchases[courseId] !== true
+        ){
+
+            showToast(
+                "এই course এখনো purchased নয়।"
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * Save active course
+         */
+
+        localStorage.setItem(
+            "activeCourse",
+            courseId
+        );
+
+
+        /*
+         * Open course page
+         */
+
+        window.location.href =
+            "course.html";
+
+
+    }catch(error){
+
+        console.error(
+            error
+        );
+
+
+        showToast(
+            "Course open করা যায়নি।"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   EMPTY
+===================================================== */
+
+function showEmpty(){
+
+    document
+        .getElementById(
+            "courseContainer"
+        )
+        .innerHTML =
+        `
+        <div class="empty">
+
+            <div class="empty-icon">
+                📚
+            </div>
+
+            <h3>
+                No Courses Available
+            </h3>
+
+            <p>
+                Teacher এখনো কোনো course publish করেননি।
+            </p>
+
+        </div>
+        `;
+
+}
+
+
+/* =====================================================
+   NOTIFICATIONS
+===================================================== */
+
+async function loadNotifications(){
+
+    const list =
+        document.getElementById(
+            "notificationList"
+        );
+
+
+    try{
+
+        const snapshot =
+            await db
+                .collection("notifications")
+                .orderBy(
+                    "createdAt",
+                    "desc"
+                )
+                .limit(10)
+                .get();
+
+
+        if(snapshot.empty){
+
+            list.innerHTML =
+                `
+                <div class="notification-empty">
+                    No new notifications.
+                </div>
+                `;
+
+            return;
+
+        }
+
+
+        list.innerHTML = "";
+
+
+        let count = 0;
+
+
+        snapshot.forEach(
+            function(doc){
+
+                const data =
+                    doc.data() || {};
+
+
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                item.className =
+                    "notification-item";
+
+
+                item.innerHTML =
+                    `
+                    <div class="notification-title">
+                        ${escapeHtml(
+                            data.title ||
+                            "Notification"
+                        )}
+                    </div>
+
+                    <div class="notification-text">
+                        ${escapeHtml(
+                            data.message ||
+                            data.text ||
+                            ""
+                        )}
+                    </div>
+                    `;
+
+
+                list.appendChild(
+                    item
+                );
+
+
+                count++;
+
+            }
+        );
+
+
+        const badge =
+            document.getElementById(
+                "notificationBadge"
+            );
+
+
+        if(count){
+
+            badge.textContent =
+                count > 9
+                    ? "9+"
+                    : count;
+
+            badge.style.display =
+                "flex";
+
+        }
+
+
+    }catch(error){
+
+        console.warn(
+            "Notification error:",
+            error
+        );
+
+
+        list.innerHTML =
+            `
+            <div class="notification-empty">
+                No notifications available.
+            </div>
+            `;
+
+    }
+
+}
+
+
+/* =====================================================
+   NOTIFICATION EVENTS
+===================================================== */
+
+document
+    .getElementById(
+        "notificationButton"
+    )
+    .addEventListener(
+        "click",
+        function(){
+
+            document
+                .getElementById(
+                    "notificationPanel"
+                )
+                .classList.toggle(
+                    "active"
+                );
+
+        }
+    );
+
+
+document
+    .getElementById(
+        "notificationClose"
+    )
+    .addEventListener(
+        "click",
+        function(){
+
+            document
+                .getElementById(
+                    "notificationPanel"
+                )
+                .classList.remove(
+                    "active"
+                );
+
+        }
+    );
+
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
+function goDashboard(){
+
+    window.location.href =
+        "dashboard.html";
+
+}
+
+
+function goCourses(){
+
+    window.location.href =
+        "courses.html";
+
+}
+
+
+function goPractice(){
+
+    /*
+     * Practice page এখনো তৈরি হয়নি।
+     *
+     * Broken page না দেখানোর জন্য
+     * আপাতত courses page-এ রাখা হয়েছে।
+     */
+
+    showToast(
+        "Practice section পরের ধাপে তৈরি হবে।"
+    );
+
+}
+
+
+function goProfile(){
+
+    window.location.href =
+        "profile.html";
+
+}
+
+
+/* =====================================================
+   SAFE HTML
+===================================================== */
+
+function escapeHtml(
+    value
+){
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+function escapeAttribute(
+    value
+){
+
+    return String(value)
+        .replace(
+            /'/g,
+            "\\'"
+        );
+
+}
+
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+let toastTimer = null;
+
+
+function showToast(
+    message
+){
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+
+    toast.textContent =
+        message;
+
+
+    toast.classList.add(
+        "show"
+    );
+
+
+    clearTimeout(
+        toastTimer
+    );
+
+
+    toastTimer =
+        setTimeout(
+            function(){
+
+                toast.classList.remove(
+                    "show"
+                );
+
+            },
+            3000
+        );
+
+}
+
+</script>
+
+</body>
+
+</html>
