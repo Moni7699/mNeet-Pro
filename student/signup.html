@@ -3,432 +3,501 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <meta
-        name="theme-color"
-        content="#1b5e20"
-    >
+<meta
+    name="theme-color"
+    content="#0f6b3c"
+>
 
-    <title>mNEET-Pro | Create Account</title>
+<title>mNEET-Pro | Create Account</title>
 
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-storage-compat.js"></script>
+<!-- Firebase -->
 
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 
-    <style>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-        * {
-            box-sizing: border-box;
-        }
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 
-        body {
+<style>
 
-            margin: 0;
+/* =====================================================
+   RESET
+===================================================== */
 
-            min-height: 100vh;
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
 
-            background:
-                linear-gradient(
-                    135deg,
-                    #e8f5e9,
-                    #f4f6f9
-                );
 
-            font-family:
-                Arial,
-                Helvetica,
-                sans-serif;
+/* =====================================================
+   BODY
+===================================================== */
 
-            color: #17221a;
+body{
 
-        }
+    min-height:100vh;
 
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 
-        .signup-page {
+    background:
+        linear-gradient(
+            135deg,
+            #e8f5e9,
+            #f5f8f6,
+            #eaf4ee
+        );
 
-            min-height: 100vh;
+    color:#17221a;
 
-            display: flex;
+}
 
-            justify-content: center;
 
-            align-items: center;
+/* =====================================================
+   PAGE
+===================================================== */
 
-            padding: 22px;
+.page{
 
-        }
+    min-height:100vh;
 
+    display:flex;
 
-        .signup-container {
+    align-items:center;
 
-            width: 100%;
+    justify-content:center;
 
-            max-width: 430px;
+    padding:20px;
 
-        }
+}
 
 
-        .brand {
+.container{
 
-            text-align: center;
+    width:100%;
 
-            margin-bottom: 22px;
+    max-width:450px;
 
-        }
+}
 
 
-        .brand-icon {
+/* =====================================================
+   BRAND
+===================================================== */
 
-            width: 68px;
+.brand{
 
-            height: 68px;
+    text-align:center;
 
-            margin: 0 auto 12px;
+    margin-bottom:20px;
 
-            border-radius: 20px;
+}
 
-            display: flex;
 
-            align-items: center;
+.logo{
 
-            justify-content: center;
+    width:68px;
 
-            background:
-                linear-gradient(
-                    135deg,
-                    #1b5e20,
-                    #2e7d32
-                );
+    height:68px;
 
-            color: #fff;
+    margin:0 auto 11px;
 
-            font-size: 30px;
+    display:flex;
 
-            font-weight: 900;
+    align-items:center;
 
-            box-shadow:
-                0 10px 25px
-                rgba(27,94,32,.22);
+    justify-content:center;
 
-        }
+    border-radius:20px;
 
+    background:
+        linear-gradient(
+            135deg,
+            #0b572f,
+            #16804a
+        );
 
-        .brand h1 {
+    color:white;
 
-            margin: 0;
+    font-size:30px;
 
-            color: #1b5e20;
+    font-weight:900;
 
-            font-size: 28px;
+    box-shadow:
+        0 12px 28px
+        rgba(11,87,47,.22);
 
-            font-weight: 900;
+}
 
-        }
 
+.brand h1{
 
-        .brand p {
+    font-size:27px;
 
-            margin: 6px 0 0;
+    font-weight:900;
 
-            color: #68756c;
+    color:#0d6035;
 
-            font-size: 13px;
+}
 
-        }
 
+.brand p{
 
-        .signup-card {
+    margin-top:6px;
 
-            background: #fff;
+    font-size:12px;
 
-            border-radius: 22px;
+    color:#68766e;
 
-            padding: 25px;
+}
 
-            box-shadow:
-                0 12px 35px
-                rgba(0,0,0,.09);
 
-            border:
-                1px solid #e1e8e2;
+/* =====================================================
+   CARD
+===================================================== */
 
-        }
+.card{
 
+    background:#fff;
 
-        .card-title {
+    border:1px solid #dfe8e1;
 
-            margin-bottom: 20px;
+    border-radius:23px;
 
-        }
+    padding:25px;
 
+    box-shadow:
+        0 18px 45px
+        rgba(0,0,0,.09);
 
-        .card-title h2 {
+}
 
-            margin: 0;
 
-            font-size: 22px;
+.heading h2{
 
-        }
+    font-size:21px;
 
+    color:#17221a;
 
-        .card-title p {
+}
 
-            margin: 6px 0 0;
 
-            color: #718078;
+.heading p{
 
-            font-size: 13px;
+    margin-top:6px;
 
-        }
+    margin-bottom:20px;
 
+    font-size:12px;
 
-        .form-group {
+    color:#758078;
 
-            margin-bottom: 15px;
+}
 
-        }
 
+/* =====================================================
+   MESSAGE
+===================================================== */
 
-        .form-group label {
+#message{
 
-            display: block;
+    display:none;
 
-            margin-bottom: 7px;
+    padding:12px 13px;
 
-            font-size: 13px;
+    margin-bottom:15px;
 
-            font-weight: 800;
+    border-radius:11px;
 
-            color: #34443a;
+    font-size:12px;
 
-        }
+    line-height:1.5;
 
+    font-weight:700;
 
-        .form-group input {
+}
 
-            width: 100%;
 
-            padding: 14px;
+#message.error{
 
-            border:
-                1px solid #d7ddd8;
+    display:block;
 
-            border-radius: 12px;
+    background:#ffebee;
 
-            outline: none;
+    color:#a52121;
 
-            font-size: 15px;
+    border:1px solid #ffcdd2;
 
-            background: #fbfcfb;
+}
 
-        }
 
+#message.success{
 
-        .form-group input:focus {
+    display:block;
 
-            border-color: #2e7d32;
+    background:#e8f5e9;
 
-            background: #fff;
+    color:#176b35;
 
-            box-shadow:
-                0 0 0 3px
-                rgba(46,125,50,.10);
+    border:1px solid #c8e6c9;
 
-        }
+}
 
 
-        .password-wrap {
+/* =====================================================
+   FIELD
+===================================================== */
 
-            position: relative;
+.field{
 
-        }
+    margin-bottom:15px;
 
+}
 
-        .password-wrap input {
 
-            padding-right: 55px;
+.field label{
 
-        }
+    display:block;
 
+    margin-bottom:7px;
 
-        .toggle-password {
+    font-size:12px;
 
-            position: absolute;
+    font-weight:800;
 
-            right: 10px;
+    color:#34443a;
 
-            top: 50%;
+}
 
-            transform:
-                translateY(-50%);
 
-            border: 0;
+.input{
 
-            background: transparent;
+    width:100%;
 
-            cursor: pointer;
+    height:47px;
 
-            font-size: 18px;
+    padding:0 13px;
 
-        }
+    border:1px solid #d5ded8;
 
+    border-radius:12px;
 
-        .create-button {
+    background:#fbfcfb;
 
-            width: 100%;
+    outline:none;
 
-            border: 0;
+    font-size:14px;
 
-            border-radius: 13px;
+    color:#17221a;
 
-            padding: 14px;
+}
 
-            background:
-                linear-gradient(
-                    135deg,
-                    #1b5e20,
-                    #2e7d32
-                );
 
-            color: #fff;
+.input:focus{
 
-            font-size: 15px;
+    border-color:#16804a;
 
-            font-weight: 900;
+    background:#fff;
 
-            cursor: pointer;
+    box-shadow:
+        0 0 0 3px
+        rgba(22,128,74,.10);
 
-        }
+}
 
 
-        .create-button:disabled {
+/* =====================================================
+   PASSWORD
+===================================================== */
 
-            opacity: .65;
+.password-box{
 
-            cursor: not-allowed;
+    position:relative;
 
-        }
+}
 
 
-        .message {
+.password-box .input{
 
-            display: none;
+    padding-right:50px;
 
-            margin-bottom: 15px;
+}
 
-            padding: 12px;
 
-            border-radius: 11px;
+.eye{
 
-            font-size: 13px;
+    position:absolute;
 
-            line-height: 1.45;
+    right:7px;
 
-            font-weight: 700;
+    top:6px;
 
-        }
+    width:36px;
 
+    height:36px;
 
-        .message.error {
+    border:0;
 
-            display: block;
+    background:transparent;
 
-            background: #ffebee;
+    cursor:pointer;
 
-            color: #b3261e;
+    font-size:17px;
 
-        }
+}
 
 
-        .message.success {
+/* =====================================================
+   CREATE BUTTON
+===================================================== */
 
-            display: block;
+.create-btn{
 
-            background: #e8f5e9;
+    width:100%;
 
-            color: #1b5e20;
+    height:49px;
 
-        }
+    border:0;
 
+    border-radius:13px;
 
-        .login-link {
+    background:
+        linear-gradient(
+            135deg,
+            #0d6035,
+            #198754
+        );
 
-            width: 100%;
+    color:#fff;
 
-            margin-top: 13px;
+    font-size:14px;
 
-            padding: 13px;
+    font-weight:900;
 
-            border:
-                1px solid #2e7d32;
+    cursor:pointer;
 
-            border-radius: 13px;
+    box-shadow:
+        0 8px 18px
+        rgba(13,96,53,.20);
 
-            background: #fff;
+}
 
-            color: #1b5e20;
 
-            font-weight: 900;
+.create-btn:active{
 
-            cursor: pointer;
+    transform:scale(.98);
 
-        }
+}
 
 
-        .footer {
+.create-btn:disabled{
 
-            text-align: center;
+    opacity:.65;
 
-            margin-top: 18px;
+    cursor:not-allowed;
 
-            color: #7a857d;
+}
 
-            font-size: 11px;
 
-            line-height: 1.5;
+.loading{
 
-        }
+    display:none;
 
+    margin-right:6px;
 
-        @media (max-width: 480px) {
+}
 
-            .signup-page {
 
-                padding: 16px;
+/* =====================================================
+   LOGIN BUTTON
+===================================================== */
 
-            }
+.login-btn{
 
-            .signup-card {
+    width:100%;
 
-                padding: 20px;
+    height:46px;
 
-            }
+    margin-top:15px;
 
-            .brand h1 {
+    border:1px solid #16804a;
 
-                font-size: 25px;
+    border-radius:13px;
 
-            }
+    background:#fff;
 
-        }
+    color:#0d6035;
 
-    </style>
+    font-size:13px;
+
+    font-weight:900;
+
+    cursor:pointer;
+
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.footer{
+
+    text-align:center;
+
+    margin-top:17px;
+
+    color:#7c8780;
+
+    font-size:10px;
+
+    line-height:1.6;
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media(max-width:480px){
+
+    .page{
+
+        padding:15px;
+
+    }
+
+    .card{
+
+        padding:20px;
+
+        border-radius:21px;
+
+    }
+
+    .brand h1{
+
+        font-size:25px;
+
+    }
+
+}
+
+</style>
 
 </head>
 
@@ -436,471 +505,689 @@
 <body>
 
 
-<div class="signup-page">
+<div class="page">
 
+<div class="container">
 
-    <div class="signup-container">
 
+<!-- =====================================================
+     BRAND
+===================================================== -->
 
-        <!-- BRAND -->
+<div class="brand">
 
-        <div class="brand">
-
-            <div class="brand-icon">
-                M
-            </div>
-
-            <h1>
-                mNEET-Pro
-            </h1>
-
-            <p>
-                Complete Learning Platform
-            </p>
-
-        </div>
-
-
-        <!-- CARD -->
-
-        <section class="signup-card">
-
-
-            <div class="card-title">
-
-                <h2>
-                    Create Student Account
-                </h2>
-
-                <p>
-                    Create your account to start learning
-                </p>
-
-            </div>
-
-
-            <div
-                id="message"
-                class="message"
-            ></div>
-
-
-            <!-- NAME -->
-
-            <div class="form-group">
-
-                <label for="name">
-                    Full Name
-                </label>
-
-                <input
-                    id="name"
-                    type="text"
-                    placeholder="Enter your full name"
-                    autocomplete="name"
-                >
-
-            </div>
-
-
-            <!-- EMAIL -->
-
-            <div class="form-group">
-
-                <label for="email">
-                    Email Address
-                </label>
-
-                <input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    autocomplete="email"
-                >
-
-            </div>
-
-
-            <!-- PASSWORD -->
-
-            <div class="form-group">
-
-                <label for="password">
-                    Password
-                </label>
-
-                <div class="password-wrap">
-
-                    <input
-                        id="password"
-                        type="password"
-                        placeholder="Minimum 6 characters"
-                        autocomplete="new-password"
-                    >
-
-                    <button
-                        type="button"
-                        class="toggle-password"
-                        id="togglePassword"
-                    >
-                        👁️
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <!-- CONFIRM PASSWORD -->
-
-            <div class="form-group">
-
-                <label for="confirmPassword">
-                    Confirm Password
-                </label>
-
-                <div class="password-wrap">
-
-                    <input
-                        id="confirmPassword"
-                        type="password"
-                        placeholder="Enter password again"
-                        autocomplete="new-password"
-                    >
-
-                    <button
-                        type="button"
-                        class="toggle-password"
-                        id="toggleConfirm"
-                    >
-                        👁️
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <!-- CREATE -->
-
-            <button
-                type="button"
-                class="create-button"
-                id="createButton"
-            >
-                Create Account
-            </button>
-
-
-            <!-- LOGIN -->
-
-            <button
-                type="button"
-                class="login-link"
-                id="loginLink"
-            >
-                Already have an account? Login
-            </button>
-
-
-        </section>
-
-
-        <div class="footer">
-
-            mNEET-Pro • Student Learning Platform
-
-            <br>
-
-            Secure account authentication
-
-        </div>
-
-
+    <div class="logo">
+        M
     </div>
+
+    <h1>
+        mNEET-Pro
+    </h1>
+
+    <p>
+        NEET Biology Learning Platform
+    </p>
 
 </div>
 
 
-<!-- APP SCRIPTS -->
+<!-- =====================================================
+     CARD
+===================================================== -->
 
-<script src="js/firebase.js"></script>
+<div class="card">
 
-<script src="js/auth.js"></script>
+
+<div class="heading">
+
+    <h2>
+        Create Student Account
+    </h2>
+
+    <p>
+        Create your account and start your NEET preparation
+    </p>
+
+</div>
+
+
+<!-- MESSAGE -->
+
+<div id="message"></div>
+
+
+<!-- =====================================================
+     NAME
+===================================================== -->
+
+<div class="field">
+
+<label for="name">
+    Student Name
+</label>
+
+<input
+    class="input"
+    id="name"
+    type="text"
+    placeholder="Enter your full name"
+    autocomplete="name"
+>
+
+</div>
+
+
+<!-- =====================================================
+     EMAIL
+===================================================== -->
+
+<div class="field">
+
+<label for="email">
+    Email Address
+</label>
+
+<input
+    class="input"
+    id="email"
+    type="email"
+    placeholder="Enter your email"
+    autocomplete="email"
+>
+
+</div>
+
+
+<!-- =====================================================
+     PASSWORD
+===================================================== -->
+
+<div class="field">
+
+<label for="password">
+    Password
+</label>
+
+<div class="password-box">
+
+<input
+    class="input"
+    id="password"
+    type="password"
+    placeholder="Minimum 6 characters"
+    autocomplete="new-password"
+>
+
+<button
+    type="button"
+    class="eye"
+    id="passwordEye"
+>
+    👁️
+</button>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     CONFIRM PASSWORD
+===================================================== -->
+
+<div class="field">
+
+<label for="confirmPassword">
+    Confirm Password
+</label>
+
+<div class="password-box">
+
+<input
+    class="input"
+    id="confirmPassword"
+    type="password"
+    placeholder="Re-enter your password"
+    autocomplete="new-password"
+>
+
+<button
+    type="button"
+    class="eye"
+    id="confirmEye"
+>
+    👁️
+</button>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     CREATE ACCOUNT
+===================================================== -->
+
+<button
+    type="button"
+    class="create-btn"
+    id="createButton"
+>
+
+<span
+    id="loading"
+    class="loading"
+>
+    ⏳
+</span>
+
+<span id="createText">
+    Create Account
+</span>
+
+</button>
+
+
+<!-- =====================================================
+     LOGIN
+===================================================== -->
+
+<button
+    type="button"
+    class="login-btn"
+    id="loginButton"
+>
+    Already have an account? Login
+</button>
+
+
+</div>
+
+
+<div class="footer">
+
+    mNEET-Pro • Student Learning Platform
+
+    <br>
+
+    Secure Firebase Authentication
+
+</div>
+
+
+</div>
+
+</div>
 
 
 <script>
 
-"use strict";
+/* =====================================================
+   FIREBASE CONFIG
+===================================================== */
 
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyApQOM_mtFZ16RiNJEaIUhb4iYFBIBRK58",
+
+    authDomain:
+        "mneet-spark.firebaseapp.com",
+
+    databaseURL:
+        "https://mneet-spark-default-rtdb.firebaseio.com",
+
+    projectId:
+        "mneet-spark",
+
+    storageBucket:
+        "mneet-spark.firebasestorage.app",
+
+    messagingSenderId:
+        "252201633700",
+
+    appId:
+        "1:252201633700:web:1a1e7a2cff1f0b168ea331"
+
+};
+
+
+/* =====================================================
+   FIREBASE INITIALIZE
+===================================================== */
+
+if(!firebase.apps.length){
+
+    firebase.initializeApp(
+        firebaseConfig
+    );
+
+}
+
+
+const auth =
+    firebase.auth();
+
+
+const db =
+    firebase.firestore();
+
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
 
 const nameInput =
-    document.getElementById(
-        "name"
-    );
-
+    document.getElementById("name");
 
 const emailInput =
-    document.getElementById(
-        "email"
-    );
-
+    document.getElementById("email");
 
 const passwordInput =
-    document.getElementById(
-        "password"
-    );
+    document.getElementById("password");
 
-
-const confirmInput =
-    document.getElementById(
-        "confirmPassword"
-    );
-
+const confirmPasswordInput =
+    document.getElementById("confirmPassword");
 
 const createButton =
-    document.getElementById(
-        "createButton"
-    );
+    document.getElementById("createButton");
+
+const loginButton =
+    document.getElementById("loginButton");
+
+const message =
+    document.getElementById("message");
+
+const loading =
+    document.getElementById("loading");
+
+const createText =
+    document.getElementById("createText");
+
+const passwordEye =
+    document.getElementById("passwordEye");
+
+const confirmEye =
+    document.getElementById("confirmEye");
 
 
-const loginLink =
-    document.getElementById(
-        "loginLink"
-    );
-
-
-const messageBox =
-    document.getElementById(
-        "message"
-    );
-
-
-const togglePassword =
-    document.getElementById(
-        "togglePassword"
-    );
-
-
-const toggleConfirm =
-    document.getElementById(
-        "toggleConfirm"
-    );
-
-
-// ==========================================================
-// MESSAGE
-// ==========================================================
+/* =====================================================
+   MESSAGE
+===================================================== */
 
 function showMessage(
-    message,
+    text,
     type
-) {
+){
 
-    messageBox.textContent =
-        message;
+    message.textContent =
+        text;
 
-    messageBox.className =
-        "message " +
+    message.className =
         type;
 
 }
 
 
-// ==========================================================
-// PASSWORD TOGGLE
-// ==========================================================
+/* =====================================================
+   FIREBASE ERROR
+===================================================== */
 
-togglePassword.addEventListener(
+function getErrorMessage(error){
+
+    switch(error.code){
+
+        case "auth/email-already-in-use":
+
+            return "এই email দিয়ে ইতিমধ্যে একটি account আছে।";
+
+        case "auth/invalid-email":
+
+            return "Email addressটি সঠিক নয়।";
+
+        case "auth/weak-password":
+
+            return "Password কমপক্ষে 6 characters হতে হবে।";
+
+        case "auth/network-request-failed":
+
+            return "Internet connection check করুন।";
+
+        case "auth/operation-not-allowed":
+
+            return "Firebase Email/Password Authentication এখনো enable করা হয়নি।";
+
+        default:
+
+            return (
+                error.message ||
+                "Account তৈরি করা যায়নি। আবার চেষ্টা করুন।"
+            );
+
+    }
+
+}
+
+
+/* =====================================================
+   PASSWORD TOGGLE
+===================================================== */
+
+passwordEye.addEventListener(
     "click",
-    function () {
+    function(){
 
-        const hidden =
+        if(
             passwordInput.type ===
-            "password";
+            "password"
+        ){
 
+            passwordInput.type =
+                "text";
 
-        passwordInput.type =
-            hidden
-                ? "text"
-                : "password";
+            passwordEye.textContent =
+                "🙈";
 
+        }else{
 
-        togglePassword.textContent =
-            hidden
-                ? "🙈"
-                : "👁️";
+            passwordInput.type =
+                "password";
+
+            passwordEye.textContent =
+                "👁️";
+
+        }
 
     }
 );
 
 
-toggleConfirm.addEventListener(
+/* =====================================================
+   CONFIRM PASSWORD TOGGLE
+===================================================== */
+
+confirmEye.addEventListener(
     "click",
-    function () {
+    function(){
 
-        const hidden =
-            confirmInput.type ===
-            "password";
+        if(
+            confirmPasswordInput.type ===
+            "password"
+        ){
 
+            confirmPasswordInput.type =
+                "text";
 
-        confirmInput.type =
-            hidden
-                ? "text"
-                : "password";
+            confirmEye.textContent =
+                "🙈";
 
+        }else{
 
-        toggleConfirm.textContent =
-            hidden
-                ? "🙈"
-                : "👁️";
+            confirmPasswordInput.type =
+                "password";
+
+            confirmEye.textContent =
+                "👁️";
+
+        }
 
     }
 );
 
 
-// ==========================================================
-// CREATE ACCOUNT
-// ==========================================================
+/* =====================================================
+   CREATE ACCOUNT
+===================================================== */
 
 createButton.addEventListener(
     "click",
-    async function () {
-
-        const name =
-            nameInput.value.trim();
-
-        const email =
-            emailInput.value.trim();
-
-        const password =
-            passwordInput.value;
-
-        const confirmPassword =
-            confirmInput.value;
+    createAccount
+);
 
 
-        if (!name) {
+async function createAccount(){
 
-            showMessage(
-                "আপনার full name দিন।",
-                "error"
-            );
+    const name =
+        nameInput.value.trim();
 
-            nameInput.focus();
+    const email =
+        emailInput.value.trim();
 
-            return;
+    const password =
+        passwordInput.value;
 
-        }
-
-
-        if (!email) {
-
-            showMessage(
-                "Email address দিন।",
-                "error"
-            );
-
-            emailInput.focus();
-
-            return;
-
-        }
+    const confirmPassword =
+        confirmPasswordInput.value;
 
 
-        if (
-            password.length < 6
-        ) {
+    /* NAME */
 
-            showMessage(
-                "Password কমপক্ষে 6 characters হতে হবে।",
-                "error"
-            );
+    if(!name){
 
-            passwordInput.focus();
+        showMessage(
+            "Student Name দিন।",
+            "error"
+        );
 
-            return;
+        nameInput.focus();
 
-        }
+        return;
 
-
-        if (
-            password !==
-            confirmPassword
-        ) {
-
-            showMessage(
-                "দুইটি password একই নয়।",
-                "error"
-            );
-
-            confirmInput.focus();
-
-            return;
-
-        }
+    }
 
 
-        createButton.disabled =
-            true;
+    /* EMAIL */
 
-        createButton.textContent =
-            "Creating Account...";
+    if(!email){
+
+        showMessage(
+            "Email address দিন।",
+            "error"
+        );
+
+        emailInput.focus();
+
+        return;
+
+    }
 
 
-        try {
+    /* PASSWORD */
 
-            await studentSignup(
-                name,
+    if(!password){
+
+        showMessage(
+            "Password দিন।",
+            "error"
+        );
+
+        passwordInput.focus();
+
+        return;
+
+    }
+
+
+    if(password.length < 6){
+
+        showMessage(
+            "Password কমপক্ষে 6 characters হতে হবে।",
+            "error"
+        );
+
+        passwordInput.focus();
+
+        return;
+
+    }
+
+
+    /* CONFIRM */
+
+    if(!confirmPassword){
+
+        showMessage(
+            "Confirm Password দিন।",
+            "error"
+        );
+
+        confirmPasswordInput.focus();
+
+        return;
+
+    }
+
+
+    if(password !== confirmPassword){
+
+        showMessage(
+            "Password এবং Confirm Password একই নয়।",
+            "error"
+        );
+
+        confirmPasswordInput.focus();
+
+        return;
+
+    }
+
+
+    /* LOADING */
+
+    createButton.disabled =
+        true;
+
+    loading.style.display =
+        "inline";
+
+    createText.textContent =
+        "Creating Account...";
+
+
+    try{
+
+        /* =============================================
+           FIREBASE AUTH ACCOUNT
+        ============================================= */
+
+        const result =
+            await auth.createUserWithEmailAndPassword(
                 email,
                 password
             );
 
 
-            showMessage(
-                "Account successfully তৈরি হয়েছে। Dashboard খুলছে...",
-                "success"
-            );
+        const user =
+            result.user;
 
 
-            setTimeout(
-                function () {
+        /* =============================================
+           USER DISPLAY NAME
+        ============================================= */
 
-                    window.location.href =
-                        "dashboard.html";
+        await user.updateProfile({
 
-                },
-                800
-            );
+            displayName:
+                name
 
-
-        } catch (error) {
-
-            showMessage(
-                error.message,
-                "error"
-            );
+        });
 
 
-            createButton.disabled =
-                false;
+        /* =============================================
+           FIRESTORE STUDENT PROFILE
+        ============================================= */
 
-            createButton.textContent =
-                "Create Account";
+        await db
+            .collection("students")
+            .doc(user.uid)
+            .set({
 
-        }
+                uid:
+                    user.uid,
+
+                name:
+                    name,
+
+                email:
+                    email,
+
+                role:
+                    "student",
+
+                targetDate:
+                    "",
+
+                targetDream:
+                    "",
+
+                selectedCourse:
+                    "",
+
+                createdAt:
+                    firebase.firestore.FieldValue.serverTimestamp(),
+
+                updatedAt:
+                    firebase.firestore.FieldValue.serverTimestamp()
+
+            });
+
+
+        /* =============================================
+           SUCCESS
+        ============================================= */
+
+        showMessage(
+            "Account successfully created. Dashboard খুলছে...",
+            "success"
+        );
+
+
+        setTimeout(
+            function(){
+
+                window.location.href =
+                    "dashboard.html";
+
+            },
+            900
+        );
+
+
+    }catch(error){
+
+        console.error(
+            "SIGNUP ERROR:",
+            error
+        );
+
+
+        showMessage(
+            getErrorMessage(error),
+            "error"
+        );
+
+
+        createButton.disabled =
+            false;
+
+        loading.style.display =
+            "none";
+
+        createText.textContent =
+            "Create Account";
 
     }
-);
+
+}
 
 
-// ==========================================================
-// LOGIN PAGE
-// ==========================================================
+/* =====================================================
+   LOGIN BUTTON
+===================================================== */
 
-loginLink.addEventListener(
+loginButton.addEventListener(
     "click",
-    function () {
+    function(){
 
         window.location.href =
             "index.html";
@@ -909,21 +1196,45 @@ loginLink.addEventListener(
 );
 
 
-// ==========================================================
-// REDIRECT LOGGED-IN USER
-// ==========================================================
+/* =====================================================
+   ENTER KEY
+===================================================== */
 
-if (
-    typeof redirectIfLoggedIn ===
-    "function"
-) {
+confirmPasswordInput.addEventListener(
+    "keydown",
+    function(event){
 
-    redirectIfLoggedIn();
+        if(
+            event.key ===
+            "Enter"
+        ){
 
-}
+            createAccount();
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   ALREADY LOGGED IN
+===================================================== */
+
+auth.onAuthStateChanged(
+    function(user){
+
+        if(user){
+
+            window.location.href =
+                "dashboard.html";
+
+        }
+
+    }
+);
 
 </script>
-
 
 </body>
 
