@@ -1,15 +1,8 @@
-// ==========================================================
-// mNEET-Pro
-// STUDENT WEBSITE
-// FIREBASE INITIALIZATION
-// ==========================================================
+/* =========================================================
+   mNEET-Pro FIREBASE
+========================================================= */
 
 "use strict";
-
-
-// ==========================================================
-// FIREBASE CONFIGURATION
-// ==========================================================
 
 const firebaseConfig = {
 
@@ -36,199 +29,20 @@ const firebaseConfig = {
 
 };
 
-
-// ==========================================================
-// FIREBASE INITIALIZATION
-// ==========================================================
-
-if (
-    typeof firebase === "undefined"
-) {
-
-    console.error(
-        "Firebase SDK পাওয়া যায়নি।"
-    );
-
-} else {
-
-    if (
-        !firebase.apps ||
-        firebase.apps.length === 0
-    ) {
-
-        firebase.initializeApp(
-            firebaseConfig
-        );
-
-    }
-
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
 }
 
+const auth = firebase.auth();
 
-// ==========================================================
-// FIREBASE AUTH
-// ==========================================================
+const db = firebase.firestore();
 
-let auth = null;
+const database =
+    firebase.database
+        ? firebase.database()
+        : null;
 
-if (
-    typeof firebase !== "undefined" &&
-    typeof firebase.auth === "function"
-) {
-
-    auth =
-        firebase.auth();
-
-}
-
-
-// ==========================================================
-// FIRESTORE
-// ==========================================================
-
-let db = null;
-
-if (
-    typeof firebase !== "undefined" &&
-    typeof firebase.firestore === "function"
-) {
-
-    db =
-        firebase.firestore();
-
-}
-
-
-// ==========================================================
-// FIREBASE STORAGE
-// ==========================================================
-
-let storage = null;
-
-if (
-    typeof firebase !== "undefined" &&
-    typeof firebase.storage === "function"
-) {
-
-    storage =
-        firebase.storage();
-
-}
-
-
-// ==========================================================
-// REALTIME DATABASE
-// ==========================================================
-
-let realtimeDB = null;
-
-if (
-    typeof firebase !== "undefined" &&
-    typeof firebase.database === "function"
-) {
-
-    realtimeDB =
-        firebase.database();
-
-}
-
-
-// ==========================================================
-// FIREBASE STATUS
-// ==========================================================
-
-function isFirebaseReady() {
-
-    return (
-        typeof firebase !== "undefined" &&
-        firebase.apps &&
-        firebase.apps.length > 0
-    );
-
-}
-
-
-// ==========================================================
-// AUTH STATUS
-// ==========================================================
-
-function isAuthReady() {
-
-    return (
-        isFirebaseReady() &&
-        auth !== null
-    );
-
-}
-
-
-// ==========================================================
-// FIRESTORE STATUS
-// ==========================================================
-
-function isFirestoreReady() {
-
-    return (
-        isFirebaseReady() &&
-        db !== null
-    );
-
-}
-
-
-// ==========================================================
-// STORAGE STATUS
-// ==========================================================
-
-function isStorageReady() {
-
-    return (
-        isFirebaseReady() &&
-        storage !== null
-    );
-
-}
-
-
-// ==========================================================
-// FIREBASE ERROR LOGGER
-// ==========================================================
-
-function firebaseError(
-    error,
-    location
-) {
-
-    console.error(
-        "Firebase Error:",
-        location || "Unknown",
-        error
-    );
-
-}
-
-
-// ==========================================================
-// STARTUP CHECK
-// ==========================================================
-
-if (
-    typeof firebase !== "undefined"
-) {
-
-    console.log(
-        "mNEET-Pro Firebase initialized."
-    );
-
-    console.log(
-        "Project:",
-        firebaseConfig.projectId
-    );
-
-} else {
-
-    console.error(
-        "mNEET-Pro: Firebase SDK load হয়নি।"
-    );
-
-}
+const storage =
+    firebase.storage
+        ? firebase.storage()
+        : null;
