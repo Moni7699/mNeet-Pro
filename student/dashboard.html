@@ -1,1782 +1,970 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<meta
-    name="theme-color"
-    content="#0d6035"
->
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d6035">
 <title>mNEET-Pro | Student Dashboard</title>
 
-
-<!-- =====================================================
-     FIREBASE
-===================================================== -->
-
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
+<!-- Your Firebase initialization -->
+<script src="js/firebase.js"></script>
 
 <style>
-
-/* =====================================================
-   RESET
-===================================================== */
-
 *{
     box-sizing:border-box;
     margin:0;
     padding:0;
 }
 
-
 html{
     scroll-behavior:smooth;
 }
 
-
 body{
-
     min-height:100vh;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
+    padding-bottom:76px;
+    font-family:Arial,Helvetica,sans-serif;
     background:#f4f7f5;
-
     color:#17221a;
-
-    padding-bottom:78px;
-
+    transition:.25s;
 }
 
-
-button{
+button,
+input,
+select{
     font-family:inherit;
 }
-
 
 button,
 a{
     -webkit-tap-highlight-color:transparent;
 }
 
+button{
+    cursor:pointer;
+}
 
-/* =====================================================
-   APP HEADER
-===================================================== */
+/* ================= HEADER ================= */
 
 .header{
-
     position:sticky;
-
     top:0;
-
     z-index:100;
-
     height:68px;
-
     display:flex;
-
     align-items:center;
-
     justify-content:space-between;
-
     padding:0 16px;
-
-    background:#ffffff;
-
-    border-bottom:1px solid #e2e8e3;
-
-    box-shadow:
-        0 4px 15px rgba(0,0,0,.05);
-
+    background:#fff;
+    border-bottom:1px solid #e0e7e2;
+    box-shadow:0 4px 15px rgba(0,0,0,.05);
 }
-
 
 .header-left{
-
     display:flex;
-
     align-items:center;
-
     gap:12px;
-
 }
 
-
-.menu-btn{
-
-    width:42px;
-
-    height:42px;
-
-    border:0;
-
-    border-radius:12px;
-
-    background:#eef6f0;
-
-    color:#0d6035;
-
-    font-size:23px;
-
-    cursor:pointer;
-
-}
-
-
+.menu-btn,
 .notification-btn{
-
-    position:relative;
-
     width:42px;
-
     height:42px;
-
     border:0;
-
     border-radius:12px;
-
     background:#eef6f0;
-
     color:#0d6035;
-
     font-size:21px;
-
-    cursor:pointer;
-
 }
-
-
-.notification-badge{
-
-    position:absolute;
-
-    right:4px;
-
-    top:3px;
-
-    min-width:17px;
-
-    height:17px;
-
-    padding:0 4px;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    border-radius:20px;
-
-    background:#e53935;
-
-    color:white;
-
-    font-size:9px;
-
-    font-weight:900;
-
-}
-
 
 .header-brand{
-
-    font-size:17px;
-
+    font-size:18px;
     font-weight:900;
-
     color:#0d6035;
-
 }
 
+.notification-btn{
+    position:relative;
+}
 
-/* =====================================================
-   SIDEBAR
-===================================================== */
+.notification-badge{
+    position:absolute;
+    top:2px;
+    right:3px;
+    min-width:17px;
+    height:17px;
+    padding:0 4px;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    border-radius:20px;
+    background:#e53935;
+    color:#fff;
+    font-size:9px;
+    font-weight:900;
+}
+
+/* ================= SIDEBAR ================= */
 
 .overlay{
-
     position:fixed;
-
     inset:0;
-
     z-index:200;
-
-    background:rgba(0,0,0,.42);
-
     display:none;
-
+    background:rgba(0,0,0,.45);
 }
-
 
 .overlay.active{
     display:block;
 }
 
-
 .sidebar{
-
     position:fixed;
-
-    left:-310px;
-
     top:0;
-
     bottom:0;
-
+    left:-315px;
     z-index:300;
-
-    width:290px;
-
+    width:295px;
     max-width:85vw;
-
-    background:#ffffff;
-
     overflow-y:auto;
-
-    box-shadow:
-        8px 0 30px rgba(0,0,0,.15);
-
+    background:#fff;
+    box-shadow:8px 0 30px rgba(0,0,0,.18);
     transition:left .25s ease;
-
 }
-
 
 .sidebar.active{
     left:0;
 }
 
-
 .sidebar-top{
-
-    padding:22px 18px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #0b572f,
-            #198754
-        );
-
-    color:white;
-
+    position:relative;
+    padding:24px 18px;
+    color:#fff;
+    background:linear-gradient(135deg,#0b572f,#198754);
 }
-
 
 .sidebar-profile{
-
     display:flex;
-
     align-items:center;
-
     gap:12px;
-
 }
-
 
 .profile-avatar{
-
-    width:50px;
-
-    height:50px;
-
-    flex-shrink:0;
-
+    width:52px;
+    height:52px;
     display:flex;
-
     align-items:center;
-
     justify-content:center;
-
+    flex-shrink:0;
     border-radius:50%;
-
-    background:rgba(255,255,255,.20);
-
+    background:rgba(255,255,255,.18);
     border:2px solid rgba(255,255,255,.45);
-
     font-size:21px;
-
     font-weight:900;
-
 }
-
 
 .sidebar-name{
-
     font-size:16px;
-
     font-weight:900;
-
 }
-
 
 .sidebar-email{
-
     margin-top:4px;
-
-    font-size:10px;
-
-    opacity:.85;
-
+    max-width:190px;
     overflow:hidden;
-
     text-overflow:ellipsis;
-
     white-space:nowrap;
-
+    font-size:10px;
+    opacity:.85;
 }
-
 
 .sidebar-close{
-
     position:absolute;
-
-    right:13px;
-
-    top:13px;
-
+    top:12px;
+    right:12px;
     width:34px;
-
     height:34px;
-
     border:0;
-
     border-radius:10px;
-
     background:rgba(255,255,255,.14);
-
-    color:white;
-
-    font-size:20px;
-
-    cursor:pointer;
-
+    color:#fff;
+    font-size:21px;
 }
-
 
 .sidebar-section{
-
-    padding:14px 12px 5px;
-
+    padding:15px 14px 6px;
     color:#89938d;
-
     font-size:10px;
-
     font-weight:900;
-
     text-transform:uppercase;
-
 }
-
 
 .side-item{
-
-    width:100%;
-
+    width:calc(100% - 20px);
+    margin:2px 10px;
     display:flex;
-
     align-items:center;
-
     gap:12px;
-
-    padding:13px 15px;
-
+    padding:13px 14px;
     border:0;
-
     border-radius:12px;
-
     background:transparent;
-
     color:#26342c;
-
     text-align:left;
-
     font-size:13px;
-
     font-weight:700;
-
-    cursor:pointer;
-
 }
-
 
 .side-item:hover{
-
     background:#eef6f0;
-
     color:#0d6035;
-
 }
-
 
 .side-icon{
-
     width:24px;
-
     text-align:center;
-
     font-size:18px;
-
 }
-
 
 .logout-item{
-
     color:#c62828;
-
 }
 
-
-.logout-item:hover{
-
-    background:#ffebee;
-
-    color:#c62828;
-
-}
-
-
-/* =====================================================
-   MAIN
-===================================================== */
+/* ================= MAIN ================= */
 
 .main{
-
     width:100%;
-
     max-width:1100px;
-
-    margin:0 auto;
-
+    margin:auto;
     padding:18px 16px 30px;
-
 }
-
-
-/* =====================================================
-   WELCOME
-===================================================== */
 
 .welcome{
-
-    margin-bottom:16px;
-
+    margin-bottom:17px;
 }
-
 
 .welcome-small{
-
-    font-size:11px;
-
     color:#77827b;
-
+    font-size:11px;
 }
-
 
 .welcome-name{
-
     margin-top:3px;
-
-    font-size:23px;
-
-    font-weight:900;
-
     color:#173021;
-
+    font-size:23px;
+    font-weight:900;
 }
 
-
-/* =====================================================
-   COURSE SELECTOR
-===================================================== */
+/* ================= SECTION ================= */
 
 .section-title{
-
     display:flex;
-
     align-items:center;
-
     justify-content:space-between;
-
+    gap:10px;
     margin-bottom:10px;
-
 }
-
 
 .section-title h2{
-
     font-size:16px;
-
     font-weight:900;
-
 }
-
 
 .section-title span{
-
-    font-size:10px;
-
     color:#7b857f;
-
+    font-size:10px;
 }
 
+/* ================= COURSE ================= */
 
 .course-box{
-
     position:relative;
-
 }
-
 
 .course-select{
-
     width:100%;
-
     height:52px;
-
     padding:0 45px 0 14px;
-
     border:1px solid #d7e1da;
-
     border-radius:14px;
-
     outline:none;
-
-    background:white;
-
-    color:#17221a;
-
-    font-size:13px;
-
-    font-weight:800;
-
     appearance:none;
-
+    background:#fff;
+    color:#17221a;
+    font-size:13px;
+    font-weight:800;
 }
-
 
 .course-select:focus{
-
     border-color:#198754;
-
-    box-shadow:
-        0 0 0 3px rgba(25,135,84,.10);
-
+    box-shadow:0 0 0 3px rgba(25,135,84,.1);
 }
-
 
 .course-arrow{
-
     position:absolute;
-
     right:15px;
-
     top:15px;
-
     pointer-events:none;
-
     color:#198754;
-
     font-size:20px;
-
 }
 
-
-/* =====================================================
-   TARGET TIMER
-===================================================== */
+/* ================= TARGET ================= */
 
 .target-card{
-
     margin-top:17px;
-
     padding:18px;
-
     border-radius:18px;
-
-    color:white;
-
-    background:
-        linear-gradient(
-            135deg,
-            #0b572f,
-            #198754
-        );
-
-    box-shadow:
-        0 10px 25px
-        rgba(13,96,53,.18);
-
+    color:#fff;
+    background:linear-gradient(135deg,#0b572f,#198754);
+    box-shadow:0 10px 25px rgba(13,96,53,.18);
 }
-
 
 .target-top{
-
     display:flex;
-
-    align-items:flex-start;
-
     justify-content:space-between;
-
+    align-items:flex-start;
+    gap:10px;
 }
-
 
 .target-label{
-
     font-size:11px;
-
     opacity:.85;
-
 }
-
 
 .target-dream{
-
     margin-top:5px;
-
     font-size:17px;
-
     font-weight:900;
-
 }
-
 
 .target-edit{
-
-    border:1px solid rgba(255,255,255,.30);
-
-    border-radius:9px;
-
     padding:7px 10px;
-
-    background:rgba(255,255,255,.10);
-
-    color:white;
-
+    border:1px solid rgba(255,255,255,.3);
+    border-radius:9px;
+    background:rgba(255,255,255,.1);
+    color:#fff;
     font-size:10px;
-
     font-weight:800;
-
-    cursor:pointer;
-
 }
-
 
 .timer{
-
     display:grid;
-
-    grid-template-columns:
-        repeat(4,1fr);
-
+    grid-template-columns:repeat(4,1fr);
     gap:8px;
-
     margin-top:17px;
-
 }
-
 
 .timer-box{
-
     padding:10px 5px;
-
-    text-align:center;
-
     border-radius:11px;
-
     background:rgba(255,255,255,.12);
-
+    text-align:center;
 }
-
 
 .timer-number{
-
     font-size:21px;
-
     font-weight:900;
-
 }
-
 
 .timer-text{
-
     margin-top:2px;
-
     font-size:8px;
-
-    opacity:.80;
-
+    opacity:.8;
     text-transform:uppercase;
-
 }
 
+/* ================= TASKS ================= */
 
-/* =====================================================
-   TODAY TASK
-===================================================== */
-
-.tasks-card{
-
+.tasks-card,
+.progress-card,
+.continue-card{
     margin-top:17px;
-
-    padding:16px;
-
+    padding:17px;
     border:1px solid #e0e7e2;
-
     border-radius:17px;
-
-    background:white;
-
+    background:#fff;
 }
-
 
 .task-list{
-
     display:flex;
-
     flex-direction:column;
-
     gap:9px;
-
 }
-
 
 .task{
-
     display:flex;
-
     align-items:center;
-
     gap:10px;
-
     padding:11px;
-
     border-radius:11px;
-
     background:#f7faf8;
-
 }
-
 
 .task-icon{
-
     width:34px;
-
     height:34px;
-
     flex-shrink:0;
-
     display:flex;
-
     align-items:center;
-
     justify-content:center;
-
     border-radius:10px;
-
     background:#e8f5e9;
-
     font-size:16px;
-
 }
-
 
 .task-content{
-
     flex:1;
-
 }
-
 
 .task-title{
-
     font-size:12px;
-
     font-weight:800;
-
 }
-
 
 .task-sub{
-
     margin-top:3px;
-
-    font-size:9px;
-
     color:#7c8780;
-
+    font-size:9px;
 }
-
 
 .task-status{
-
-    font-size:9px;
-
-    font-weight:900;
-
     color:#198754;
-
+    font-size:9px;
+    font-weight:900;
 }
 
-
-/* =====================================================
-   STATS
-===================================================== */
+/* ================= STATS ================= */
 
 .stats{
-
     display:grid;
-
-    grid-template-columns:
-        repeat(2,1fr);
-
+    grid-template-columns:repeat(2,1fr);
     gap:11px;
-
     margin-top:17px;
-
 }
-
 
 .stat{
-
     padding:15px;
-
     border:1px solid #e0e7e2;
-
     border-radius:16px;
-
-    background:white;
-
+    background:#fff;
 }
-
 
 .stat-icon{
-
     font-size:20px;
-
 }
-
 
 .stat-value{
-
     margin-top:8px;
-
-    font-size:22px;
-
-    font-weight:900;
-
     color:#0d6035;
-
+    font-size:22px;
+    font-weight:900;
 }
-
 
 .stat-label{
-
     margin-top:3px;
-
-    font-size:10px;
-
     color:#7b857f;
-
+    font-size:10px;
 }
 
-
-/* =====================================================
-   PROGRESS
-===================================================== */
-
-.progress-card{
-
-    margin-top:17px;
-
-    padding:17px;
-
-    border:1px solid #e0e7e2;
-
-    border-radius:17px;
-
-    background:white;
-
-}
-
+/* ================= PROGRESS ================= */
 
 .progress-row{
-
     display:flex;
-
-    justify-content:space-between;
-
     align-items:center;
-
+    justify-content:space-between;
     margin-bottom:10px;
-
 }
-
 
 .progress-name{
-
     font-size:13px;
-
     font-weight:900;
-
 }
-
 
 .progress-percent{
-
-    font-size:14px;
-
-    font-weight:900;
-
     color:#198754;
-
+    font-size:14px;
+    font-weight:900;
 }
-
 
 .progress-track{
-
     width:100%;
-
     height:9px;
-
     overflow:hidden;
-
     border-radius:20px;
-
     background:#e7ece8;
-
 }
-
 
 .progress-fill{
-
-    width:0%;
-
+    width:0;
     height:100%;
-
     border-radius:20px;
-
-    background:
-        linear-gradient(
-            90deg,
-            #0d6035,
-            #2e9b62
-        );
-
-    transition:width .5s ease;
-
+    background:linear-gradient(90deg,#0d6035,#2e9b62);
+    transition:width .5s;
 }
-
 
 .progress-sub{
-
     margin-top:8px;
-
-    font-size:9px;
-
     color:#7c8780;
-
+    font-size:9px;
 }
 
-
-/* =====================================================
-   CONTINUE
-===================================================== */
-
-.continue-card{
-
-    margin-top:17px;
-
-    padding:17px;
-
-    border-radius:17px;
-
-    background:white;
-
-    border:1px solid #e0e7e2;
-
-}
-
+/* ================= CONTINUE ================= */
 
 .continue-content{
-
     display:flex;
-
     align-items:center;
-
     gap:12px;
-
 }
-
 
 .continue-icon{
-
     width:48px;
-
     height:48px;
-
     display:flex;
-
     align-items:center;
-
     justify-content:center;
-
+    flex-shrink:0;
     border-radius:13px;
-
     background:#e8f5e9;
-
     font-size:22px;
-
 }
-
 
 .continue-info{
-
     flex:1;
-
 }
-
 
 .continue-title{
-
     font-size:13px;
-
     font-weight:900;
-
 }
-
 
 .continue-sub{
-
     margin-top:4px;
-
-    font-size:10px;
-
     color:#7b857f;
-
+    font-size:10px;
 }
-
 
 .continue-btn{
-
-    margin-top:14px;
-
     width:100%;
-
     height:43px;
-
+    margin-top:14px;
     border:0;
-
     border-radius:11px;
-
     background:#0d6035;
-
-    color:white;
-
+    color:#fff;
     font-size:12px;
-
     font-weight:900;
-
-    cursor:pointer;
-
 }
 
-
-/* =====================================================
-   NOTIFICATION PANEL
-===================================================== */
+/* ================= NOTIFICATIONS ================= */
 
 .notification-panel{
-
     position:fixed;
-
-    top:72px;
-
+    top:73px;
     right:14px;
-
     z-index:150;
-
     width:330px;
-
     max-width:calc(100vw - 28px);
-
     max-height:70vh;
-
     overflow:auto;
-
     display:none;
-
-    background:white;
-
     border:1px solid #dfe7e1;
-
     border-radius:17px;
-
-    box-shadow:
-        0 15px 40px rgba(0,0,0,.16);
-
+    background:#fff;
+    box-shadow:0 15px 40px rgba(0,0,0,.16);
 }
-
 
 .notification-panel.active{
     display:block;
 }
 
-
 .notification-head{
-
     position:sticky;
-
     top:0;
-
     z-index:2;
-
     display:flex;
-
-    justify-content:space-between;
-
     align-items:center;
-
+    justify-content:space-between;
     padding:15px;
-
-    background:white;
-
     border-bottom:1px solid #edf1ee;
-
+    background:#fff;
 }
-
 
 .notification-head strong{
-
     font-size:14px;
-
 }
-
 
 .notification-close{
-
     border:0;
-
     background:none;
-
     font-size:18px;
-
-    cursor:pointer;
-
 }
-
 
 .notification-item{
-
     padding:13px 15px;
-
     border-bottom:1px solid #edf1ee;
-
 }
-
 
 .notification-title{
-
     font-size:12px;
-
     font-weight:900;
-
 }
-
 
 .notification-text{
-
     margin-top:4px;
-
-    font-size:10px;
-
-    line-height:1.5;
-
     color:#727d76;
-
+    font-size:10px;
+    line-height:1.5;
 }
-
 
 .notification-empty{
-
     padding:30px 15px;
-
-    text-align:center;
-
     color:#7b857f;
-
+    text-align:center;
     font-size:11px;
-
 }
 
-
-/* =====================================================
-   BOTTOM NAVIGATION
-===================================================== */
+/* ================= BOTTOM NAV ================= */
 
 .bottom-nav{
-
     position:fixed;
-
     left:0;
-
     right:0;
-
     bottom:0;
-
     z-index:120;
-
     height:70px;
-
     display:grid;
-
-    grid-template-columns:
-        repeat(4,1fr);
-
-    background:white;
-
+    grid-template-columns:repeat(4,1fr);
     border-top:1px solid #dfe7e1;
-
-    box-shadow:
-        0 -5px 20px rgba(0,0,0,.06);
-
+    background:#fff;
+    box-shadow:0 -5px 20px rgba(0,0,0,.06);
 }
-
 
 .nav-item{
-
-    border:0;
-
-    background:white;
-
-    color:#7b857f;
-
     display:flex;
-
     flex-direction:column;
-
     align-items:center;
-
     justify-content:center;
-
     gap:4px;
-
-    cursor:pointer;
-
+    border:0;
+    background:#fff;
+    color:#7b857f;
     font-size:9px;
-
     font-weight:800;
-
 }
-
 
 .nav-icon{
-
     font-size:20px;
-
 }
-
 
 .nav-item.active{
-
     color:#0d6035;
-
 }
 
-
-.nav-item.active .nav-icon{
-
-    transform:translateY(-1px);
-
-}
-
-
-/* =====================================================
-   MODAL
-===================================================== */
+/* ================= MODAL ================= */
 
 .modal-overlay{
-
     position:fixed;
-
     inset:0;
-
     z-index:500;
-
     display:none;
-
     align-items:center;
-
     justify-content:center;
-
     padding:18px;
-
     background:rgba(0,0,0,.45);
-
 }
-
 
 .modal-overlay.active{
-
     display:flex;
-
 }
-
 
 .modal{
-
     width:100%;
-
     max-width:420px;
-
-    max-height:90vh;
-
-    overflow:auto;
-
     padding:21px;
-
     border-radius:19px;
-
-    background:white;
-
-    box-shadow:
-        0 20px 50px rgba(0,0,0,.20);
-
+    background:#fff;
+    box-shadow:0 20px 50px rgba(0,0,0,.2);
 }
-
 
 .modal h3{
-
     font-size:18px;
-
 }
-
 
 .modal p{
-
-    margin-top:5px;
-
-    margin-bottom:17px;
-
-    font-size:10px;
-
+    margin:5px 0 17px;
     color:#7b857f;
-
+    font-size:10px;
 }
-
 
 .modal-label{
-
     display:block;
-
     margin-bottom:6px;
-
     font-size:11px;
-
     font-weight:800;
-
 }
-
 
 .modal-input{
-
     width:100%;
-
     height:44px;
-
     margin-bottom:14px;
-
     padding:0 12px;
-
     border:1px solid #d6dfd8;
-
     border-radius:11px;
-
     outline:none;
-
     font-size:13px;
-
 }
-
 
 .modal-buttons{
-
     display:flex;
-
     gap:9px;
-
 }
-
 
 .modal-cancel,
 .modal-save{
-
     flex:1;
-
     height:43px;
-
     border-radius:11px;
-
     font-size:12px;
-
     font-weight:900;
-
-    cursor:pointer;
-
 }
-
 
 .modal-cancel{
-
     border:1px solid #d7dfd9;
-
-    background:white;
-
+    background:#fff;
     color:#59655d;
-
 }
-
 
 .modal-save{
-
     border:0;
-
     background:#0d6035;
-
-    color:white;
-
+    color:#fff;
 }
 
+/* ================= DARK MODE ================= */
 
-/* =====================================================
-   DESKTOP
-===================================================== */
+body.dark{
+    background:#101612;
+    color:#edf5ef;
+}
+
+body.dark .header,
+body.dark .tasks-card,
+body.dark .progress-card,
+body.dark .continue-card,
+body.dark .stat,
+body.dark .notification-panel,
+body.dark .modal,
+body.dark .bottom-nav,
+body.dark .course-select,
+body.dark .sidebar{
+    background:#18221c;
+    border-color:#29372e;
+}
+
+body.dark .header-brand,
+body.dark .welcome-name,
+body.dark .section-title h2,
+body.dark .progress-name,
+body.dark .continue-title,
+body.dark .task-title,
+body.dark .notification-head strong{
+    color:#edf5ef;
+}
+
+body.dark .course-select{
+    color:#edf5ef;
+}
+
+body.dark .task{
+    background:#202c24;
+}
+
+body.dark .task-sub,
+body.dark .stat-label,
+body.dark .continue-sub,
+body.dark .progress-sub,
+body.dark .section-title span,
+body.dark .welcome-small{
+    color:#aab8ae;
+}
+
+body.dark .bottom-nav,
+body.dark .nav-item{
+    background:#18221c;
+}
+
+body.dark .nav-item{
+    color:#91a197;
+}
+
+body.dark .nav-item.active{
+    color:#62c78b;
+}
+
+body.dark .sidebar-section{
+    color:#829188;
+}
+
+body.dark .side-item{
+    color:#edf5ef;
+}
+
+body.dark .side-item:hover{
+    background:#223028;
+}
+
+body.dark .modal-input{
+    background:#202c24;
+    color:#fff;
+    border-color:#35453b;
+}
+
+/* ================= DESKTOP ================= */
 
 @media(min-width:800px){
-
     .main{
-
         padding-left:24px;
-
         padding-right:24px;
-
     }
-
 
     .stats{
-
-        grid-template-columns:
-            repeat(4,1fr);
-
+        grid-template-columns:repeat(4,1fr);
     }
-
-
-    .tasks-card{
-
-        margin-top:20px;
-
-    }
-
 }
 
+@media(max-width:420px){
+    .main{
+        padding-left:13px;
+        padding-right:13px;
+    }
+
+    .welcome-name{
+        font-size:21px;
+    }
+
+    .target-card{
+        padding:15px;
+    }
+
+    .timer-number{
+        font-size:19px;
+    }
+}
 </style>
-
 </head>
-
 
 <body>
 
+<!-- OVERLAY -->
+<div id="overlay" class="overlay"></div>
 
-<!-- =====================================================
-     OVERLAY
-===================================================== -->
-
-<div
-    id="overlay"
-    class="overlay"
-></div>
-
-
-<!-- =====================================================
-     SIDEBAR
-===================================================== -->
-
-<aside
-    id="sidebar"
-    class="sidebar"
->
-
-    <button
-        id="sidebarClose"
-        class="sidebar-close"
-    >
-        ×
-    </button>
-
+<!-- SIDEBAR -->
+<aside id="sidebar" class="sidebar">
 
     <div class="sidebar-top">
 
+        <button id="sidebarClose" class="sidebar-close">×</button>
+
         <div class="sidebar-profile">
 
-            <div
-                id="avatar"
-                class="profile-avatar"
-            >
-                M
-            </div>
+            <div id="avatar" class="profile-avatar">M</div>
 
             <div>
-
-                <div
-                    id="sideName"
-                    class="sidebar-name"
-                >
-                    Student
-                </div>
-
-                <div
-                    id="sideEmail"
-                    class="sidebar-email"
-                >
-                    Loading...
-                </div>
-
+                <div id="sideName" class="sidebar-name">Student</div>
+                <div id="sideEmail" class="sidebar-email">Loading...</div>
             </div>
 
         </div>
-
     </div>
 
+    <div class="sidebar-section">Account</div>
 
-    <div class="sidebar-section">
-        Account
-    </div>
-
-
-    <button
-        class="side-item"
-        onclick="openProfile()"
-    >
-
-        <span class="side-icon">
-            👤
-        </span>
-
+    <button class="side-item" onclick="openProfile()">
+        <span class="side-icon">👤</span>
         Profile Details
-
     </button>
 
-
-    <button
-        class="side-item"
-        onclick="openTargetModal()"
-    >
-
-        <span class="side-icon">
-            🎯
-        </span>
-
+    <button class="side-item" onclick="openTargetModal()">
+        <span class="side-icon">🎯</span>
         Target Date & Dream
-
     </button>
 
+    <div class="sidebar-section">Settings</div>
 
-    <div class="sidebar-section">
-        Settings
-    </div>
-
-
-    <button
-        id="themeButton"
-        class="side-item"
-        onclick="toggleTheme()"
-    >
-
-        <span
-            id="themeIcon"
-            class="side-icon"
-        >
-            🌙
-        </span>
-
-        <span id="themeText">
-            Dark Mode
-        </span>
-
+    <button class="side-item" onclick="toggleTheme()">
+        <span id="themeIcon" class="side-icon">🌙</span>
+        <span id="themeText">Dark Mode</span>
     </button>
 
+    <div class="sidebar-section">Connect With Us</div>
 
-    <div class="sidebar-section">
-        Connect With Us
-    </div>
-
-
-    <button
-        class="side-item"
-        onclick="openExternal('https://www.youtube.com/')"
-    >
-
-        <span class="side-icon">
-            ▶️
-        </span>
-
+    <button class="side-item" onclick="openExternal('https://www.youtube.com/')">
+        <span class="side-icon">▶️</span>
         YouTube Channel
-
     </button>
 
-
-    <button
-        class="side-item"
-        onclick="openExternal('https://www.facebook.com/')"
-    >
-
-        <span class="side-icon">
-            📘
-        </span>
-
+    <button class="side-item" onclick="openExternal('https://www.facebook.com/')">
+        <span class="side-icon">📘</span>
         Facebook Page
-
     </button>
 
-
-    <button
-        class="side-item"
-        onclick="openExternal('https://www.instagram.com/')"
-    >
-
-        <span class="side-icon">
-            📸
-        </span>
-
+    <button class="side-item" onclick="openExternal('https://www.instagram.com/')">
+        <span class="side-icon">📸</span>
         Instagram
-
     </button>
 
-
-    <button
-        class="side-item"
-        onclick="openExternal('https://chat.whatsapp.com/')"
-    >
-
-        <span class="side-icon">
-            💬
-        </span>
-
+    <button class="side-item" onclick="openExternal('https://chat.whatsapp.com/')">
+        <span class="side-icon">💬</span>
         WhatsApp Community
-
     </button>
 
+    <div class="sidebar-section">Account</div>
 
-    <div class="sidebar-section">
-        Account
-    </div>
-
-
-    <button
-        class="side-item logout-item"
-        onclick="logoutStudent()"
-    >
-
-        <span class="side-icon">
-            🚪
-        </span>
-
+    <button class="side-item logout-item" onclick="logoutStudent()">
+        <span class="side-icon">🚪</span>
         Logout
-
     </button>
 
 </aside>
 
-
-<!-- =====================================================
-     NOTIFICATION PANEL
-===================================================== -->
-
-<div
-    id="notificationPanel"
-    class="notification-panel"
->
+<!-- NOTIFICATIONS -->
+<div id="notificationPanel" class="notification-panel">
 
     <div class="notification-head">
-
-        <strong>
-            Notifications
-        </strong>
-
-        <button
-            id="notificationClose"
-            class="notification-close"
-        >
-            ×
-        </button>
-
+        <strong>Notifications</strong>
+        <button id="notificationClose" class="notification-close">×</button>
     </div>
 
-
     <div id="notificationList">
-
         <div class="notification-empty">
             Loading notifications...
         </div>
-
     </div>
 
 </div>
 
-
-<!-- =====================================================
-     HEADER
-===================================================== -->
-
+<!-- HEADER -->
 <header class="header">
-
 
     <div class="header-left">
 
-        <button
-            id="menuButton"
-            class="menu-btn"
-        >
-            ☰
-        </button>
+        <button id="menuButton" class="menu-btn">☰</button>
 
-
-        <div class="header-brand">
-            mNEET-Pro
-        </div>
+        <div class="header-brand">mNEET-Pro</div>
 
     </div>
 
-
-    <button
-        id="notificationButton"
-        class="notification-btn"
-    >
+    <button id="notificationButton" class="notification-btn">
 
         🔔
 
-        <span
-            id="notificationBadge"
-            class="notification-badge"
-            style="display:none;"
-        >
+        <span id="notificationBadge" class="notification-badge">
             0
         </span>
 
@@ -1784,377 +972,164 @@ a{
 
 </header>
 
-
-<!-- =====================================================
-     MAIN
-===================================================== -->
-
+<!-- MAIN -->
 <main class="main">
 
-
     <!-- WELCOME -->
-
     <section class="welcome">
 
         <div class="welcome-small">
             Welcome back,
         </div>
 
-        <div
-            id="studentName"
-            class="welcome-name"
-        >
+        <div id="studentName" class="welcome-name">
             Student
         </div>
 
     </section>
 
-
-    <!-- =================================================
-         COURSE SELECTION
-    ================================================== -->
-
+    <!-- COURSE -->
     <section>
 
         <div class="section-title">
-
-            <h2>
-                Select Course
-            </h2>
-
-            <span>
-                Your purchased courses
-            </span>
-
+            <h2>Select Course</h2>
+            <span>Your purchased courses</span>
         </div>
-
 
         <div class="course-box">
 
-            <select
-                id="courseSelect"
-                class="course-select"
-            >
-
-                <option value="">
-                    Loading courses...
-                </option>
-
+            <select id="courseSelect" class="course-select">
+                <option value="">Loading courses...</option>
             </select>
 
-            <div class="course-arrow">
-               ⌄
-            </div>
+            <div class="course-arrow">⌄</div>
 
         </div>
 
     </section>
 
-
-    <!-- =================================================
-         TARGET
-    ================================================== -->
-
+    <!-- TARGET -->
     <section class="target-card">
-
 
         <div class="target-top">
 
             <div>
+                <div class="target-label">My NEET Target</div>
 
-                <div class="target-label">
-                    My NEET Target
-                </div>
-
-                <div
-                    id="targetDream"
-                    class="target-dream"
-                >
+                <div id="targetDream" class="target-dream">
                     Set your dream
                 </div>
-
             </div>
 
-
-            <button
-                class="target-edit"
-                onclick="openTargetModal()"
-            >
+            <button class="target-edit" onclick="openTargetModal()">
                 EDIT
             </button>
 
         </div>
 
-
         <div class="timer">
 
-
             <div class="timer-box">
-
-                <div
-                    id="days"
-                    class="timer-number"
-                >
-                    0
-                </div>
-
-                <div class="timer-text">
-                    Days
-                </div>
-
+                <div id="days" class="timer-number">0</div>
+                <div class="timer-text">Days</div>
             </div>
 
-
             <div class="timer-box">
-
-                <div
-                    id="hours"
-                    class="timer-number"
-                >
-                    0
-                </div>
-
-                <div class="timer-text">
-                    Hours
-                </div>
-
+                <div id="hours" class="timer-number">0</div>
+                <div class="timer-text">Hours</div>
             </div>
 
-
             <div class="timer-box">
-
-                <div
-                    id="minutes"
-                    class="timer-number"
-                >
-                    0
-                </div>
-
-                <div class="timer-text">
-                    Minutes
-                </div>
-
+                <div id="minutes" class="timer-number">0</div>
+                <div class="timer-text">Minutes</div>
             </div>
 
-
             <div class="timer-box">
-
-                <div
-                    id="seconds"
-                    class="timer-number"
-                >
-                    0
-                </div>
-
-                <div class="timer-text">
-                    Seconds
-                </div>
-
+                <div id="seconds" class="timer-number">0</div>
+                <div class="timer-text">Seconds</div>
             </div>
-
 
         </div>
 
     </section>
 
-
-    <!-- =================================================
-         TODAY TASK
-    ================================================== -->
-
+    <!-- TODAY TASK -->
     <section class="tasks-card">
 
         <div class="section-title">
-
-            <h2>
-                Today's Tasks
-            </h2>
-
-            <span>
-                Your daily plan
-            </span>
-
+            <h2>Today's Tasks</h2>
+            <span>Your daily plan</span>
         </div>
 
-
-        <div
-            id="taskList"
-            class="task-list"
-        >
+        <div id="taskList" class="task-list">
 
             <div class="task">
-
-                <div class="task-icon">
-                    📖
-                </div>
+                <div class="task-icon">📖</div>
 
                 <div class="task-content">
-
-                    <div class="task-title">
-                        Continue your course
-                    </div>
-
-                    <div class="task-sub">
-                        Complete today's learning target
-                    </div>
-
+                    <div class="task-title">Continue your course</div>
+                    <div class="task-sub">Continue your current learning</div>
                 </div>
 
-                <div class="task-status">
-                    Start
-                </div>
-
+                <div class="task-status">Start</div>
             </div>
 
-
             <div class="task">
-
-                <div class="task-icon">
-                    📝
-                </div>
+                <div class="task-icon">📝</div>
 
                 <div class="task-content">
-
-                    <div class="task-title">
-                        Practice Questions
-                    </div>
-
-                    <div class="task-sub">
-                        Solve Biology questions
-                    </div>
-
+                    <div class="task-title">Practice Questions</div>
+                    <div class="task-sub">Solve Biology questions</div>
                 </div>
 
-                <div class="task-status">
-                    Practice
-                </div>
-
+                <div class="task-status">Practice</div>
             </div>
 
-
             <div class="task">
-
-                <div class="task-icon">
-                    📚
-                </div>
+                <div class="task-icon">📚</div>
 
                 <div class="task-content">
-
-                    <div class="task-title">
-                        NCERT Reading
-                    </div>
-
-                    <div class="task-sub">
-                        Revise today's chapter
-                    </div>
-
+                    <div class="task-title">NCERT Reading</div>
+                    <div class="task-sub">Revise your NCERT chapters</div>
                 </div>
 
-                <div class="task-status">
-                    Read
-                </div>
-
+                <div class="task-status">Read</div>
             </div>
 
         </div>
 
     </section>
 
-
-    <!-- =================================================
-         STATS
-    ================================================== -->
-
+    <!-- STATS -->
     <section class="stats">
 
-
         <div class="stat">
-
-            <div class="stat-icon">
-                📊
-            </div>
-
-            <div
-                id="progressValue"
-                class="stat-value"
-            >
-                0%
-            </div>
-
-            <div class="stat-label">
-                Course Progress
-            </div>
-
+            <div class="stat-icon">📊</div>
+            <div id="progressValue" class="stat-value">0%</div>
+            <div class="stat-label">Course Progress</div>
         </div>
 
-
         <div class="stat">
-
-            <div class="stat-icon">
-                🏆
-            </div>
-
-            <div
-                id="lastScore"
-                class="stat-value"
-            >
-                —
-            </div>
-
-            <div class="stat-label">
-                Last Attempt
-            </div>
-
+            <div class="stat-icon">🏆</div>
+            <div id="lastScore" class="stat-value">—</div>
+            <div class="stat-label">Last Attempt</div>
         </div>
 
-
         <div class="stat">
-
-            <div class="stat-icon">
-                🎯
-            </div>
-
-            <div
-                id="accuracy"
-                class="stat-value"
-            >
-                0%
-            </div>
-
-            <div class="stat-label">
-                Accuracy
-            </div>
-
+            <div class="stat-icon">🎯</div>
+            <div id="accuracy" class="stat-value">0%</div>
+            <div class="stat-label">Accuracy</div>
         </div>
 
-
         <div class="stat">
-
-            <div class="stat-icon">
-                🔥
-            </div>
-
-            <div
-                id="streak"
-                class="stat-value"
-            >
-                0
-            </div>
-
-            <div class="stat-label">
-                Study Streak
-            </div>
-
+            <div class="stat-icon">🔥</div>
+            <div id="streak" class="stat-value">0</div>
+            <div class="stat-label">Study Streak</div>
         </div>
-
 
     </section>
 
-
-    <!-- =================================================
-         PROGRESS
-    ================================================== -->
-
+    <!-- PROGRESS -->
     <section class="progress-card">
 
         <div class="progress-row">
@@ -2163,181 +1138,90 @@ a{
                 Overall Course Progress
             </div>
 
-            <div
-                id="progressPercent"
-                class="progress-percent"
-            >
+            <div id="progressPercent" class="progress-percent">
                 0%
             </div>
 
         </div>
 
-
         <div class="progress-track">
-
-            <div
-                id="progressFill"
-                class="progress-fill"
-            ></div>
-
+            <div id="progressFill" class="progress-fill"></div>
         </div>
 
-
-        <div
-            id="progressSub"
-            class="progress-sub"
-        >
+        <div id="progressSub" class="progress-sub">
             Start learning to build your progress.
-
         </div>
 
     </section>
 
-
-    <!-- =================================================
-         CONTINUE LEARNING
-    ================================================== -->
-
+    <!-- CONTINUE -->
     <section class="continue-card">
-
 
         <div class="continue-content">
 
-
-            <div class="continue-icon">
-                ▶️
-            </div>
-
+            <div class="continue-icon">▶️</div>
 
             <div class="continue-info">
 
-                <div
-                    id="continueTitle"
-                    class="continue-title"
-                >
+                <div id="continueTitle" class="continue-title">
                     Start Learning
                 </div>
 
-                <div
-                    id="continueSub"
-                    class="continue-sub"
-                >
+                <div id="continueSub" class="continue-sub">
                     Select a course to continue.
                 </div>
 
             </div>
 
-
         </div>
 
-
-        <button
-            class="continue-btn"
-            onclick="continueLearning()"
-        >
+        <button class="continue-btn" onclick="continueLearning()">
             Continue Learning
         </button>
 
-
     </section>
-
 
 </main>
 
-
-<!-- =====================================================
-     BOTTOM NAVIGATION
-===================================================== -->
-
+<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
 
-
-    <button
-        class="nav-item active"
-        onclick="goHome()"
-    >
-
-        <span class="nav-icon">
-            🏠
-        </span>
-
+    <button class="nav-item active" onclick="goHome()">
+        <span class="nav-icon">🏠</span>
         Home
-
     </button>
 
-
-    <button
-        class="nav-item"
-        onclick="goCourses()"
-    >
-
-        <span class="nav-icon">
-            📚
-        </span>
-
+    <button class="nav-item" onclick="goCourses()">
+        <span class="nav-icon">📚</span>
         Courses
-
     </button>
 
-
-    <button
-        class="nav-item"
-        onclick="goPractice()"
-    >
-
-        <span class="nav-icon">
-            📝
-        </span>
-
+    <button class="nav-item" onclick="goPractice()">
+        <span class="nav-icon">📝</span>
         Practice
-
     </button>
 
-
-    <button
-        class="nav-item"
-        onclick="openProfile()"
-    >
-
-        <span class="nav-icon">
-            👤
-        </span>
-
+    <button class="nav-item" onclick="openProfile()">
+        <span class="nav-icon">👤</span>
         Profile
-
     </button>
-
 
 </nav>
 
-
-<!-- =====================================================
-     TARGET MODAL
-===================================================== -->
-
-<div
-    id="targetModal"
-    class="modal-overlay"
->
+<!-- TARGET MODAL -->
+<div id="targetModal" class="modal-overlay">
 
     <div class="modal">
 
-        <h3>
-            Set Your Target
-        </h3>
+        <h3>Set Your Target</h3>
 
         <p>
             Set your NEET target date and dream.
         </p>
 
-
-        <label
-            class="modal-label"
-            for="targetDateInput"
-        >
+        <label class="modal-label" for="targetDateInput">
             Target Date
         </label>
-
 
         <input
             id="targetDateInput"
@@ -2345,14 +1229,9 @@ a{
             type="date"
         >
 
-
-        <label
-            class="modal-label"
-            for="targetDreamInput"
-        >
+        <label class="modal-label" for="targetDreamInput">
             Target Dream
         </label>
-
 
         <input
             id="targetDreamInput"
@@ -2361,21 +1240,13 @@ a{
             placeholder="Example: NEET 2027 - AIIMS"
         >
 
-
         <div class="modal-buttons">
 
-            <button
-                class="modal-cancel"
-                onclick="closeTargetModal()"
-            >
+            <button class="modal-cancel" onclick="closeTargetModal()">
                 Cancel
             </button>
 
-
-            <button
-                class="modal-save"
-                onclick="saveTarget()"
-            >
+            <button class="modal-save" onclick="saveTarget()">
                 Save Target
             </button>
 
@@ -2385,222 +1256,168 @@ a{
 
 </div>
 
-
 <script>
+"use strict";
 
-/* =====================================================
-   FIREBASE CONFIG
-===================================================== */
+/* =========================================================
+   FIREBASE
+   js/firebase.js must initialize Firebase.
+========================================================= */
 
-const firebaseConfig = {
+let auth = null;
+let db = null;
 
-    apiKey:
-        "AIzaSyApQOM_mtFZ16RiNJEaIUhb4iYFBIBRK58",
+try {
+    if (typeof firebase === "undefined") {
+        throw new Error("Firebase SDK not loaded.");
+    }
 
-    authDomain:
-        "mneet-spark.firebaseapp.com",
+    if (!firebase.apps.length) {
+        console.error(
+            "Firebase was not initialized by js/firebase.js"
+        );
+    }
 
-    databaseURL:
-        "https://mneet-spark-default-rtdb.firebaseio.com",
+    auth = firebase.auth();
+    db = firebase.firestore();
 
-    projectId:
-        "mneet-spark",
-
-    storageBucket:
-        "mneet-spark.firebasestorage.app",
-
-    messagingSenderId:
-        "252201633700",
-
-    appId:
-        "1:252201633700:web:1a1e7a2cff1f0b168ea331"
-
-};
-
-
-/* =====================================================
-   FIREBASE INITIALIZE
-===================================================== */
-
-if(!firebase.apps.length){
-
-    firebase.initializeApp(
-        firebaseConfig
-    );
-
+} catch (error) {
+    console.error("Firebase initialization error:", error);
 }
 
-
-const auth =
-    firebase.auth();
-
-
-const db =
-    firebase.firestore();
-
-
-/* =====================================================
-   GLOBAL DATA
-===================================================== */
+/* =========================================================
+   GLOBAL
+========================================================= */
 
 let currentUser = null;
-
 let studentData = {};
-
 let selectedCourseId = "";
-
 let targetTimer = null;
 
-
-/* =====================================================
+/* =========================================================
    ELEMENTS
-===================================================== */
+========================================================= */
 
 const sidebar =
-    document.getElementById(
-        "sidebar"
-    );
+    document.getElementById("sidebar");
 
 const overlay =
-    document.getElementById(
-        "overlay"
-    );
+    document.getElementById("overlay");
 
 const notificationPanel =
-    document.getElementById(
-        "notificationPanel"
-    );
+    document.getElementById("notificationPanel");
 
 const courseSelect =
-    document.getElementById(
-        "courseSelect"
-    );
+    document.getElementById("courseSelect");
 
-
-/* =====================================================
+/* =========================================================
    SIDEBAR
-===================================================== */
+========================================================= */
 
 document
     .getElementById("menuButton")
-    .addEventListener(
-        "click",
-        openSidebar
-    );
-
+    .addEventListener("click", openSidebar);
 
 document
     .getElementById("sidebarClose")
-    .addEventListener(
-        "click",
-        closeSidebar
-    );
-
+    .addEventListener("click", closeSidebar);
 
 overlay.addEventListener(
     "click",
     closeSidebar
 );
 
-
-function openSidebar(){
-
-    sidebar.classList.add(
-        "active"
-    );
-
-    overlay.classList.add(
-        "active"
-    );
-
+function openSidebar() {
+    sidebar.classList.add("active");
+    overlay.classList.add("active");
 }
 
-
-function closeSidebar(){
-
-    sidebar.classList.remove(
-        "active"
-    );
-
-    overlay.classList.remove(
-        "active"
-    );
-
+function closeSidebar() {
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
 }
 
-
-/* =====================================================
-   NOTIFICATION
-===================================================== */
+/* =========================================================
+   NOTIFICATIONS
+========================================================= */
 
 document
     .getElementById("notificationButton")
     .addEventListener(
         "click",
-        function(){
+        function(event) {
 
-            notificationPanel.classList.toggle(
-                "active"
-            );
+            event.stopPropagation();
 
+            notificationPanel.classList.toggle("active");
         }
     );
-
 
 document
     .getElementById("notificationClose")
     .addEventListener(
         "click",
-        function(){
-
-            notificationPanel.classList.remove(
-                "active"
-            );
-
+        function() {
+            notificationPanel.classList.remove("active");
         }
     );
 
+document.addEventListener(
+    "click",
+    function(event) {
 
-/* =====================================================
-   AUTH STATE
-===================================================== */
-
-auth.onAuthStateChanged(
-    async function(user){
-
-        if(!user){
-
-            window.location.replace(
-                "index.html"
-            );
-
-            return;
-
+        if (
+            !notificationPanel.contains(event.target) &&
+            event.target.id !== "notificationButton"
+        ) {
+            notificationPanel.classList.remove("active");
         }
-
-
-        currentUser = user;
-
-
-        await loadStudent();
-
-        await loadCourses();
-
-        await loadNotifications();
-
-        loadTheme();
 
     }
 );
 
+/* =========================================================
+   AUTH
+========================================================= */
 
-/* =====================================================
-   LOAD STUDENT
-===================================================== */
+if (auth) {
 
-async function loadStudent(){
+    auth.onAuthStateChanged(
+        async function(user) {
 
-    try{
+            if (!user) {
+
+                window.location.replace(
+                    "index.html"
+                );
+
+                return;
+            }
+
+            currentUser = user;
+
+            await loadStudent();
+            await loadCourses();
+            await loadNotifications();
+
+            loadTheme();
+        }
+    );
+
+} else {
+
+    showFatalError(
+        "Firebase load হয়নি। js/firebase.js এবং Firebase SDK check করুন।"
+    );
+}
+
+/* =========================================================
+   STUDENT
+========================================================= */
+
+async function loadStudent() {
+
+    try {
 
         const doc =
             await db
@@ -2608,328 +1425,253 @@ async function loadStudent(){
                 .doc(currentUser.uid)
                 .get();
 
-
-        if(doc.exists){
+        if (doc.exists) {
 
             studentData =
                 doc.data() || {};
 
-        }else{
+        } else {
 
             studentData = {
-
                 name:
                     currentUser.displayName ||
                     "Student",
 
                 email:
-                    currentUser.email || "",
-
-                targetDate:
+                    currentUser.email ||
                     "",
 
-                targetDream:
-                    "",
-
-                selectedCourse:
-                    "",
-
-                progress:
-                    0
-
+                targetDate: "",
+                targetDream: "",
+                selectedCourse: "",
+                progress: 0,
+                lastScore: null,
+                accuracy: 0,
+                streak: 0
             };
 
         }
-
 
         const name =
             studentData.name ||
             currentUser.displayName ||
             "Student";
 
-
         const email =
             studentData.email ||
             currentUser.email ||
             "";
 
+        document.getElementById(
+            "studentName"
+        ).textContent = name;
 
-        document
-            .getElementById("studentName")
-            .textContent =
-                name;
+        document.getElementById(
+            "sideName"
+        ).textContent = name;
 
+        document.getElementById(
+            "sideEmail"
+        ).textContent = email;
 
-        document
-            .getElementById("sideName")
-            .textContent =
-                name;
+        document.getElementById(
+            "avatar"
+        ).textContent =
+            name.charAt(0).toUpperCase();
 
+        setProgress(
+            Number(studentData.progress || 0)
+        );
 
-        document
-            .getElementById("sideEmail")
-            .textContent =
-                email;
+        document.getElementById(
+            "lastScore"
+        ).textContent =
+            studentData.lastScore !== undefined &&
+            studentData.lastScore !== null
+                ? studentData.lastScore
+                : "—";
 
+        document.getElementById(
+            "accuracy"
+        ).textContent =
+            Number(studentData.accuracy || 0) + "%";
 
-        document
-            .getElementById("avatar")
-            .textContent =
-                name
-                    .charAt(0)
-                    .toUpperCase();
-
-
-        const progress =
-            Number(
-                studentData.progress || 0
-            );
-
-
-        setProgress(progress);
-
-
-        document
-            .getElementById("lastScore")
-            .textContent =
-                studentData.lastScore != null
-                    ? studentData.lastScore
-                    : "—";
-
-
-        document
-            .getElementById("accuracy")
-            .textContent =
-                studentData.accuracy != null
-                    ? studentData.accuracy + "%"
-                    : "0%";
-
-
-        document
-            .getElementById("streak")
-            .textContent =
-                studentData.streak != null
-                    ? studentData.streak
-                    : "0";
-
+        document.getElementById(
+            "streak"
+        ).textContent =
+            Number(studentData.streak || 0);
 
         updateTargetUI();
 
-
-    }catch(error){
+    } catch (error) {
 
         console.error(
             "Student load error:",
             error
         );
 
-        document
-            .getElementById("studentName")
-            .textContent =
-                currentUser.displayName ||
-                "Student";
-
+        document.getElementById(
+            "studentName"
+        ).textContent =
+            currentUser.displayName ||
+            "Student";
     }
-
 }
 
+/* =========================================================
+   COURSES
+========================================================= */
 
-/* =====================================================
-   LOAD COURSES
-===================================================== */
-
-async function loadCourses(){
+async function loadCourses() {
 
     courseSelect.innerHTML =
         '<option value="">Loading courses...</option>';
 
-
-    try{
-
-        /*
-         * First try courses collection.
-         */
+    try {
 
         const snapshot =
             await db
                 .collection("courses")
                 .get();
 
-
         courseSelect.innerHTML = "";
 
-
-        if(snapshot.empty){
+        if (snapshot.empty) {
 
             courseSelect.innerHTML =
                 '<option value="">No course available</option>';
 
+            selectedCourseId = "";
+
             updateContinueState();
 
             return;
-
         }
 
-
         snapshot.forEach(
-            function(doc){
+            function(doc) {
 
                 const data =
                     doc.data() || {};
 
-
                 const option =
-                    document.createElement(
-                        "option"
-                    );
-
+                    document.createElement("option");
 
                 option.value =
                     doc.id;
-
 
                 option.textContent =
                     data.title ||
                     data.name ||
                     "Biology Course";
 
-
-                courseSelect.appendChild(
-                    option
-                );
-
+                courseSelect.appendChild(option);
             }
         );
 
-
-        let savedCourse =
+        const savedCourse =
             studentData.selectedCourse || "";
 
+        if (
+            savedCourse &&
+            Array.from(
+                courseSelect.options
+            ).some(
+                option =>
+                    option.value === savedCourse
+            )
+        ) {
 
-        if(savedCourse){
+            selectedCourseId =
+                savedCourse;
 
-            const exists =
-                Array.from(
-                    courseSelect.options
-                ).some(
-                    option =>
-                        option.value ===
-                        savedCourse
-                );
+            courseSelect.value =
+                savedCourse;
 
+        } else {
 
-            if(exists){
+            selectedCourseId =
+                courseSelect.options[0]
+                    ? courseSelect.options[0].value
+                    : "";
 
-                courseSelect.value =
-                    savedCourse;
-
-                selectedCourseId =
-                    savedCourse;
-
-            }
-
+            courseSelect.value =
+                selectedCourseId;
         }
-
-
-        if(!selectedCourseId){
-
-            const first =
-                courseSelect.options[0];
-
-            if(first){
-
-                selectedCourseId =
-                    first.value;
-
-                courseSelect.value =
-                    selectedCourseId;
-
-            }
-
-        }
-
 
         updateContinueState();
 
-
-    }catch(error){
+    } catch (error) {
 
         console.error(
             "Course load error:",
             error
         );
 
-
         courseSelect.innerHTML =
             '<option value="">Course loading failed</option>';
 
-    }
+        selectedCourseId = "";
 
+        updateContinueState();
+    }
 }
 
-
-/* =====================================================
+/* =========================================================
    COURSE CHANGE
-===================================================== */
+========================================================= */
 
 courseSelect.addEventListener(
     "change",
-    async function(){
+    async function() {
 
         selectedCourseId =
             this.value;
 
+        updateContinueState();
 
-        if(!currentUser){
-
+        if (!currentUser || !selectedCourseId) {
             return;
-
         }
 
-
-        try{
+        try {
 
             await db
                 .collection("students")
                 .doc(currentUser.uid)
-                .set({
+                .set(
+                    {
+                        selectedCourse:
+                            selectedCourseId,
 
-                    selectedCourse:
-                        selectedCourseId,
-
-                    updatedAt:
-                        firebase.firestore.FieldValue.serverTimestamp()
-
-                },{
-                    merge:true
-                });
-
+                        updatedAt:
+                            firebase.firestore
+                                .FieldValue
+                                .serverTimestamp()
+                    },
+                    {
+                        merge: true
+                    }
+                );
 
             studentData.selectedCourse =
                 selectedCourseId;
 
-
-            updateContinueState();
-
-
-        }catch(error){
+        } catch (error) {
 
             console.error(
                 "Course save error:",
                 error
             );
-
         }
-
     }
 );
 
+/* =========================================================
+   CONTINUE
+========================================================= */
 
-/* =====================================================
-   CONTINUE STATE
-===================================================== */
-
-function updateContinueState(){
+function updateContinueState() {
 
     const title =
         document.getElementById(
@@ -2941,8 +1683,7 @@ function updateContinueState(){
             "continueSub"
         );
 
-
-    if(!selectedCourseId){
+    if (!selectedCourseId) {
 
         title.textContent =
             "Start Learning";
@@ -2951,48 +1692,37 @@ function updateContinueState(){
             "Select a course to continue.";
 
         return;
-
     }
 
-
-    const selectedOption =
+    const option =
         courseSelect.options[
             courseSelect.selectedIndex
         ];
 
-
     const courseName =
-        selectedOption
-            ? selectedOption.textContent
+        option
+            ? option.textContent
             : "Your Course";
-
 
     title.textContent =
         courseName;
 
-
     sub.textContent =
         "Continue your Biology preparation.";
-
 }
 
-
-/* =====================================================
+/* =========================================================
    PROGRESS
-===================================================== */
+========================================================= */
 
-function setProgress(value){
+function setProgress(value) {
 
     let progress =
         Number(value);
 
-
-    if(isNaN(progress)){
-
+    if (!Number.isFinite(progress)) {
         progress = 0;
-
     }
-
 
     progress =
         Math.max(
@@ -3003,274 +1733,216 @@ function setProgress(value){
             )
         );
 
+    document.getElementById(
+        "progressValue"
+    ).textContent =
+        Math.round(progress) + "%";
 
-    document
-        .getElementById("progressValue")
-        .textContent =
-            Math.round(progress) + "%";
+    document.getElementById(
+        "progressPercent"
+    ).textContent =
+        Math.round(progress) + "%";
 
+    document.getElementById(
+        "progressFill"
+    ).style.width =
+        progress + "%";
 
-    document
-        .getElementById("progressPercent")
-        .textContent =
-            Math.round(progress) + "%";
-
-
-    document
-        .getElementById("progressFill")
-        .style.width =
-            progress + "%";
-
-
-    document
-        .getElementById("progressSub")
-        .textContent =
-            progress > 0
-                ? "Keep learning and complete your course."
-                : "Start learning to build your progress.";
-
+    document.getElementById(
+        "progressSub"
+    ).textContent =
+        progress > 0
+            ? "Keep learning and complete your course."
+            : "Start learning to build your progress.";
 }
 
+/* =========================================================
+   TARGET
+========================================================= */
 
-/* =====================================================
-   TARGET UI
-===================================================== */
+function updateTargetUI() {
 
-function updateTargetUI(){
-
-    const targetDate =
+    const date =
         studentData.targetDate || "";
-
 
     const dream =
         studentData.targetDream ||
         "Set your dream";
 
+    document.getElementById(
+        "targetDream"
+    ).textContent =
+        dream;
 
-    document
-        .getElementById("targetDream")
-        .textContent =
-            dream;
+    document.getElementById(
+        "targetDateInput"
+    ).value =
+        date;
 
+    document.getElementById(
+        "targetDreamInput"
+    ).value =
+        studentData.targetDream || "";
 
-    document
-        .getElementById("targetDateInput")
-        .value =
-            targetDate;
-
-
-    document
-        .getElementById("targetDreamInput")
-        .value =
-            studentData.targetDream || "";
-
-
-    startTargetTimer(
-        targetDate
-    );
-
+    startTargetTimer(date);
 }
 
-
-/* =====================================================
-   TARGET MODAL
-===================================================== */
-
-function openTargetModal(){
-
-    document
-        .getElementById("targetModal")
-        .classList.add("active");
-
+function openTargetModal() {
 
     closeSidebar();
 
+    document.getElementById(
+        "targetModal"
+    ).classList.add("active");
 }
 
+function closeTargetModal() {
 
-function closeTargetModal(){
-
-    document
-        .getElementById("targetModal")
-        .classList.remove("active");
-
+    document.getElementById(
+        "targetModal"
+    ).classList.remove("active");
 }
 
+async function saveTarget() {
 
-async function saveTarget(){
-
-    if(!currentUser){
-
+    if (!currentUser) {
         return;
-
     }
 
-
     const targetDate =
-        document
-            .getElementById(
-                "targetDateInput"
-            )
-            .value;
-
+        document.getElementById(
+            "targetDateInput"
+        ).value;
 
     const targetDream =
-        document
-            .getElementById(
-                "targetDreamInput"
-            )
-            .value
-            .trim();
+        document.getElementById(
+            "targetDreamInput"
+        ).value.trim();
 
-
-    if(!targetDate){
+    if (!targetDate) {
 
         alert(
             "Target date select করুন।"
         );
 
         return;
-
     }
 
-
-    try{
+    try {
 
         await db
             .collection("students")
             .doc(currentUser.uid)
-            .set({
+            .set(
+                {
+                    targetDate:
+                        targetDate,
 
-                targetDate:
-                    targetDate,
+                    targetDream:
+                        targetDream ||
+                        "NEET Target",
 
-                targetDream:
-                    targetDream ||
-                    "NEET Target",
-
-                updatedAt:
-                    firebase.firestore.FieldValue.serverTimestamp()
-
-            },{
-                merge:true
-            });
-
+                    updatedAt:
+                        firebase.firestore
+                            .FieldValue
+                            .serverTimestamp()
+                },
+                {
+                    merge: true
+                }
+            );
 
         studentData.targetDate =
             targetDate;
-
 
         studentData.targetDream =
             targetDream ||
             "NEET Target";
 
-
         updateTargetUI();
 
         closeTargetModal();
 
-
-    }catch(error){
+    } catch (error) {
 
         console.error(
             "Target save error:",
             error
         );
 
-
         alert(
             "Target save করা যায়নি। আবার চেষ্টা করুন।"
         );
-
     }
-
 }
 
-
-/* =====================================================
+/* =========================================================
    TARGET TIMER
-===================================================== */
+========================================================= */
 
-function startTargetTimer(
-    date
-){
+function startTargetTimer(date) {
 
-    if(targetTimer){
+    if (targetTimer) {
 
         clearInterval(
             targetTimer
         );
 
+        targetTimer = null;
     }
 
+    if (!date) {
 
-    if(!date){
-
-        setTimer(
-            0,
-            0,
-            0,
-            0
-        );
+        setTimer(0,0,0,0);
 
         return;
-
     }
 
-
-    function update(){
+    function update() {
 
         const target =
             new Date(
                 date + "T23:59:59"
             ).getTime();
 
-
-        const now =
-            Date.now();
-
-
         let difference =
-            target - now;
+            target - Date.now();
 
-
-        if(difference < 0){
-
+        if (difference < 0) {
             difference = 0;
-
         }
 
+        const dayMs =
+            1000 * 60 * 60 * 24;
+
+        const hourMs =
+            1000 * 60 * 60;
+
+        const minuteMs =
+            1000 * 60;
 
         const days =
             Math.floor(
-                difference /
-                (1000 * 60 * 60 * 24)
+                difference / dayMs
             );
-
 
         const hours =
             Math.floor(
-                (difference %
-                    (1000 * 60 * 60 * 24)) /
-                    (1000 * 60 * 60)
+                (difference % dayMs) /
+                hourMs
             );
-
 
         const minutes =
             Math.floor(
-                (difference %
-                    (1000 * 60 * 60)) /
-                    (1000 * 60)
+                (difference % hourMs) /
+                minuteMs
             );
-
 
         const seconds =
             Math.floor(
-                (difference %
-                    (1000 * 60)) /
-                    1000
+                (difference % minuteMs) /
+                1000
             );
-
 
         setTimer(
             days,
@@ -3278,81 +1950,83 @@ function startTargetTimer(
             minutes,
             seconds
         );
-
     }
 
-
     update();
-
 
     targetTimer =
         setInterval(
             update,
             1000
         );
-
 }
-
 
 function setTimer(
     days,
     hours,
     minutes,
     seconds
-){
+) {
 
-    document
-        .getElementById("days")
-        .textContent =
-            days;
+    document.getElementById(
+        "days"
+    ).textContent = days;
 
+    document.getElementById(
+        "hours"
+    ).textContent = hours;
 
-    document
-        .getElementById("hours")
-        .textContent =
-            hours;
+    document.getElementById(
+        "minutes"
+    ).textContent = minutes;
 
-
-    document
-        .getElementById("minutes")
-        .textContent =
-            minutes;
-
-
-    document
-        .getElementById("seconds")
-        .textContent =
-            seconds;
-
+    document.getElementById(
+        "seconds"
+    ).textContent = seconds;
 }
 
-
-/* =====================================================
+/* =========================================================
    NOTIFICATIONS
-===================================================== */
+========================================================= */
 
-async function loadNotifications(){
+async function loadNotifications() {
 
     const list =
         document.getElementById(
             "notificationList"
         );
 
+    try {
 
-    try{
+        let snapshot;
 
-        const snapshot =
-            await db
-                .collection("notifications")
-                .orderBy(
-                    "createdAt",
-                    "desc"
-                )
-                .limit(10)
-                .get();
+        try {
 
+            snapshot =
+                await db
+                    .collection("notifications")
+                    .orderBy(
+                        "createdAt",
+                        "desc"
+                    )
+                    .limit(20)
+                    .get();
 
-        if(snapshot.empty){
+        } catch (orderError) {
+
+            console.warn(
+                "Notification orderBy failed. Trying simple query.",
+                orderError
+            );
+
+            snapshot =
+                await db
+                    .collection("notifications")
+                    .limit(20)
+                    .get();
+        }
+
+        if (snapshot.empty) {
 
             list.innerHTML =
                 `
@@ -3362,32 +2036,23 @@ async function loadNotifications(){
                 `;
 
             return;
-
         }
-
 
         list.innerHTML = "";
 
-
         let count = 0;
 
-
         snapshot.forEach(
-            function(doc){
+            function(doc) {
 
                 const data =
                     doc.data() || {};
 
-
                 const item =
-                    document.createElement(
-                        "div"
-                    );
-
+                    document.createElement("div");
 
                 item.className =
                     "notification-item";
-
 
                 item.innerHTML =
                     `
@@ -3407,25 +2072,18 @@ async function loadNotifications(){
                     </div>
                     `;
 
-
-                list.appendChild(
-                    item
-                );
-
+                list.appendChild(item);
 
                 count++;
-
             }
         );
-
 
         const badge =
             document.getElementById(
                 "notificationBadge"
             );
 
-
-        if(count > 0){
+        if (count > 0) {
 
             badge.textContent =
                 count > 9
@@ -3435,95 +2093,68 @@ async function loadNotifications(){
             badge.style.display =
                 "flex";
 
+        } else {
+
+            badge.style.display =
+                "none";
         }
 
-    }catch(error){
+    } catch (error) {
 
         console.error(
             "Notification error:",
             error
         );
 
-
         list.innerHTML =
             `
             <div class="notification-empty">
-                No notifications available.
+                Notifications unavailable.
             </div>
             `;
-
     }
-
 }
 
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
 
-/* =====================================================
-   SAFE HTML
-===================================================== */
-
-function escapeHtml(
-    text
-){
+function escapeHtml(text) {
 
     return String(text)
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
 }
 
-
-/* =====================================================
+/* =========================================================
    THEME
-===================================================== */
+========================================================= */
 
-function loadTheme(){
+function loadTheme() {
 
     const saved =
         localStorage.getItem(
             "mneet-theme"
         );
 
-
-    if(saved === "dark"){
-
+    if (saved === "dark") {
         applyDarkTheme();
-
-    }else{
-
+    } else {
         applyLightTheme();
-
     }
-
 }
 
+function toggleTheme() {
 
-function toggleTheme(){
-
-    const current =
-        localStorage.getItem(
-            "mneet-theme"
+    const isDark =
+        document.body.classList.contains(
+            "dark"
         );
 
-
-    if(current === "dark"){
+    if (isDark) {
 
         localStorage.setItem(
             "mneet-theme",
@@ -3532,7 +2163,7 @@ function toggleTheme(){
 
         applyLightTheme();
 
-    }else{
+    } else {
 
         localStorage.setItem(
             "mneet-theme",
@@ -3540,247 +2171,175 @@ function toggleTheme(){
         );
 
         applyDarkTheme();
-
     }
-
 }
 
+function applyDarkTheme() {
 
-function applyDarkTheme(){
+    document.body.classList.add(
+        "dark"
+    );
 
-    document.body.style.background =
-        "#101612";
+    document.getElementById(
+        "themeIcon"
+    ).textContent = "☀️";
 
-    document.body.style.color =
-        "#edf5ef";
-
-
-    document
-        .querySelectorAll(
-            ".header, .card, .stat, .progress-card, .continue-card, .tasks-card, .notification-panel, .modal, .bottom-nav"
-        )
-        .forEach(
-            function(el){
-
-                el.style.background =
-                    "#18221c";
-
-                el.style.borderColor =
-                    "#29372e";
-
-            }
-        );
-
-
-    document
-        .querySelectorAll(
-            ".section-title h2, .welcome-name, .stat-label, .continue-title, .task-title"
-        )
-        .forEach(
-            function(el){
-
-                el.style.color =
-                    "#edf5ef";
-
-            }
-        );
-
-
-    document
-        .getElementById("themeIcon")
-        .textContent =
-            "☀️";
-
-
-    document
-        .getElementById("themeText")
-        .textContent =
-            "White Mode";
-
+    document.getElementById(
+        "themeText"
+    ).textContent = "White Mode";
 }
 
+function applyLightTheme() {
 
-function applyLightTheme(){
+    document.body.classList.remove(
+        "dark"
+    );
 
-    document.body.style.background =
-        "#f4f7f5";
+    document.getElementById(
+        "themeIcon"
+    ).textContent = "🌙";
 
-    document.body.style.color =
-        "#17221a";
-
-
-    document
-        .querySelectorAll(
-            ".header, .card, .stat, .progress-card, .continue-card, .tasks-card, .notification-panel, .modal, .bottom-nav"
-        )
-        .forEach(
-            function(el){
-
-                el.style.background =
-                    "#ffffff";
-
-                el.style.borderColor =
-                    "#e0e7e2";
-
-            }
-        );
-
-
-    document
-        .getElementById("themeIcon")
-        .textContent =
-            "🌙";
-
-
-    document
-        .getElementById("themeText")
-        .textContent =
-            "Dark Mode";
-
+    document.getElementById(
+        "themeText"
+    ).textContent = "Dark Mode";
 }
 
+/* =========================================================
+   EXTERNAL
+========================================================= */
 
-/* =====================================================
-   EXTERNAL LINKS
-===================================================== */
-
-function openExternal(
-    url
-){
+function openExternal(url) {
 
     window.open(
         url,
         "_blank",
-        "noopener"
+        "noopener,noreferrer"
     );
-
 }
 
-
-/* =====================================================
+/* =========================================================
    PROFILE
-===================================================== */
+========================================================= */
 
-function openProfile(){
+function openProfile() {
 
     closeSidebar();
 
     window.location.href =
         "profile.html";
-
 }
 
-
-/* =====================================================
+/* =========================================================
    CONTINUE LEARNING
-===================================================== */
+========================================================= */
 
-function continueLearning(){
+function continueLearning() {
 
-    if(!selectedCourseId){
+    if (!selectedCourseId) {
 
         alert(
             "প্রথমে একটি course select করুন।"
         );
 
         return;
-
     }
-
 
     localStorage.setItem(
         "activeCourse",
         selectedCourseId
     );
 
-
     window.location.href =
         "course.html";
-
 }
 
-
-/* =====================================================
+/* =========================================================
    NAVIGATION
-===================================================== */
+========================================================= */
 
-function goHome(){
+function goHome() {
 
     window.location.href =
         "dashboard.html";
-
 }
 
-
-function goCourses(){
+function goCourses() {
 
     window.location.href =
         "courses.html";
-
 }
 
-
-function goPractice(){
+function goPractice() {
 
     /*
-     * Practice page পরে তৈরি হবে।
-     * আপাতত courses page-এ পাঠানো হচ্ছে,
-     * যাতে broken link না হয়।
+     * Practice page এখনো আলাদা না থাকলে
+     * Courses page-এ যাবে।
      */
-
     window.location.href =
         "courses.html";
-
 }
 
-
-/* =====================================================
+/* =========================================================
    LOGOUT
-===================================================== */
+========================================================= */
 
-async function logoutStudent(){
+async function logoutStudent() {
 
     const confirmed =
         confirm(
             "আপনি কি logout করতে চান?"
         );
 
-
-    if(!confirmed){
-
+    if (!confirmed) {
         return;
-
     }
 
-
-    try{
+    try {
 
         await auth.signOut();
-
 
         window.location.replace(
             "index.html"
         );
 
-
-    }catch(error){
+    } catch (error) {
 
         console.error(
             "Logout error:",
             error
         );
 
-
         alert(
             "Logout করা যায়নি। আবার চেষ্টা করুন।"
         );
-
     }
-
 }
 
+/* =========================================================
+   FATAL ERROR
+========================================================= */
+
+function showFatalError(message) {
+
+    const box =
+        document.createElement("div");
+
+    box.style.position = "fixed";
+    box.style.left = "15px";
+    box.style.right = "15px";
+    box.style.bottom = "90px";
+    box.style.zIndex = "9999";
+    box.style.padding = "15px";
+    box.style.borderRadius = "12px";
+    box.style.background = "#ffebee";
+    box.style.color = "#b71c1c";
+    box.style.fontSize = "12px";
+    box.style.fontWeight = "700";
+    box.textContent = message;
+
+    document.body.appendChild(box);
+}
 </script>
 
 </body>
-
 </html>
