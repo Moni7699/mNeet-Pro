@@ -1,111 +1,178 @@
-/* =========================================================
+/* =====================================================
+   mNEET-PRO
    COMMON STUDENT FUNCTIONS
-========================================================= */
+===================================================== */
 
 "use strict";
 
-function $(id) {
-    return document.getElementById(id);
-}
 
+/* =====================================================
+   HTML ESCAPE
+===================================================== */
 
-function escapeHtml(value) {
+function escapeHtml(value){
 
     return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
 
 }
 
 
-function showLoading(element, text = "Loading...") {
+/* =====================================================
+   AUTH REQUIRED
+===================================================== */
 
-    if (!element) return;
+function requireLogin(){
 
-    element.innerHTML =
-        `<div class="loading-text">${escapeHtml(text)}</div>`;
+    return new Promise(
+        function(resolve){
+
+            auth.onAuthStateChanged(
+                function(user){
+
+                    if(!user){
+
+                        window.location.replace(
+                            "index.html"
+                        );
+
+                        return;
+
+                    }
+
+                    resolve(user);
+
+                }
+            );
+
+        }
+    );
 
 }
 
 
-function saveLocal(key, value) {
+/* =====================================================
+   LOGOUT
+===================================================== */
 
-    try {
+async function logoutStudent(){
 
-        localStorage.setItem(
-            key,
-            JSON.stringify(value)
+    const ok =
+        confirm(
+            "আপনি কি logout করতে চান?"
         );
 
-    } catch (error) {
+    if(!ok){
+        return;
+    }
+
+    try{
+
+        await auth.signOut();
+
+        localStorage.removeItem(
+            "activeCourse"
+        );
+
+        localStorage.removeItem(
+            "activeTopic"
+        );
+
+        window.location.replace(
+            "index.html"
+        );
+
+    }catch(error){
 
         console.error(
-            "LocalStorage save error:",
+            "Logout error:",
             error
         );
 
-    }
-
-}
-
-
-function getLocal(key, fallback = null) {
-
-    try {
-
-        const value =
-            localStorage.getItem(key);
-
-        if (value === null) {
-            return fallback;
-        }
-
-        return JSON.parse(value);
-
-    } catch (error) {
-
-        return fallback;
-
-    }
-
-}
-
-
-function setActiveNav(page) {
-
-    document
-        .querySelectorAll(".nav-item")
-        .forEach(function(item) {
-
-            item.classList.remove("active");
-
-        });
-
-    const target =
-        document.querySelector(
-            `[data-page="${page}"]`
+        alert(
+            "Logout করা যায়নি। আবার চেষ্টা করুন।"
         );
 
-    if (target) {
-        target.classList.add("active");
     }
 
 }
 
 
-function goTo(url) {
+/* =====================================================
+   SAVE ACTIVE COURSE
+===================================================== */
 
-    window.location.href = url;
+function setActiveCourse(courseId){
+
+    if(!courseId){
+        return;
+    }
+
+    localStorage.setItem(
+        "activeCourse",
+        courseId
+    );
 
 }
 
 
-function openExternal(url) {
+/* =====================================================
+   GET ACTIVE COURSE
+===================================================== */
 
-    if (!url) return;
+function getActiveCourse(){
+
+    return localStorage.getItem(
+        "activeCourse"
+    ) || "";
+
+}
+
+
+/* =====================================================
+   SAVE ACTIVE TOPIC
+===================================================== */
+
+function setActiveTopic(topicId){
+
+    if(!topicId){
+        return;
+    }
+
+    localStorage.setItem(
+        "activeTopic",
+        topicId
+    );
+
+}
+
+
+/* =====================================================
+   GET ACTIVE TOPIC
+===================================================== */
+
+function getActiveTopic(){
+
+    return localStorage.getItem(
+        "activeTopic"
+    ) || "";
+
+}
+
+
+/* =====================================================
+   OPEN EXTERNAL
+===================================================== */
+
+function openExternal(url){
+
+    if(!url){
+        return;
+    }
 
     window.open(
         url,
@@ -116,92 +183,291 @@ function openExternal(url) {
 }
 
 
-function debounce(fn, delay = 300) {
+/* =====================================================
+   FORMAT DATE
+===================================================== */
 
-    let timer;
+function formatDate(value){
 
-    return function() {
-
-        const context = this;
-        const args = arguments;
-
-        clearTimeout(timer);
-
-        timer =
-            setTimeout(function() {
-
-                fn.apply(
-                    context,
-                    args
-                );
-
-            }, delay);
-
-    };
-
-}
-
-
-function formatDate(dateValue) {
-
-    if (!dateValue) {
-        return "—";
+    if(!value){
+        return "";
     }
 
     let date;
 
-    if (
-        dateValue &&
-        typeof dateValue.toDate === "function"
-    ) {
+    if(
+        value &&
+        typeof value.toDate === "function"
+    ){
 
         date =
-            dateValue.toDate();
+            value.toDate();
 
-    } else {
+    }else{
 
         date =
-            new Date(dateValue);
+            new Date(value);
 
     }
 
-    if (isNaN(date.getTime())) {
-        return "—";
+    if(
+        Number.isNaN(
+            date.getTime()
+        )
+    ){
+
+        return "";
+
     }
 
     return date.toLocaleDateString(
         "en-IN",
         {
-            day: "2-digit",
-            month: "short",
-            year: "numeric"
+            day:"2-digit",
+            month:"short",
+            year:"numeric"
         }
     );
 
 }
 
 
-function formatTimestamp(timestamp) {
+/* =====================================================
+   FORMAT TIME
+===================================================== */
 
-    if (!timestamp) {
-        return "—";
+function formatTime(value){
+
+    if(!value){
+        return "";
     }
 
-    try {
+    let date;
 
-        const date =
-            timestamp.toDate
-                ? timestamp.toDate()
-                : new Date(timestamp);
+    if(
+        value &&
+        typeof value.toDate === "function"
+    ){
 
-        return date.toLocaleString(
-            "en-IN"
+        date =
+            value.toDate();
+
+    }else{
+
+        date =
+            new Date(value);
+
+    }
+
+    if(
+        Number.isNaN(
+            date.getTime()
+        )
+    ){
+
+        return "";
+
+    }
+
+    return date.toLocaleTimeString(
+        "en-IN",
+        {
+            hour:"2-digit",
+            minute:"2-digit"
+        }
+    );
+
+}
+
+
+/* =====================================================
+   DARK MODE
+===================================================== */
+
+function loadTheme(){
+
+    const theme =
+        localStorage.getItem(
+            "mneet-theme"
         );
 
-    } catch (error) {
+    if(theme === "dark"){
 
-        return "—";
+        document.body.classList.add(
+            "dark-mode"
+        );
+
+    }else{
+
+        document.body.classList.remove(
+            "dark-mode"
+        );
 
     }
+
+    updateThemeUI();
+
+}
+
+
+/* =====================================================
+   TOGGLE THEME
+===================================================== */
+
+function toggleTheme(){
+
+    const dark =
+        document.body.classList.toggle(
+            "dark-mode"
+        );
+
+    localStorage.setItem(
+        "mneet-theme",
+        dark
+            ? "dark"
+            : "light"
+    );
+
+    updateThemeUI();
+
+}
+
+
+/* =====================================================
+   THEME UI
+===================================================== */
+
+function updateThemeUI(){
+
+    const icon =
+        document.getElementById(
+            "themeIcon"
+        );
+
+    const text =
+        document.getElementById(
+            "themeText"
+        );
+
+    if(!icon || !text){
+        return;
+    }
+
+    const dark =
+        document.body.classList.contains(
+            "dark-mode"
+        );
+
+    if(dark){
+
+        icon.textContent =
+            "☀️";
+
+        text.textContent =
+            "White Mode";
+
+    }else{
+
+        icon.textContent =
+            "🌙";
+
+        text.textContent =
+            "Dark Mode";
+
+    }
+
+}
+
+
+/* =====================================================
+   PROFILE NAVIGATION
+===================================================== */
+
+function openProfile(){
+
+    window.location.href =
+        "profile.html";
+
+}
+
+
+/* =====================================================
+   COURSES NAVIGATION
+===================================================== */
+
+function goCourses(){
+
+    window.location.href =
+        "courses.html";
+
+}
+
+
+/* =====================================================
+   HOME
+===================================================== */
+
+function goHome(){
+
+    window.location.href =
+        "dashboard.html";
+
+}
+
+
+/* =====================================================
+   NOTIFICATIONS
+===================================================== */
+
+function goNotifications(){
+
+    window.location.href =
+        "notifications.html";
+
+}
+
+
+/* =====================================================
+   PRACTICE
+===================================================== */
+
+function goPractice(){
+
+    const course =
+        getActiveCourse();
+
+    if(course){
+
+        window.location.href =
+            "course.html";
+
+    }else{
+
+        window.location.href =
+            "courses.html";
+
+    }
+
+}
+
+
+/* =====================================================
+   TODAY DATE KEY
+===================================================== */
+
+function todayKey(){
+
+    const now =
+        new Date();
+
+    return [
+        now.getFullYear(),
+        String(
+            now.getMonth()+1
+        ).padStart(2,"0"),
+        String(
+            now.getDate()
+        ).padStart(2,"0")
+    ].join("-");
 
 }
