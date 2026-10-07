@@ -1,0 +1,51 @@
+
+# mNEET-Pro Student Module
+
+This package contains the complete student-side starter implementation.
+
+## Files
+- index.html / signup.html
+- dashboard.html / courses.html / course.html / topic.html
+- notes.html / quiz.html / result.html
+- profile.html / notifications.html
+- css/style.css
+- js/firebase.js, common.js, auth.js, student.js, dashboard.js,
+  courses.js, course.js, topic.js, notes.js, quiz.js, result.js,
+  notifications.js, profile.js
+- assets placeholder PNGs
+
+## Firestore structure expected
+
+courses/{courseId}
+  title, description, price
+
+courses/{courseId}/chapters/{chapterId}
+  title, description, order
+
+courses/{courseId}/chapters/{chapterId}/topics/{topicId}
+  title, description, notesUrl/pdfUrl
+  hasQuiz (optional)
+
+courses/{courseId}/chapters/{chapterId}/topics/{topicId}/quizzes/{questionId}
+  question or text
+  options: ["...", "...", "...", "..."]
+  correctOption: 0..3 (or 1..4 / A..D)
+  imageUrl (optional)
+  solution/explanation (optional)
+  solutionUrl/ncertUrl (optional)
+  order (optional)
+
+students/{uid}
+  name, email, selectedCourse, targetDate, targetDream,
+  progress, lastScore, accuracy, streak
+
+purchases/{uid}
+  courseId: true
+
+notifications/{notificationId}
+  title, message, createdAt
+
+## Important
+Firebase Storage is not required by these student pages to display an already
+published PDF/image URL. Teacher/Admin code can later upload files and store
+their URLs in the corresponding Firestore documents.
