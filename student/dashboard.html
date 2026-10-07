@@ -1,1 +1,2474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#0d5c36">
+<title>mNEET-Pro | Student Dashboard</title>
 
+<link rel="stylesheet" href="css/style.css">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+<style>
+*{box-sizing:border-box}
+
+:root{
+ --green:#0d5c36;
+ --green2:#198754;
+ --green3:#eaf7ef;
+ --bg:#f4f7f5;
+ --card:#fff;
+ --text:#17221c;
+ --muted:#718078;
+ --border:#e0e8e3;
+ --danger:#e53935;
+ --shadow:0 8px 25px rgba(0,0,0,.07);
+}
+
+body.dark{
+ --bg:#101614;
+ --card:#18211d;
+ --text:#edf5ef;
+ --muted:#9eaaa3;
+ --border:#29352f;
+ --green3:#20382a;
+ --shadow:0 8px 25px rgba(0,0,0,.25);
+}
+
+body{
+ margin:0;
+ background:var(--bg);
+ color:var(--text);
+ font-family:Arial,Helvetica,sans-serif;
+ transition:.2s;
+}
+
+button{
+ font-family:inherit;
+ cursor:pointer;
+}
+
+a{text-decoration:none;color:inherit}
+
+/* ================= HEADER ================= */
+
+.header{
+ height:70px;
+ position:sticky;
+ top:0;
+ z-index:80;
+ background:var(--card);
+ border-bottom:1px solid var(--border);
+ display:grid;
+ grid-template-columns:60px 1fr 60px;
+ align-items:center;
+ padding:0 15px;
+}
+
+.menu-btn,
+.notification-btn{
+ width:43px;
+ height:43px;
+ border:1px solid var(--border);
+ background:var(--card);
+ color:var(--text);
+ border-radius:13px;
+ font-size:21px;
+ position:relative;
+}
+
+.menu-btn:hover,
+.notification-btn:hover{
+ background:var(--green3);
+}
+
+.student-heading{
+ text-align:center;
+ overflow:hidden;
+}
+
+.student-heading .hello{
+ font-size:10px;
+ color:var(--muted);
+ margin-bottom:2px;
+}
+
+.student-heading .name{
+ font-size:16px;
+ font-weight:900;
+ white-space:nowrap;
+ overflow:hidden;
+ text-overflow:ellipsis;
+}
+
+.notification-dot{
+ position:absolute;
+ right:7px;
+ top:6px;
+ width:8px;
+ height:8px;
+ background:#ef3030;
+ border-radius:50%;
+ border:2px solid var(--card);
+}
+
+/* ================= SIDEBAR ================= */
+
+.overlay{
+ display:none;
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,.48);
+ z-index:90;
+}
+
+.overlay.show{display:block}
+
+.sidebar{
+ position:fixed;
+ top:0;
+ left:0;
+ bottom:0;
+ width:300px;
+ max-width:88%;
+ background:var(--card);
+ z-index:100;
+ transform:translateX(-105%);
+ transition:.28s ease;
+ box-shadow:12px 0 35px rgba(0,0,0,.15);
+ overflow-y:auto;
+}
+
+.sidebar.open{
+ transform:translateX(0);
+}
+
+.side-top{
+ padding:24px 18px 18px;
+ background:linear-gradient(135deg,#0b4b2c,#198754);
+ color:#fff;
+}
+
+.side-profile{
+ display:flex;
+ align-items:center;
+ gap:12px;
+}
+
+.side-avatar{
+ width:55px;
+ height:55px;
+ border-radius:50%;
+ background:rgba(255,255,255,.18);
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:22px;
+ font-weight:900;
+ border:2px solid rgba(255,255,255,.5);
+}
+
+.side-name{
+ font-weight:900;
+ font-size:16px;
+}
+
+.side-email{
+ font-size:10px;
+ opacity:.78;
+ margin-top:4px;
+ overflow:hidden;
+ text-overflow:ellipsis;
+}
+
+.close-side{
+ margin-left:auto;
+ border:0;
+ background:rgba(255,255,255,.12);
+ color:#fff;
+ width:36px;
+ height:36px;
+ border-radius:10px;
+ font-size:20px;
+}
+
+.side-section{
+ padding:13px 12px 5px;
+ color:var(--muted);
+ font-size:10px;
+ font-weight:900;
+ text-transform:uppercase;
+ letter-spacing:.8px;
+}
+
+.side-item{
+ width:calc(100% - 20px);
+ margin:3px 10px;
+ padding:12px;
+ border:0;
+ background:transparent;
+ color:var(--text);
+ border-radius:11px;
+ display:flex;
+ align-items:center;
+ gap:12px;
+ text-align:left;
+ font-size:13px;
+ font-weight:700;
+}
+
+.side-item:hover{
+ background:var(--green3);
+ color:var(--green);
+}
+
+.side-icon{
+ width:25px;
+ text-align:center;
+ font-size:18px;
+}
+
+.theme-box{
+ margin:9px 10px;
+ padding:12px;
+ border:1px solid var(--border);
+ border-radius:12px;
+ background:var(--bg);
+}
+
+.theme-title{
+ font-size:11px;
+ font-weight:900;
+ margin-bottom:9px;
+}
+
+.theme-buttons{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:7px;
+}
+
+.theme-buttons button{
+ border:1px solid var(--border);
+ background:var(--card);
+ color:var(--text);
+ border-radius:9px;
+ padding:9px 5px;
+ font-size:11px;
+ font-weight:800;
+}
+
+.social-grid{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:7px;
+ margin:5px 10px;
+}
+
+.social{
+ padding:10px 5px;
+ border:1px solid var(--border);
+ border-radius:10px;
+ text-align:center;
+ font-size:10px;
+ font-weight:800;
+ background:var(--card);
+}
+
+.logout{
+ color:#d32f2f;
+}
+
+/* ================= PAGE ================= */
+
+.main{
+ max-width:1200px;
+ margin:auto;
+ padding:18px;
+}
+
+/* ================= COURSE SELECT ================= */
+
+.course-section{
+ margin-bottom:17px;
+}
+
+.section-title{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ margin-bottom:10px;
+}
+
+.section-title h2{
+ margin:0;
+ font-size:17px;
+}
+
+.section-title span{
+ color:var(--muted);
+ font-size:10px;
+}
+
+.course-scroll{
+ display:flex;
+ gap:10px;
+ overflow-x:auto;
+ padding-bottom:5px;
+}
+
+.course-scroll::-webkit-scrollbar{
+ height:3px;
+}
+
+.course-card{
+ min-width:245px;
+ background:var(--card);
+ border:1px solid var(--border);
+ border-radius:16px;
+ padding:15px;
+ box-shadow:var(--shadow);
+ position:relative;
+}
+
+.course-card.selected{
+ border:2px solid var(--green2);
+}
+
+.course-check{
+ position:absolute;
+ top:11px;
+ right:11px;
+ width:22px;
+ height:22px;
+ border-radius:50%;
+ background:var(--green2);
+ color:white;
+ display:none;
+ align-items:center;
+ justify-content:center;
+ font-size:12px;
+}
+
+.course-card.selected .course-check{
+ display:flex;
+}
+
+.course-title{
+ font-size:14px;
+ font-weight:900;
+ padding-right:28px;
+}
+
+.course-desc{
+ color:var(--muted);
+ font-size:10px;
+ margin-top:5px;
+ line-height:1.4;
+}
+
+.course-progress{
+ height:6px;
+ background:var(--bg);
+ border-radius:10px;
+ overflow:hidden;
+ margin-top:12px;
+}
+
+.course-progress-fill{
+ height:100%;
+ background:linear-gradient(90deg,#0d5c36,#35a866);
+ width:0%;
+}
+
+.course-footer{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-top:7px;
+}
+
+.course-percent{
+ color:var(--green2);
+ font-size:11px;
+ font-weight:900;
+}
+
+.select-course{
+ border:0;
+ background:var(--green);
+ color:white;
+ border-radius:8px;
+ padding:7px 10px;
+ font-size:10px;
+ font-weight:900;
+}
+
+/* ================= TARGET ================= */
+
+.target-card{
+ background:linear-gradient(135deg,#0d5c36,#198754);
+ color:#fff;
+ border-radius:20px;
+ padding:21px;
+ margin-bottom:17px;
+ box-shadow:0 10px 28px rgba(13,92,54,.20);
+}
+
+.target-top{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+
+.target-label{
+ font-size:10px;
+ opacity:.75;
+ text-transform:uppercase;
+ letter-spacing:1px;
+ font-weight:900;
+}
+
+.target-dream{
+ font-size:19px;
+ font-weight:900;
+ margin-top:5px;
+}
+
+.target-date{
+ font-size:10px;
+ opacity:.7;
+ margin-top:4px;
+}
+
+.countdown{
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:7px;
+ margin-top:17px;
+}
+
+.time-box{
+ background:rgba(255,255,255,.13);
+ border:1px solid rgba(255,255,255,.1);
+ border-radius:11px;
+ padding:10px 5px;
+ text-align:center;
+}
+
+.time-number{
+ font-size:22px;
+ font-weight:900;
+}
+
+.time-label{
+ font-size:8px;
+ opacity:.72;
+ margin-top:2px;
+}
+
+/* ================= TODAY TASK ================= */
+
+.task-card{
+ background:var(--card);
+ border:1px solid var(--border);
+ border-radius:17px;
+ padding:16px;
+ box-shadow:var(--shadow);
+ margin-bottom:17px;
+}
+
+.task{
+ display:flex;
+ align-items:center;
+ gap:11px;
+ padding:11px 0;
+ border-bottom:1px solid var(--border);
+}
+
+.task:last-child{
+ border-bottom:0;
+}
+
+.task-check{
+ width:20px;
+ height:20px;
+ border:2px solid #b8c5bd;
+ border-radius:6px;
+ flex-shrink:0;
+ cursor:pointer;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+}
+
+.task.done .task-check{
+ background:var(--green2);
+ border-color:var(--green2);
+ color:white;
+}
+
+.task.done .task-name{
+ text-decoration:line-through;
+ color:var(--muted);
+}
+
+.task-name{
+ flex:1;
+ font-size:12px;
+ font-weight:700;
+}
+
+.task-time{
+ color:var(--muted);
+ font-size:9px;
+}
+
+/* ================= STATS ================= */
+
+.stats{
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:11px;
+ margin-bottom:18px;
+}
+
+.stat{
+ background:var(--card);
+ border:1px solid var(--border);
+ border-radius:15px;
+ padding:15px;
+ box-shadow:var(--shadow);
+}
+
+.stat-icon{
+ font-size:20px;
+}
+
+.stat-label{
+ color:var(--muted);
+ font-size:9px;
+ margin-top:7px;
+ font-weight:700;
+}
+
+.stat-value{
+ font-size:19px;
+ font-weight:900;
+ margin-top:4px;
+}
+
+/* ================= PROGRESS ================= */
+
+.progress-card{
+ background:var(--card);
+ border:1px solid var(--border);
+ border-radius:17px;
+ padding:17px;
+ box-shadow:var(--shadow);
+ margin-bottom:17px;
+}
+
+.progress-header{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+
+.progress-header h3{
+ margin:0;
+ font-size:14px;
+}
+
+.progress-big{
+ font-size:18px;
+ font-weight:900;
+ color:var(--green2);
+}
+
+.big-progress{
+ height:9px;
+ background:var(--bg);
+ border-radius:20px;
+ overflow:hidden;
+ margin-top:13px;
+}
+
+.big-progress div{
+ height:100%;
+ width:0%;
+ background:linear-gradient(90deg,#0d5c36,#36ad69);
+}
+
+.progress-note{
+ margin-top:7px;
+ color:var(--muted);
+ font-size:9px;
+}
+
+/* ================= CONTINUE ================= */
+
+.continue-card{
+ background:var(--card);
+ border:1px solid var(--border);
+ border-radius:17px;
+ padding:17px;
+ display:flex;
+ align-items:center;
+ gap:14px;
+ box-shadow:var(--shadow);
+ margin-bottom:17px;
+}
+
+.continue-icon{
+ width:50px;
+ height:50px;
+ border-radius:13px;
+ background:var(--green3);
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:23px;
+}
+
+.continue-info{
+ flex:1;
+}
+
+.continue-info h3{
+ margin:0;
+ font-size:14px;
+}
+
+.continue-info p{
+ margin:5px 0 0;
+ color:var(--muted);
+ font-size:10px;
+}
+
+.continue-btn{
+ border:0;
+ background:var(--green);
+ color:#fff;
+ border-radius:10px;
+ padding:10px 13px;
+ font-size:10px;
+ font-weight:900;
+}
+
+/* ================= LEARNING ================= */
+
+.learning-grid{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:11px;
+ margin-bottom:18px;
+}
+
+.learning-card{
+ background:var(--card);
+ border:1px solid var(--border);
+ border-radius:16px;
+ padding:17px;
+ box-shadow:var(--shadow);
+ cursor:pointer;
+ transition:.2s;
+}
+
+.learning-card:hover{
+ transform:translateY(-2px);
+}
+
+.learning-icon{
+ font-size:25px;
+ margin-bottom:10px;
+}
+
+.learning-card h3{
+ margin:0;
+ font-size:13px;
+}
+
+.learning-card p{
+ color:var(--muted);
+ font-size:10px;
+ line-height:1.45;
+ margin:6px 0 0;
+}
+
+/* ================= PERFORMANCE ================= */
+
+.performance{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:11px;
+ margin-bottom:18px;
+}
+
+.performance-card{
+ background:var(--card);
+ border:1px solid var(--border);
+ border-radius:16px;
+ padding:16px;
+ box-shadow:var(--shadow);
+}
+
+.performance-card h3{
+ margin:0;
+ font-size:13px;
+}
+
+.performance-row{
+ display:flex;
+ justify-content:space-between;
+ padding:9px 0;
+ border-bottom:1px solid var(--border);
+ font-size:10px;
+}
+
+.performance-row:last-child{
+ border-bottom:0;
+}
+
+.score{
+ font-weight:900;
+ color:var(--green2);
+}
+
+/* ================= NOTIFICATION ================= */
+
+.notification-panel{
+ position:fixed;
+ top:76px;
+ right:15px;
+ width:330px;
+ max-width:calc(100% - 30px);
+ max-height:70vh;
+ overflow:auto;
+ background:var(--card);
+ border:1px solid var(--border);
+ border-radius:16px;
+ box-shadow:0 15px 40px rgba(0,0,0,.18);
+ z-index:70;
+ display:none;
+}
+
+.notification-panel.show{
+ display:block;
+}
+
+.notification-head{
+ padding:15px;
+ border-bottom:1px solid var(--border);
+ display:flex;
+ justify-content:space-between;
+}
+
+.notification-head strong{
+ font-size:14px;
+}
+
+.notification-head button{
+ border:0;
+ background:transparent;
+ color:var(--green2);
+ font-size:10px;
+ font-weight:900;
+}
+
+.notification{
+ padding:13px 15px;
+ border-bottom:1px solid var(--border);
+}
+
+.notification:last-child{
+ border-bottom:0;
+}
+
+.notification-title{
+ font-size:11px;
+ font-weight:900;
+}
+
+.notification-text{
+ color:var(--muted);
+ font-size:10px;
+ margin-top:4px;
+ line-height:1.4;
+}
+
+.notification-time{
+ color:var(--muted);
+ font-size:8px;
+ margin-top:5px;
+}
+
+/* ================= MOBILE ================= */
+
+.bottom-nav{
+ display:none;
+}
+
+@media(max-width:850px){
+
+ .main{
+  padding:14px;
+  padding-bottom:80px;
+ }
+
+ .stats{
+  grid-template-columns:repeat(2,1fr);
+ }
+
+ .learning-grid{
+  grid-template-columns:1fr;
+ }
+
+ .performance{
+  grid-template-columns:1fr;
+ }
+
+ .bottom-nav{
+  position:fixed;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  left:0;
+  right:0;
+  bottom:0;
+  height:65px;
+  background:var(--card);
+  border-top:1px solid var(--border);
+  z-index:85;
+  box-shadow:0 -6px 20px rgba(0,0,0,.08);
+ }
+
+ .bottom-item{
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  font-size:9px;
+  font-weight:800;
+ }
+
+ .bottom-item span{
+  display:block;
+  font-size:19px;
+  margin-bottom:3px;
+ }
+
+ .bottom-item.active{
+  color:var(--green2);
+ }
+
+}
+
+@media(max-width:500px){
+
+ .header{
+  grid-template-columns:52px 1fr 52px;
+  padding:0 8px;
+ }
+
+ .main{
+  padding:12px;
+ }
+
+ .course-card{
+  min-width:225px;
+ }
+
+ .target-card{
+  padding:17px;
+ }
+
+ .target-dream{
+  font-size:17px;
+ }
+
+ .time-number{
+  font-size:18px;
+ }
+
+ .stat{
+  padding:13px;
+ }
+
+ .stat-value{
+  font-size:17px;
+ }
+
+ .continue-card{
+  align-items:flex-start;
+ }
+
+ .continue-btn{
+  align-self:center;
+ }
+
+}
+
+/* ================= LOADING ================= */
+
+.loading{
+ padding:25px;
+ text-align:center;
+ color:var(--muted);
+ font-size:12px;
+}
+
+.empty{
+ padding:25px;
+ text-align:center;
+ color:var(--muted);
+ font-size:11px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= SIDEBAR OVERLAY ================= -->
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar" id="sidebar">
+
+ <div class="side-top">
+
+  <div class="side-profile">
+
+   <div class="side-avatar" id="sideAvatar">M</div>
+
+   <div style="flex:1;min-width:0">
+    <div class="side-name" id="sideName">Student</div>
+    <div class="side-email" id="sideEmail">Loading...</div>
+   </div>
+
+   <button class="close-side" onclick="closeSidebar()">×</button>
+
+  </div>
+
+ </div>
+
+ <div class="side-section">Profile</div>
+
+ <button class="side-item" onclick="openProfile()">
+  <span class="side-icon">👤</span>
+  Profile Details
+ </button>
+
+ <button class="side-item" onclick="setTarget()">
+  <span class="side-icon">🎯</span>
+  Target Date & Dream
+ </button>
+
+ <div class="side-section">Appearance</div>
+
+ <div class="theme-box">
+
+  <div class="theme-title">App Theme</div>
+
+  <div class="theme-buttons">
+
+   <button onclick="setTheme('light')">
+    ☀️ White
+   </button>
+
+   <button onclick="setTheme('dark')">
+    🌙 Dark
+   </button>
+
+  </div>
+
+ </div>
+
+ <div class="side-section">Connect With Us</div>
+
+ <div class="social-grid">
+
+  <!-- Replace these URLs later with your real links -->
+
+  <a class="social" href="https://youtube.com/" target="_blank">
+   ▶️ YouTube
+  </a>
+
+  <a class="social" href="https://facebook.com/" target="_blank">
+   📘 Facebook
+  </a>
+
+  <a class="social" href="https://instagram.com/" target="_blank">
+   📸 Instagram
+  </a>
+
+  <a class="social" href="https://chat.whatsapp.com/" target="_blank">
+   💬 WhatsApp
+  </a>
+
+ </div>
+
+ <div class="side-section">Account</div>
+
+ <button class="side-item logout" onclick="logoutUser()">
+  <span class="side-icon">↪</span>
+  Logout
+ </button>
+
+ <div style="height:25px"></div>
+
+</aside>
+
+<!-- ================= HEADER ================= -->
+
+<header class="header">
+
+ <button class="menu-btn" onclick="openSidebar()">
+  ☰
+ </button>
+
+ <div class="student-heading">
+  <div class="hello">Assalamu Alaikum</div>
+  <div class="name" id="headerName">Student</div>
+ </div>
+
+ <button class="notification-btn" onclick="toggleNotifications()">
+  🔔
+  <span class="notification-dot" id="notificationDot"></span>
+ </button>
+
+</header>
+
+<!-- ================= NOTIFICATION PANEL ================= -->
+
+<div class="notification-panel" id="notificationPanel">
+
+ <div class="notification-head">
+  <strong>Notifications</strong>
+  <button onclick="markNotificationsRead()">Mark read</button>
+ </div>
+
+ <div id="notificationList">
+  <div class="loading">Loading...</div>
+ </div>
+
+</div>
+
+<!-- ================= MAIN ================= -->
+
+<main class="main">
+
+ <!-- COURSE SELECTION -->
+
+ <section class="course-section">
+
+  <div class="section-title">
+   <h2>📚 Select Course</h2>
+   <span id="courseHint">Your purchased courses</span>
+  </div>
+
+  <div class="course-scroll" id="courseList">
+   <div class="loading">Loading courses...</div>
+  </div>
+
+ </section>
+
+ <!-- TARGET -->
+
+ <section class="target-card">
+
+  <div class="target-top">
+
+   <div>
+    <div class="target-label">My NEET Target</div>
+
+    <div class="target-dream" id="dreamText">
+     Set Your Dream 🎯
+    </div>
+
+    <div class="target-date" id="targetDateText">
+     Target date not set
+    </div>
+   </div>
+
+   <button
+    onclick="setTarget()"
+    style="
+     border:1px solid rgba(255,255,255,.3);
+     background:rgba(255,255,255,.12);
+     color:#fff;
+     border-radius:9px;
+     padding:8px 10px;
+     font-size:10px;
+     font-weight:800;
+    "
+   >
+    Edit
+   </button>
+
+  </div>
+
+  <div class="countdown">
+
+   <div class="time-box">
+    <div class="time-number" id="days">0</div>
+    <div class="time-label">DAYS</div>
+   </div>
+
+   <div class="time-box">
+    <div class="time-number" id="hours">00</div>
+    <div class="time-label">HOURS</div>
+   </div>
+
+   <div class="time-box">
+    <div class="time-number" id="minutes">00</div>
+    <div class="time-label">MINUTES</div>
+   </div>
+
+   <div class="time-box">
+    <div class="time-number" id="seconds">00</div>
+    <div class="time-label">SECONDS</div>
+   </div>
+
+  </div>
+
+ </section>
+
+ <!-- TODAY TASK -->
+
+ <div class="section-title">
+  <h2>📋 Today's Tasks</h2>
+  <span id="taskProgress">0% completed</span>
+ </div>
+
+ <section class="task-card" id="taskList">
+
+  <div class="task" data-task="1">
+   <div class="task-check" onclick="toggleTask(1)">✓</div>
+   <div class="task-name">Complete today's Biology practice</div>
+   <div class="task-time">Practice</div>
+  </div>
+
+  <div class="task" data-task="2">
+   <div class="task-check" onclick="toggleTask(2)">✓</div>
+   <div class="task-name">Read today's NCERT topic</div>
+   <div class="task-time">Reading</div>
+  </div>
+
+  <div class="task" data-task="3">
+   <div class="task-check" onclick="toggleTask(3)">✓</div>
+   <div class="task-name">Revise previous mistakes</div>
+   <div class="task-time">Revision</div>
+  </div>
+
+  <div class="task" data-task="4">
+   <div class="task-check" onclick="toggleTask(4)">✓</div>
+   <div class="task-name">Solve PYQ questions</div>
+   <div class="task-time">PYQ</div>
+  </div>
+
+ </section>
+
+ <!-- STATS -->
+
+ <div class="section-title">
+  <h2>📊 Your Performance</h2>
+ </div>
+
+ <section class="stats">
+
+  <div class="stat">
+   <div class="stat-icon">📝</div>
+   <div class="stat-label">Questions Attempted</div>
+   <div class="stat-value" id="questions">0</div>
+  </div>
+
+  <div class="stat">
+   <div class="stat-icon">🎯</div>
+   <div class="stat-label">Accuracy</div>
+   <div class="stat-value" id="accuracy">0%</div>
+  </div>
+
+  <div class="stat">
+   <div class="stat-icon">✅</div>
+   <div class="stat-label">Correct</div>
+   <div class="stat-value" id="correct">0</div>
+  </div>
+
+  <div class="stat">
+   <div class="stat-icon">🏆</div>
+   <div class="stat-label">Best Score</div>
+   <div class="stat-value" id="bestScore">—</div>
+  </div>
+
+ </section>
+
+ <!-- PROGRESS -->
+
+ <section class="progress-card">
+
+  <div class="progress-header">
+   <h3>📈 Overall Course Progress</h3>
+   <div class="progress-big" id="overallProgress">0%</div>
+  </div>
+
+  <div class="big-progress">
+   <div id="overallBar"></div>
+  </div>
+
+  <div class="progress-note" id="progressNote">
+   Select a course to start learning.
+  </div>
+
+ </section>
+
+ <!-- CONTINUE -->
+
+ <section class="continue-card">
+
+  <div class="continue-icon">▶️</div>
+
+  <div class="continue-info">
+   <h3 id="continueTitle">Continue Learning</h3>
+   <p id="continueText">
+    Select a course and start your preparation.
+   </p>
+  </div>
+
+  <button class="continue-btn" onclick="continueLearning()">
+   Continue →
+  </button>
+
+ </section>
+
+ <!-- LEARNING -->
+
+ <div class="section-title">
+  <h2>📚 Learning</h2>
+ </div>
+
+ <section class="learning-grid">
+
+  <div class="learning-card" onclick="openCourse('topic')">
+
+   <div class="learning-icon">📖</div>
+
+   <h3>Topic Wise Practice</h3>
+
+   <p>
+    Chapter → Topic → Quiz + Notes PDF
+   </p>
+
+  </div>
+
+  <div class="learning-card" onclick="openCourse('type')">
+
+   <div class="learning-icon">🧠</div>
+
+   <h3>Chapter Wise Practice</h3>
+
+   <p>
+    Assertion, Statement, Match, Diagram, PYQ & Rapid Revision
+   </p>
+
+  </div>
+
+  <div class="learning-card" onclick="openCourse('ncert')">
+
+   <div class="learning-icon">📚</div>
+
+   <h3>NCERT Books</h3>
+
+   <p>
+    Chapter-wise NCERT, PYQ PDF & PYQ Quiz
+   </p>
+
+  </div>
+
+ </section>
+
+ <!-- RECENT PERFORMANCE -->
+
+ <div class="section-title">
+  <h2>🏆 Recent Performance</h2>
+ </div>
+
+ <section class="performance">
+
+  <div class="performance-card">
+
+   <h3>Latest Attempt</h3>
+
+   <div class="performance-row">
+    <span>Score</span>
+    <span class="score" id="lastScore">—</span>
+   </div>
+
+   <div class="performance-row">
+    <span>Accuracy</span>
+    <span class="score" id="lastAccuracy">—</span>
+   </div>
+
+   <div class="performance-row">
+    <span>Questions</span>
+    <span id="lastQuestions">—</span>
+   </div>
+
+  </div>
+
+  <div class="performance-card">
+
+   <h3>Study Summary</h3>
+
+   <div class="performance-row">
+    <span>Completed Topics</span>
+    <span id="completedTopics">0</span>
+   </div>
+
+   <div class="performance-row">
+    <span>Completed Quizzes</span>
+    <span id="completedQuizzes">0</span>
+   </div>
+
+   <div class="performance-row">
+    <span>Study Days</span>
+    <span id="studyDays">0</span>
+   </div>
+
+  </div>
+
+ </section>
+
+ <!-- NOTIFICATION SUMMARY -->
+
+ <div class="section-title">
+
+  <h2>🔔 Latest Updates</h2>
+
+  <button
+   onclick="toggleNotifications()"
+   style="
+    border:0;
+    background:transparent;
+    color:var(--green2);
+    font-size:10px;
+    font-weight:900;
+   "
+  >
+   View All
+  </button>
+
+ </div>
+
+ <section class="task-card" id="latestUpdates">
+
+  <div class="empty">
+   No new updates.
+  </div>
+
+ </section>
+
+</main>
+
+<!-- ================= MOBILE NAV ================= -->
+
+<nav class="bottom-nav">
+
+ <button class="bottom-item active" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <span>🏠</span>
+  Home
+ </button>
+
+ <button class="bottom-item" onclick="window.location.href='courses.html'">
+  <span>📚</span>
+  Courses
+ </button>
+
+ <button class="bottom-item" onclick="toggleNotifications()">
+  <span>🔔</span>
+  Alerts
+ </button>
+
+ <button class="bottom-item" onclick="openProfile()">
+  <span>👤</span>
+  Profile
+ </button>
+
+</nav>
+
+<!-- ================= FIREBASE ================= -->
+
+<script src="js/firebase.js"></script>
+<script src="js/auth.js"></script>
+
+<script>
+"use strict";
+
+/* ==========================================================
+   GLOBAL DATA
+========================================================== */
+
+let currentUser = null;
+let selectedCourseId = null;
+let countdownInterval = null;
+
+const DEFAULT_TASKS = 4;
+
+
+/* ==========================================================
+   SIDEBAR
+========================================================== */
+
+function openSidebar(){
+ document.getElementById("sidebar").classList.add("open");
+ document.getElementById("overlay").classList.add("show");
+}
+
+function closeSidebar(){
+ document.getElementById("sidebar").classList.remove("open");
+ document.getElementById("overlay").classList.remove("show");
+}
+
+
+/* ==========================================================
+   THEME
+========================================================== */
+
+function setTheme(theme){
+
+ if(theme === "dark"){
+  document.body.classList.add("dark");
+ }else{
+  document.body.classList.remove("dark");
+ }
+
+ localStorage.setItem("mneet_theme",theme);
+}
+
+(function loadTheme(){
+ const theme = localStorage.getItem("mneet_theme") || "light";
+ setTheme(theme);
+})();
+
+
+/* ==========================================================
+   PROFILE
+========================================================== */
+
+function openProfile(){
+ window.location.href = "profile.html";
+}
+
+
+/* ==========================================================
+   LOGOUT
+========================================================== */
+
+function logoutUser(){
+
+ if(!confirm("Are you sure you want to logout?")){
+  return;
+ }
+
+ if(typeof auth !== "undefined" && auth){
+
+  auth.signOut()
+   .then(function(){
+    window.location.href = "index.html";
+   })
+   .catch(function(error){
+    alert(error.message);
+   });
+
+ }else{
+
+  window.location.href = "index.html";
+
+ }
+
+}
+
+
+/* ==========================================================
+   TARGET DATE + DREAM
+========================================================== */
+
+function setTarget(){
+
+ const oldDream =
+  localStorage.getItem("mneet_dream") ||
+  "";
+
+ const oldDate =
+  localStorage.getItem("mneet_target_date") ||
+  "";
+
+ const dream =
+  prompt(
+   "Enter your target/dream:",
+   oldDream
+  );
+
+ if(dream === null){
+  return;
+ }
+
+ const date =
+  prompt(
+   "Enter target date (YYYY-MM-DD):",
+   oldDate
+  );
+
+ if(date === null){
+  return;
+ }
+
+ if(!date){
+  alert("Please enter a target date.");
+  return;
+ }
+
+ const target =
+  new Date(date + "T23:59:59");
+
+ if(isNaN(target.getTime())){
+  alert("Invalid date.");
+  return;
+ }
+
+ localStorage.setItem(
+  "mneet_dream",
+  dream || "NEET 2027"
+ );
+
+ localStorage.setItem(
+  "mneet_target_date",
+  date
+ );
+
+ loadTarget();
+}
+
+
+/* ==========================================================
+   TARGET LOAD
+========================================================== */
+
+function loadTarget(){
+
+ const dream =
+  localStorage.getItem("mneet_dream") ||
+  "Set Your Dream 🎯";
+
+ const date =
+  localStorage.getItem("mneet_target_date");
+
+ document.getElementById(
+  "dreamText"
+ ).textContent = dream;
+
+ if(date){
+
+  const d = new Date(date + "T23:59:59");
+
+  document.getElementById(
+   "targetDateText"
+  ).textContent =
+   "Target: " +
+   d.toLocaleDateString(
+    "en-IN",
+    {
+     day:"2-digit",
+     month:"long",
+     year:"numeric"
+    }
+   );
+
+  startCountdown(d);
+
+ }else{
+
+  document.getElementById(
+   "targetDateText"
+  ).textContent =
+   "Target date not set";
+
+  stopCountdown();
+
+ }
+
+}
+
+
+/* ==========================================================
+   COUNTDOWN
+========================================================== */
+
+function startCountdown(target){
+
+ stopCountdown();
+
+ function update(){
+
+  const now = new Date().getTime();
+  const distance =
+   target.getTime() - now;
+
+  if(distance <= 0){
+
+   document.getElementById("days").textContent = "0";
+   document.getElementById("hours").textContent = "00";
+   document.getElementById("minutes").textContent = "00";
+   document.getElementById("seconds").textContent = "00";
+
+   return;
+
+  }
+
+  const days =
+   Math.floor(
+    distance /
+    (1000 * 60 * 60 * 24)
+   );
+
+  const hours =
+   Math.floor(
+    (distance %
+     (1000 * 60 * 60 * 24)) /
+     (1000 * 60 * 60)
+   );
+
+  const minutes =
+   Math.floor(
+    (distance %
+     (1000 * 60 * 60)) /
+     (1000 * 60)
+   );
+
+  const seconds =
+   Math.floor(
+    (distance %
+     (1000 * 60)) /
+     1000
+   );
+
+  document.getElementById("days")
+   .textContent = days;
+
+  document.getElementById("hours")
+   .textContent =
+    String(hours).padStart(2,"0");
+
+  document.getElementById("minutes")
+   .textContent =
+    String(minutes).padStart(2,"0");
+
+  document.getElementById("seconds")
+   .textContent =
+    String(seconds).padStart(2,"0");
+
+ }
+
+ update();
+
+ countdownInterval =
+  setInterval(update,1000);
+}
+
+
+function stopCountdown(){
+
+ if(countdownInterval){
+  clearInterval(countdownInterval);
+  countdownInterval = null;
+ }
+
+}
+
+
+/* ==========================================================
+   TODAY TASKS
+========================================================== */
+
+function taskKey(id){
+
+ const today =
+  new Date()
+   .toISOString()
+   .slice(0,10);
+
+ return "mneet_task_" + today + "_" + id;
+}
+
+
+function toggleTask(id){
+
+ const key = taskKey(id);
+
+ const current =
+  localStorage.getItem(key) === "1";
+
+ localStorage.setItem(
+  key,
+  current ? "0" : "1"
+ );
+
+ loadTasks();
+}
+
+
+function loadTasks(){
+
+ let done = 0;
+
+ for(let i=1;i<=DEFAULT_TASKS;i++){
+
+  const element =
+   document.querySelector(
+    '.task[data-task="' + i + '"]'
+   );
+
+  if(!element) continue;
+
+  const completed =
+   localStorage.getItem(taskKey(i))
+   === "1";
+
+  if(completed){
+   done++;
+   element.classList.add("done");
+  }else{
+   element.classList.remove("done");
+  }
+
+ }
+
+ const percent =
+  Math.round(
+   (done / DEFAULT_TASKS) * 100
+  );
+
+ document.getElementById(
+  "taskProgress"
+ ).textContent =
+  percent + "% completed";
+
+}
+
+
+/* ==========================================================
+   COURSE SELECTION
+========================================================== */
+
+function saveSelectedCourse(courseId){
+
+ selectedCourseId =
+  courseId;
+
+ localStorage.setItem(
+  "mneet_selected_course",
+  courseId
+ );
+
+ document
+  .querySelectorAll(".course-card")
+  .forEach(function(card){
+
+   card.classList.remove("selected");
+
+  });
+
+ const selected =
+  document.querySelector(
+   '[data-course-id="' +
+   courseId +
+   '"]'
+  );
+
+ if(selected){
+  selected.classList.add("selected");
+ }
+
+ const title =
+  selected
+   ?.querySelector(".course-title")
+   ?.textContent ||
+  "Selected Course";
+
+ document.getElementById(
+  "continueTitle"
+ ).textContent =
+  "Continue " + title;
+
+ document.getElementById(
+  "continueText"
+ ).textContent =
+  "Continue your preparation from where you stopped.";
+
+}
+
+
+/* ==========================================================
+   LOAD COURSES
+========================================================== */
+
+async function loadCourses(){
+
+ const container =
+  document.getElementById("courseList");
+
+ try{
+
+  if(
+   typeof db === "undefined" ||
+   !db
+  ){
+   throw new Error("Firestore unavailable");
+  }
+
+  const snapshot =
+   await db
+    .collection("courses")
+    .get();
+
+  if(snapshot.empty){
+
+   container.innerHTML =
+    '<div class="empty">No courses available yet.</div>';
+
+   return;
+
+  }
+
+  container.innerHTML = "";
+
+  let firstCourse = null;
+
+  snapshot.forEach(function(doc){
+
+   const data =
+    doc.data() || {};
+
+   const id =
+    doc.id;
+
+   if(!firstCourse){
+    firstCourse = id;
+   }
+
+   const title =
+    data.title ||
+    data.name ||
+    "NEET Biology Course";
+
+   const description =
+    data.description ||
+    "Complete NEET preparation course";
+
+   const progress =
+    Number(data.progress || 0);
+
+   const card =
+    document.createElement("div");
+
+   card.className =
+    "course-card";
+
+   card.dataset.courseId =
+    id;
+
+   card.innerHTML = `
+    <div class="course-check">✓</div>
+
+    <div class="course-title">
+     ${escapeHTML(title)}
+    </div>
+
+    <div class="course-desc">
+     ${escapeHTML(description)}
+    </div>
+
+    <div class="course-progress">
+     <div
+      class="course-progress-fill"
+      style="width:${Math.min(progress,100)}%"
+     ></div>
+    </div>
+
+    <div class="course-footer">
+
+     <span class="course-percent">
+      ${progress}% Complete
+     </span>
+
+     <button
+      class="select-course"
+      onclick="selectCourse('${escapeAttribute(id)}')"
+     >
+      Select
+     </button>
+
+    </div>
+   `;
+
+   container.appendChild(card);
+
+  });
+
+  const saved =
+   localStorage.getItem(
+    "mneet_selected_course"
+   );
+
+  if(saved){
+
+   const exists =
+    document.querySelector(
+     '[data-course-id="' +
+     saved +
+     '"]'
+    );
+
+   if(exists){
+    saveSelectedCourse(saved);
+    return;
+   }
+
+  }
+
+  if(firstCourse){
+   saveSelectedCourse(firstCourse);
+  }
+
+ }catch(error){
+
+  console.warn(
+   "Course loading:",
+   error
+  );
+
+  container.innerHTML =
+   `
+   <div class="empty">
+    Course list is ready.
+    <br>
+    Course data will appear here after Firebase course setup.
+   </div>
+   `;
+
+ }
+
+}
+
+
+function selectCourse(courseId){
+
+ saveSelectedCourse(courseId);
+
+ const title =
+  document.querySelector(
+   '[data-course-id="' +
+   courseId +
+   '"] .course-title'
+  )?.textContent ||
+  "Course";
+
+ alert(
+  '"' +
+  title +
+  '" selected successfully.'
+ );
+
+}
+
+
+/* ==========================================================
+   LEARNING NAVIGATION
+========================================================== */
+
+function openCourse(type){
+
+ const course =
+  selectedCourseId ||
+  localStorage.getItem(
+   "mneet_selected_course"
+  );
+
+ if(!course){
+
+  alert(
+   "Please select a course first."
+  );
+
+  return;
+
+ }
+
+ localStorage.setItem(
+  "mneet_learning_mode",
+  type
+ );
+
+ window.location.href =
+  "course.html";
+
+}
+
+
+function continueLearning(){
+
+ const course =
+  selectedCourseId ||
+  localStorage.getItem(
+   "mneet_selected_course"
+  );
+
+ if(!course){
+
+  alert(
+   "Please select a course first."
+  );
+
+  return;
+
+ }
+
+ window.location.href =
+  "course.html";
+
+}
+
+
+/* ==========================================================
+   NOTIFICATIONS
+========================================================== */
+
+const defaultNotifications = [
+
+ {
+  title:"Welcome to mNEET-Pro",
+  text:"Your student dashboard is ready.",
+  time:"Just now"
+ },
+
+ {
+  title:"Set your NEET target",
+  text:"Set your target date and dream from the sidebar.",
+  time:"Today"
+ },
+
+ {
+  title:"Start your preparation",
+  text:"Select your course and continue learning.",
+  time:"Today"
+ }
+
+];
+
+
+function toggleNotifications(){
+
+ const panel =
+  document.getElementById(
+   "notificationPanel"
+  );
+
+ panel.classList.toggle("show");
+
+ if(panel.classList.contains("show")){
+  loadNotifications();
+ }
+
+}
+
+
+function markNotificationsRead(){
+
+ localStorage.setItem(
+  "mneet_notifications_read",
+  "1"
+ );
+
+ document.getElementById(
+  "notificationDot"
+ ).style.display =
+  "none";
+
+}
+
+
+async function loadNotifications(){
+
+ const list =
+  document.getElementById(
+   "notificationList"
+  );
+
+ const latest =
+  document.getElementById(
+   "latestUpdates"
+  );
+
+ list.innerHTML = "";
+
+ try{
+
+  if(
+   typeof db !== "undefined" &&
+   db
+  ){
+
+   const snap =
+    await db
+     .collection("notifications")
+     .orderBy("createdAt","desc")
+     .limit(20)
+     .get();
+
+   if(!snap.empty){
+
+    let html = "";
+
+    snap.forEach(function(doc){
+
+     const d =
+      doc.data() || {};
+
+     html += `
+      <div class="notification">
+
+       <div class="notification-title">
+        ${escapeHTML(
+         d.title ||
+         "Notification"
+        )}
+       </div>
+
+       <div class="notification-text">
+        ${escapeHTML(
+         d.message ||
+         d.text ||
+         ""
+        )}
+       </div>
+
+       <div class="notification-time">
+        ${formatTime(d.createdAt)}
+       </div>
+
+      </div>
+     `;
+
+    });
+
+    list.innerHTML =
+     html;
+
+    latest.innerHTML =
+     html.slice(0,1800);
+
+    if(
+     localStorage.getItem(
+      "mneet_notifications_read"
+     ) !== "1"
+    ){
+     document.getElementById(
+      "notificationDot"
+     ).style.display =
+      "block";
+    }
+
+    return;
+
+   }
+
+  }
+
+ }catch(error){
+
+  console.warn(
+   "Notification loading:",
+   error
+  );
+
+ }
+
+ let html = "";
+
+ defaultNotifications.forEach(function(n){
+
+  html += `
+   <div class="notification">
+
+    <div class="notification-title">
+     ${n.title}
+    </div>
+
+    <div class="notification-text">
+     ${n.text}
+    </div>
+
+    <div class="notification-time">
+     ${n.time}
+    </div>
+
+   </div>
+  `;
+
+ });
+
+ list.innerHTML =
+  html;
+
+ latest.innerHTML =
+  html;
+
+}
+
+
+function formatTime(timestamp){
+
+ if(!timestamp){
+  return "Recently";
+ }
+
+ try{
+
+  const date =
+   timestamp.toDate
+    ? timestamp.toDate()
+    : new Date(timestamp);
+
+  return date.toLocaleString(
+   "en-IN",
+   {
+    day:"2-digit",
+    month:"short",
+    hour:"2-digit",
+    minute:"2-digit"
+   }
+  );
+
+ }catch(e){
+
+  return "Recently";
+
+ }
+
+}
+
+
+/* ==========================================================
+   USER DATA
+========================================================== */
+
+async function loadUser(){
+
+ if(
+  typeof auth === "undefined" ||
+  !auth
+ ){
+  return;
+ }
+
+ auth.onAuthStateChanged(
+  async function(user){
+
+   if(!user){
+
+    window.location.href =
+     "index.html";
+
+    return;
+
+   }
+
+   currentUser =
+    user;
+
+   let name =
+    user.displayName ||
+    (
+     user.email
+      ? user.email.split("@")[0]
+      : "Student"
+    );
+
+   let email =
+    user.email ||
+    "";
+
+   try{
+
+    if(
+     typeof db !== "undefined" &&
+     db
+    ){
+
+     const snap =
+      await db
+       .collection("users")
+       .doc(user.uid)
+       .get();
+
+     if(snap.exists){
+
+      const data =
+       snap.data() || {};
+
+      name =
+       data.name ||
+       data.fullName ||
+       name;
+
+      email =
+       data.email ||
+       email;
+
+      if(data.targetDate){
+
+       localStorage.setItem(
+        "mneet_target_date",
+        data.targetDate
+       );
+
+      }
+
+      if(data.targetDream){
+
+       localStorage.setItem(
+        "mneet_dream",
+        data.targetDream
+       );
+
+      }
+
+     }
+
+    }
+
+   }catch(error){
+
+    console.warn(
+     "User profile:",
+     error
+    );
+
+   }
+
+   const letter =
+    name
+     .trim()
+     .charAt(0)
+     .toUpperCase() ||
+    "M";
+
+   document.getElementById(
+    "headerName"
+   ).textContent =
+    name;
+
+   document.getElementById(
+    "sideName"
+   ).textContent =
+    name;
+
+   document.getElementById(
+    "sideEmail"
+   ).textContent =
+    email;
+
+   document.getElementById(
+    "sideAvatar"
+   ).textContent =
+    letter;
+
+   loadTarget();
+   loadCourses();
+   loadNotifications();
+
+  }
+ );
+
+}
+
+
+/* ==========================================================
+   SAFE TEXT
+========================================================== */
+
+function escapeHTML(value){
+
+ return String(value)
+  .replace(/&/g,"&amp;")
+  .replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;")
+  .replace(/'/g,"&#039;");
+
+}
+
+
+function escapeAttribute(value){
+
+ return String(value)
+  .replace(/'/g,"&#039;");
+
+}
+
+
+/* ==========================================================
+   INITIAL DATA
+========================================================== */
+
+document.addEventListener(
+ "DOMContentLoaded",
+ function(){
+
+  loadTasks();
+
+  loadTarget();
+
+  loadUser();
+
+ }
+);
+
+
+/* Close notification when clicking elsewhere */
+
+document.addEventListener(
+ "click",
+ function(event){
+
+  const panel =
+   document.getElementById(
+    "notificationPanel"
+   );
+
+  const button =
+   document.querySelector(
+    ".notification-btn"
+   );
+
+  if(
+   panel.classList.contains("show") &&
+   !panel.contains(event.target) &&
+   !button.contains(event.target)
+  ){
+
+   panel.classList.remove("show");
+
+  }
+
+ }
+);
+
+</script>
+
+</body>
+</html>
