@@ -1,120 +1,18 @@
-/* =========================================================
-   STUDENT NOTIFICATIONS PAGE
-========================================================= */
-
+=====================================
 "use strict";
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
+document.addEventListener("DOMContentLoaded",()=>{
+    auth.onAuthStateChanged(async user=>{
+        if(!user){goTo("index.html");return;}
+        loadNotificationsPage();
+    });
+});
 
-        auth.onAuthStateChanged(
-            async function(user) {
-
-                if (!user) {
-
-                    window.location.replace(
-                        "index.html"
-                    );
-
-                    return;
-
-                }
-
-                await loadAllNotifications();
-
-            }
-        );
-
-    }
-);
-
-
-async function loadAllNotifications() {
-
-    const container =
-        $("allNotifications");
-
-    if (!container) return;
-
-    showLoading(
-        container,
-        "Loading notifications..."
-    );
-
-    try {
-
-        const snapshot =
-            await db
-                .collection("notifications")
-                .orderBy(
-                    "createdAt",
-                    "desc"
-                )
-                .limit(50)
-                .get();
-
-        if (snapshot.empty) {
-
-            container.innerHTML =
-                `<div class="notification-empty">
-                    No notifications available.
-                </div>`;
-
-            return;
-
-        }
-
-        container.innerHTML = "";
-
-        snapshot.forEach(function(doc) {
-
-            const data =
-                doc.data() || {};
-
-            const item =
-                document.createElement(
-                    "div"
-                );
-
-            item.className =
-                "notification-item";
-
-            item.innerHTML = `
-                <div class="notification-title">
-                    ${escapeHtml(
-                        data.title ||
-                        "Notification"
-                    )}
-                </div>
-
-                <div class="notification-text">
-                    ${escapeHtml(
-                        data.message ||
-                        data.text ||
-                        ""
-                    )}
-                </div>
-            `;
-
-            container.appendChild(
-                item
-            );
-
-        });
-
-    } catch (error) {
-
-        console.error(
-            "Notification page error:",
-            error
-        );
-
-        container.innerHTML =
-            `<div class="notification-empty">
-                Notifications could not be loaded.
-            </div>`;
-
-    }
-
+async function loadNotificationsPage(){
+    const box=document.getElementById("notificationsList");
+    try{
+        const snap=await db.collection("notifications").orderBy("createdAt","desc").limit(50).get();
+        box.innerHTML=snap.empty?`<div class="empty">No notifications.</div>`:
+            snap.docs.map(d=>{const n=d.data();return `<article class="notification-card"><h3>${escapeHTML(n.title||"Notification")}</h3><p>${escapeHTML(n.message||n.text||"")}</p><small>${formatDate(n.createdAt)}</small></article>`}).join("");
+    }catch(e){box.innerHTML=`<div class="empty">Notifications load করা যায়নি।</div>`;}
 }
