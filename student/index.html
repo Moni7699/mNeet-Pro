@@ -1,1 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#1b5e20"
+    >
+
+    <title>mNEET-Pro | Student Login</title>
+
+
+    <!-- ==================================================
+         FIREBASE SDK
+    =================================================== -->
+
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-database-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-storage-compat.js"></script>
+
+
+    <!-- ==================================================
+         MAIN CSS
+    =================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            min-height: 100vh;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #e8f5e9,
+                    #f4f6f9
+                );
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            color: #17221a;
+
+        }
+
+
+        .login-page {
+
+            min-height: 100vh;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 22px;
+
+        }
+
+
+        .login-container {
+
+            width: 100%;
+
+            max-width: 430px;
+
+        }
+
+
+        .brand {
+
+            text-align: center;
+
+            margin-bottom: 22px;
+
+        }
+
+
+        .brand-icon {
+
+            width: 68px;
+
+            height: 68px;
+
+            margin: 0 auto 12px;
+
+            border-radius: 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #1b5e20,
+                    #2e7d32
+                );
+
+            color: #fff;
+
+            font-size: 30px;
+
+            font-weight: 900;
+
+            box-shadow:
+                0 10px 25px
+                rgba(27,94,32,.22);
+
+        }
+
+
+        .brand h1 {
+
+            margin: 0;
+
+            color: #1b5e20;
+
+            font-size: 28px;
+
+            font-weight: 900;
+
+        }
+
+
+        .brand p {
+
+            margin: 6px 0 0;
+
+            color: #68756c;
+
+            font-size: 13px;
+
+        }
+
+
+        .login-card {
+
+            background: #fff;
+
+            border-radius: 22px;
+
+            padding: 25px;
+
+            box-shadow:
+                0 12px 35px
+                rgba(0,0,0,.09);
+
+            border:
+                1px solid #e1e8e2;
+
+        }
+
+
+        .card-title {
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .card-title h2 {
+
+            margin: 0;
+
+            font-size: 22px;
+
+            color: #17221a;
+
+        }
+
+
+        .card-title p {
+
+            margin: 6px 0 0;
+
+            color: #718078;
+
+            font-size: 13px;
+
+        }
+
+
+        .form-group {
+
+            margin-bottom: 15px;
+
+        }
+
+
+        .form-group label {
+
+            display: block;
+
+            margin-bottom: 7px;
+
+            font-size: 13px;
+
+            font-weight: 800;
+
+            color: #34443a;
+
+        }
+
+
+        .form-group input {
+
+            width: 100%;
+
+            padding: 14px;
+
+            border:
+                1px solid #d7ddd8;
+
+            border-radius: 12px;
+
+            outline: none;
+
+            font-size: 15px;
+
+            background: #fbfcfb;
+
+        }
+
+
+        .form-group input:focus {
+
+            border-color: #2e7d32;
+
+            background: #fff;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(46,125,50,.10);
+
+        }
+
+
+        .password-row {
+
+            position: relative;
+
+        }
+
+
+        .password-row input {
+
+            padding-right: 55px;
+
+        }
+
+
+        .password-toggle {
+
+            position: absolute;
+
+            right: 10px;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            border: 0;
+
+            background: transparent;
+
+            cursor: pointer;
+
+            font-size: 18px;
+
+        }
+
+
+        .login-button {
+
+            width: 100%;
+
+            border: 0;
+
+            border-radius: 13px;
+
+            padding: 14px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #1b5e20,
+                    #2e7d32
+                );
+
+            color: #fff;
+
+            font-size: 15px;
+
+            font-weight: 900;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 7px 16px
+                rgba(27,94,32,.18);
+
+        }
+
+
+        .login-button:disabled {
+
+            opacity: .65;
+
+            cursor: not-allowed;
+
+        }
+
+
+        .message {
+
+            display: none;
+
+            margin-bottom: 15px;
+
+            padding: 12px;
+
+            border-radius: 11px;
+
+            font-size: 13px;
+
+            line-height: 1.45;
+
+            font-weight: 700;
+
+        }
+
+
+        .message.error {
+
+            display: block;
+
+            background: #ffebee;
+
+            color: #b3261e;
+
+        }
+
+
+        .message.success {
+
+            display: block;
+
+            background: #e8f5e9;
+
+            color: #1b5e20;
+
+        }
+
+
+        .divider {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            margin: 21px 0;
+
+            color: #9aa49d;
+
+            font-size: 12px;
+
+        }
+
+
+        .divider::before,
+        .divider::after {
+
+            content: "";
+
+            flex: 1;
+
+            height: 1px;
+
+            background: #e2e7e3;
+
+        }
+
+
+        .signup-button {
+
+            width: 100%;
+
+            border:
+                1px solid #2e7d32;
+
+            border-radius: 13px;
+
+            padding: 13px;
+
+            background: #fff;
+
+            color: #1b5e20;
+
+            font-weight: 900;
+
+            cursor: pointer;
+
+        }
+
+
+        .forgot-button {
+
+            border: 0;
+
+            background: transparent;
+
+            color: #2e7d32;
+
+            font-size: 12px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+
+            padding: 0;
+
+        }
+
+
+        .login-footer {
+
+            text-align: center;
+
+            margin-top: 18px;
+
+            color: #7a857d;
+
+            font-size: 11px;
+
+            line-height: 1.5;
+
+        }
+
+
+        .loading {
+
+            display: none;
+
+            margin-right: 6px;
+
+        }
+
+
+        @media (max-width: 480px) {
+
+            .login-page {
+
+                padding: 16px;
+
+            }
+
+
+            .login-card {
+
+                padding: 20px;
+
+            }
+
+
+            .brand h1 {
+
+                font-size: 25px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="login-page">
+
+
+    <div class="login-container">
+
+
+        <!-- BRAND -->
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                M
+            </div>
+
+            <h1>
+                mNEET-Pro
+            </h1>
+
+            <p>
+                Complete Learning Platform
+            </p>
+
+        </div>
+
+
+        <!-- LOGIN CARD -->
+
+        <section class="login-card">
+
+
+            <div class="card-title">
+
+                <h2>
+                    Student Login
+                </h2>
+
+                <p>
+                    Login to continue your learning
+                </p>
+
+            </div>
+
+
+            <!-- MESSAGE -->
+
+            <div
+                id="message"
+                class="message"
+            ></div>
+
+
+            <!-- EMAIL -->
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email Address
+                </label>
+
+                <input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    autocomplete="email"
+                >
+
+            </div>
+
+
+            <!-- PASSWORD -->
+
+            <div class="form-group">
+
+                <label for="password">
+                    Password
+                </label>
+
+                <div class="password-row">
+
+                    <input
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                    >
+
+                    <button
+                        type="button"
+                        class="password-toggle"
+                        id="togglePassword"
+                        aria-label="Show password"
+                    >
+                        👁️
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- FORGOT -->
+
+            <div
+                style="
+                    display:flex;
+                    justify-content:flex-end;
+                    margin-bottom:18px;
+                "
+            >
+
+                <button
+                    type="button"
+                    class="forgot-button"
+                    id="forgotPassword"
+                >
+                    Forgot Password?
+                </button>
+
+            </div>
+
+
+            <!-- LOGIN -->
+
+            <button
+                type="button"
+                class="login-button"
+                id="loginButton"
+            >
+
+                <span
+                    id="loginLoading"
+                    class="loading"
+                >
+                    ⏳
+                </span>
+
+                <span id="loginText">
+                    Login
+                </span>
+
+            </button>
+
+
+            <!-- DIVIDER -->
+
+            <div class="divider">
+                New student?
+            </div>
+
+
+            <!-- SIGNUP -->
+
+            <button
+                type="button"
+                class="signup-button"
+                id="signupButton"
+            >
+                Create Student Account
+            </button>
+
+
+        </section>
+
+
+        <div class="login-footer">
+
+            mNEET-Pro • Student Learning Platform
+
+            <br>
+
+            Secure account authentication
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- ======================================================
+     FIREBASE + APP SCRIPTS
+======================================================= -->
+
+<script src="js/firebase.js"></script>
+
+<script src="js/auth.js"></script>
+
+
+<script>
+
+"use strict";
+
+
+// ==========================================================
+// ELEMENTS
+// ==========================================================
+
+const emailInput =
+    document.getElementById(
+        "email"
+    );
+
+
+const passwordInput =
+    document.getElementById(
+        "password"
+    );
+
+
+const loginButton =
+    document.getElementById(
+        "loginButton"
+    );
+
+
+const signupButton =
+    document.getElementById(
+        "signupButton"
+    );
+
+
+const forgotButton =
+    document.getElementById(
+        "forgotPassword"
+    );
+
+
+const togglePassword =
+    document.getElementById(
+        "togglePassword"
+    );
+
+
+const messageBox =
+    document.getElementById(
+        "message"
+    );
+
+
+const loginText =
+    document.getElementById(
+        "loginText"
+    );
+
+
+const loginLoading =
+    document.getElementById(
+        "loginLoading"
+    );
+
+
+// ==========================================================
+// MESSAGE
+// ==========================================================
+
+function showMessage(
+    message,
+    type
+) {
+
+    messageBox.textContent =
+        message;
+
+    messageBox.className =
+        "message " +
+        type;
+
+}
+
+
+// ==========================================================
+// PASSWORD TOGGLE
+// ==========================================================
+
+togglePassword.addEventListener(
+    "click",
+    function () {
+
+        const isPassword =
+            passwordInput.type ===
+            "password";
+
+
+        passwordInput.type =
+            isPassword
+                ? "text"
+                : "password";
+
+
+        togglePassword.textContent =
+            isPassword
+                ? "🙈"
+                : "👁️";
+
+    }
+);
+
+
+// ==========================================================
+// LOGIN
+// ==========================================================
+
+loginButton.addEventListener(
+    "click",
+    async function () {
+
+        const email =
+            emailInput.value.trim();
+
+        const password =
+            passwordInput.value;
+
+
+        if (!email) {
+
+            showMessage(
+                "Email address দিন।",
+                "error"
+            );
+
+            emailInput.focus();
+
+            return;
+
+        }
+
+
+        if (!password) {
+
+            showMessage(
+                "Password দিন।",
+                "error"
+            );
+
+            passwordInput.focus();
+
+            return;
+
+        }
+
+
+        loginButton.disabled =
+            true;
+
+        loginLoading.style.display =
+            "inline";
+
+        loginText.textContent =
+            "Logging in...";
+
+
+        try {
+
+            await studentLogin(
+                email,
+                password
+            );
+
+
+            showMessage(
+                "Login successful. Dashboard খুলছে...",
+                "success"
+            );
+
+
+            setTimeout(
+                function () {
+
+                    window.location.href =
+                        "dashboard.html";
+
+                },
+                500
+            );
+
+
+        } catch (error) {
+
+            showMessage(
+                error.message,
+                "error"
+            );
+
+
+            loginButton.disabled =
+                false;
+
+            loginLoading.style.display =
+                "none";
+
+            loginText.textContent =
+                "Login";
+
+        }
+
+    }
+);
+
+
+// ==========================================================
+// SIGNUP
+// ==========================================================
+
+signupButton.addEventListener(
+    "click",
+    function () {
+
+        window.location.href =
+            "signup.html";
+
+    }
+);
+
+
+// ==========================================================
+// FORGOT PASSWORD
+// ==========================================================
+
+forgotButton.addEventListener(
+    "click",
+    async function () {
+
+        const email =
+            emailInput.value.trim();
+
+
+        if (!email) {
+
+            showMessage(
+                "প্রথমে আপনার email address দিন।",
+                "error"
+            );
+
+            emailInput.focus();
+
+            return;
+
+        }
+
+
+        try {
+
+            await auth.sendPasswordResetEmail(
+                email
+            );
+
+
+            showMessage(
+                "Password reset email পাঠানো হয়েছে। আপনার inbox check করুন।",
+                "success"
+            );
+
+        } catch (error) {
+
+            const formatted =
+                typeof formatAuthError ===
+                "function"
+                    ? formatAuthError(error)
+                    : new Error(
+                        error.message
+                    );
+
+
+            showMessage(
+                formatted.message,
+                "error"
+            );
+
+        }
+
+    }
+);
+
+
+// ==========================================================
+// ENTER KEY LOGIN
+// ==========================================================
+
+passwordInput.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (
+            event.key === "Enter"
+        ) {
+
+            loginButton.click();
+
+        }
+
+    }
+);
+
+
+// ==========================================================
+// REDIRECT ALREADY LOGGED-IN USER
+// ==========================================================
+
+if (
+    typeof redirectIfLoggedIn ===
+    "function"
+) {
+
+    redirectIfLoggedIn();
+
+}
+
+</script>
+
+
+</body>
+
+</html>
