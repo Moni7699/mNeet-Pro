@@ -1,2474 +1,3786 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="theme-color" content="#0d5c36">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<meta
+    name="theme-color"
+    content="#0d6035"
+>
+
 <title>mNEET-Pro | Student Dashboard</title>
 
-<link rel="stylesheet" href="css/style.css">
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<!-- =====================================================
+     FIREBASE
+===================================================== -->
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
 
 <style>
-*{box-sizing:border-box}
 
-:root{
- --green:#0d5c36;
- --green2:#198754;
- --green3:#eaf7ef;
- --bg:#f4f7f5;
- --card:#fff;
- --text:#17221c;
- --muted:#718078;
- --border:#e0e8e3;
- --danger:#e53935;
- --shadow:0 8px 25px rgba(0,0,0,.07);
+/* =====================================================
+   RESET
+===================================================== */
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
 }
 
-body.dark{
- --bg:#101614;
- --card:#18211d;
- --text:#edf5ef;
- --muted:#9eaaa3;
- --border:#29352f;
- --green3:#20382a;
- --shadow:0 8px 25px rgba(0,0,0,.25);
+
+html{
+    scroll-behavior:smooth;
 }
+
 
 body{
- margin:0;
- background:var(--bg);
- color:var(--text);
- font-family:Arial,Helvetica,sans-serif;
- transition:.2s;
+
+    min-height:100vh;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:#f4f7f5;
+
+    color:#17221a;
+
+    padding-bottom:78px;
+
 }
+
 
 button{
- font-family:inherit;
- cursor:pointer;
+    font-family:inherit;
 }
 
-a{text-decoration:none;color:inherit}
 
-/* ================= HEADER ================= */
+button,
+a{
+    -webkit-tap-highlight-color:transparent;
+}
+
+
+/* =====================================================
+   APP HEADER
+===================================================== */
 
 .header{
- height:70px;
- position:sticky;
- top:0;
- z-index:80;
- background:var(--card);
- border-bottom:1px solid var(--border);
- display:grid;
- grid-template-columns:60px 1fr 60px;
- align-items:center;
- padding:0 15px;
+
+    position:sticky;
+
+    top:0;
+
+    z-index:100;
+
+    height:68px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:0 16px;
+
+    background:#ffffff;
+
+    border-bottom:1px solid #e2e8e3;
+
+    box-shadow:
+        0 4px 15px rgba(0,0,0,.05);
+
 }
 
-.menu-btn,
+
+.header-left{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+
+.menu-btn{
+
+    width:42px;
+
+    height:42px;
+
+    border:0;
+
+    border-radius:12px;
+
+    background:#eef6f0;
+
+    color:#0d6035;
+
+    font-size:23px;
+
+    cursor:pointer;
+
+}
+
+
 .notification-btn{
- width:43px;
- height:43px;
- border:1px solid var(--border);
- background:var(--card);
- color:var(--text);
- border-radius:13px;
- font-size:21px;
- position:relative;
+
+    position:relative;
+
+    width:42px;
+
+    height:42px;
+
+    border:0;
+
+    border-radius:12px;
+
+    background:#eef6f0;
+
+    color:#0d6035;
+
+    font-size:21px;
+
+    cursor:pointer;
+
 }
 
-.menu-btn:hover,
-.notification-btn:hover{
- background:var(--green3);
+
+.notification-badge{
+
+    position:absolute;
+
+    right:4px;
+
+    top:3px;
+
+    min-width:17px;
+
+    height:17px;
+
+    padding:0 4px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:20px;
+
+    background:#e53935;
+
+    color:white;
+
+    font-size:9px;
+
+    font-weight:900;
+
 }
 
-.student-heading{
- text-align:center;
- overflow:hidden;
+
+.header-brand{
+
+    font-size:17px;
+
+    font-weight:900;
+
+    color:#0d6035;
+
 }
 
-.student-heading .hello{
- font-size:10px;
- color:var(--muted);
- margin-bottom:2px;
-}
 
-.student-heading .name{
- font-size:16px;
- font-weight:900;
- white-space:nowrap;
- overflow:hidden;
- text-overflow:ellipsis;
-}
-
-.notification-dot{
- position:absolute;
- right:7px;
- top:6px;
- width:8px;
- height:8px;
- background:#ef3030;
- border-radius:50%;
- border:2px solid var(--card);
-}
-
-/* ================= SIDEBAR ================= */
+/* =====================================================
+   SIDEBAR
+===================================================== */
 
 .overlay{
- display:none;
- position:fixed;
- inset:0;
- background:rgba(0,0,0,.48);
- z-index:90;
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:200;
+
+    background:rgba(0,0,0,.42);
+
+    display:none;
+
 }
 
-.overlay.show{display:block}
+
+.overlay.active{
+    display:block;
+}
+
 
 .sidebar{
- position:fixed;
- top:0;
- left:0;
- bottom:0;
- width:300px;
- max-width:88%;
- background:var(--card);
- z-index:100;
- transform:translateX(-105%);
- transition:.28s ease;
- box-shadow:12px 0 35px rgba(0,0,0,.15);
- overflow-y:auto;
+
+    position:fixed;
+
+    left:-310px;
+
+    top:0;
+
+    bottom:0;
+
+    z-index:300;
+
+    width:290px;
+
+    max-width:85vw;
+
+    background:#ffffff;
+
+    overflow-y:auto;
+
+    box-shadow:
+        8px 0 30px rgba(0,0,0,.15);
+
+    transition:left .25s ease;
+
 }
 
-.sidebar.open{
- transform:translateX(0);
+
+.sidebar.active{
+    left:0;
 }
 
-.side-top{
- padding:24px 18px 18px;
- background:linear-gradient(135deg,#0b4b2c,#198754);
- color:#fff;
+
+.sidebar-top{
+
+    padding:22px 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0b572f,
+            #198754
+        );
+
+    color:white;
+
 }
 
-.side-profile{
- display:flex;
- align-items:center;
- gap:12px;
+
+.sidebar-profile{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
 }
 
-.side-avatar{
- width:55px;
- height:55px;
- border-radius:50%;
- background:rgba(255,255,255,.18);
- display:flex;
- align-items:center;
- justify-content:center;
- font-size:22px;
- font-weight:900;
- border:2px solid rgba(255,255,255,.5);
+
+.profile-avatar{
+
+    width:50px;
+
+    height:50px;
+
+    flex-shrink:0;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.20);
+
+    border:2px solid rgba(255,255,255,.45);
+
+    font-size:21px;
+
+    font-weight:900;
+
 }
 
-.side-name{
- font-weight:900;
- font-size:16px;
+
+.sidebar-name{
+
+    font-size:16px;
+
+    font-weight:900;
+
 }
 
-.side-email{
- font-size:10px;
- opacity:.78;
- margin-top:4px;
- overflow:hidden;
- text-overflow:ellipsis;
+
+.sidebar-email{
+
+    margin-top:4px;
+
+    font-size:10px;
+
+    opacity:.85;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+    white-space:nowrap;
+
 }
 
-.close-side{
- margin-left:auto;
- border:0;
- background:rgba(255,255,255,.12);
- color:#fff;
- width:36px;
- height:36px;
- border-radius:10px;
- font-size:20px;
+
+.sidebar-close{
+
+    position:absolute;
+
+    right:13px;
+
+    top:13px;
+
+    width:34px;
+
+    height:34px;
+
+    border:0;
+
+    border-radius:10px;
+
+    background:rgba(255,255,255,.14);
+
+    color:white;
+
+    font-size:20px;
+
+    cursor:pointer;
+
 }
 
-.side-section{
- padding:13px 12px 5px;
- color:var(--muted);
- font-size:10px;
- font-weight:900;
- text-transform:uppercase;
- letter-spacing:.8px;
+
+.sidebar-section{
+
+    padding:14px 12px 5px;
+
+    color:#89938d;
+
+    font-size:10px;
+
+    font-weight:900;
+
+    text-transform:uppercase;
+
 }
+
 
 .side-item{
- width:calc(100% - 20px);
- margin:3px 10px;
- padding:12px;
- border:0;
- background:transparent;
- color:var(--text);
- border-radius:11px;
- display:flex;
- align-items:center;
- gap:12px;
- text-align:left;
- font-size:13px;
- font-weight:700;
+
+    width:100%;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:13px 15px;
+
+    border:0;
+
+    border-radius:12px;
+
+    background:transparent;
+
+    color:#26342c;
+
+    text-align:left;
+
+    font-size:13px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
 }
+
 
 .side-item:hover{
- background:var(--green3);
- color:var(--green);
+
+    background:#eef6f0;
+
+    color:#0d6035;
+
 }
+
 
 .side-icon{
- width:25px;
- text-align:center;
- font-size:18px;
+
+    width:24px;
+
+    text-align:center;
+
+    font-size:18px;
+
 }
 
-.theme-box{
- margin:9px 10px;
- padding:12px;
- border:1px solid var(--border);
- border-radius:12px;
- background:var(--bg);
+
+.logout-item{
+
+    color:#c62828;
+
 }
 
-.theme-title{
- font-size:11px;
- font-weight:900;
- margin-bottom:9px;
+
+.logout-item:hover{
+
+    background:#ffebee;
+
+    color:#c62828;
+
 }
 
-.theme-buttons{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:7px;
-}
 
-.theme-buttons button{
- border:1px solid var(--border);
- background:var(--card);
- color:var(--text);
- border-radius:9px;
- padding:9px 5px;
- font-size:11px;
- font-weight:800;
-}
-
-.social-grid{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:7px;
- margin:5px 10px;
-}
-
-.social{
- padding:10px 5px;
- border:1px solid var(--border);
- border-radius:10px;
- text-align:center;
- font-size:10px;
- font-weight:800;
- background:var(--card);
-}
-
-.logout{
- color:#d32f2f;
-}
-
-/* ================= PAGE ================= */
+/* =====================================================
+   MAIN
+===================================================== */
 
 .main{
- max-width:1200px;
- margin:auto;
- padding:18px;
+
+    width:100%;
+
+    max-width:1100px;
+
+    margin:0 auto;
+
+    padding:18px 16px 30px;
+
 }
 
-/* ================= COURSE SELECT ================= */
 
-.course-section{
- margin-bottom:17px;
+/* =====================================================
+   WELCOME
+===================================================== */
+
+.welcome{
+
+    margin-bottom:16px;
+
 }
+
+
+.welcome-small{
+
+    font-size:11px;
+
+    color:#77827b;
+
+}
+
+
+.welcome-name{
+
+    margin-top:3px;
+
+    font-size:23px;
+
+    font-weight:900;
+
+    color:#173021;
+
+}
+
+
+/* =====================================================
+   COURSE SELECTOR
+===================================================== */
 
 .section-title{
- display:flex;
- align-items:center;
- justify-content:space-between;
- margin-bottom:10px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    margin-bottom:10px;
+
 }
+
 
 .section-title h2{
- margin:0;
- font-size:17px;
+
+    font-size:16px;
+
+    font-weight:900;
+
 }
+
 
 .section-title span{
- color:var(--muted);
- font-size:10px;
+
+    font-size:10px;
+
+    color:#7b857f;
+
 }
 
-.course-scroll{
- display:flex;
- gap:10px;
- overflow-x:auto;
- padding-bottom:5px;
+
+.course-box{
+
+    position:relative;
+
 }
 
-.course-scroll::-webkit-scrollbar{
- height:3px;
+
+.course-select{
+
+    width:100%;
+
+    height:52px;
+
+    padding:0 45px 0 14px;
+
+    border:1px solid #d7e1da;
+
+    border-radius:14px;
+
+    outline:none;
+
+    background:white;
+
+    color:#17221a;
+
+    font-size:13px;
+
+    font-weight:800;
+
+    appearance:none;
+
 }
 
-.course-card{
- min-width:245px;
- background:var(--card);
- border:1px solid var(--border);
- border-radius:16px;
- padding:15px;
- box-shadow:var(--shadow);
- position:relative;
+
+.course-select:focus{
+
+    border-color:#198754;
+
+    box-shadow:
+        0 0 0 3px rgba(25,135,84,.10);
+
 }
 
-.course-card.selected{
- border:2px solid var(--green2);
+
+.course-arrow{
+
+    position:absolute;
+
+    right:15px;
+
+    top:15px;
+
+    pointer-events:none;
+
+    color:#198754;
+
+    font-size:20px;
+
 }
 
-.course-check{
- position:absolute;
- top:11px;
- right:11px;
- width:22px;
- height:22px;
- border-radius:50%;
- background:var(--green2);
- color:white;
- display:none;
- align-items:center;
- justify-content:center;
- font-size:12px;
-}
 
-.course-card.selected .course-check{
- display:flex;
-}
-
-.course-title{
- font-size:14px;
- font-weight:900;
- padding-right:28px;
-}
-
-.course-desc{
- color:var(--muted);
- font-size:10px;
- margin-top:5px;
- line-height:1.4;
-}
-
-.course-progress{
- height:6px;
- background:var(--bg);
- border-radius:10px;
- overflow:hidden;
- margin-top:12px;
-}
-
-.course-progress-fill{
- height:100%;
- background:linear-gradient(90deg,#0d5c36,#35a866);
- width:0%;
-}
-
-.course-footer{
- display:flex;
- justify-content:space-between;
- align-items:center;
- margin-top:7px;
-}
-
-.course-percent{
- color:var(--green2);
- font-size:11px;
- font-weight:900;
-}
-
-.select-course{
- border:0;
- background:var(--green);
- color:white;
- border-radius:8px;
- padding:7px 10px;
- font-size:10px;
- font-weight:900;
-}
-
-/* ================= TARGET ================= */
+/* =====================================================
+   TARGET TIMER
+===================================================== */
 
 .target-card{
- background:linear-gradient(135deg,#0d5c36,#198754);
- color:#fff;
- border-radius:20px;
- padding:21px;
- margin-bottom:17px;
- box-shadow:0 10px 28px rgba(13,92,54,.20);
+
+    margin-top:17px;
+
+    padding:18px;
+
+    border-radius:18px;
+
+    color:white;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0b572f,
+            #198754
+        );
+
+    box-shadow:
+        0 10px 25px
+        rgba(13,96,53,.18);
+
 }
+
 
 .target-top{
- display:flex;
- justify-content:space-between;
- align-items:center;
+
+    display:flex;
+
+    align-items:flex-start;
+
+    justify-content:space-between;
+
 }
+
 
 .target-label{
- font-size:10px;
- opacity:.75;
- text-transform:uppercase;
- letter-spacing:1px;
- font-weight:900;
+
+    font-size:11px;
+
+    opacity:.85;
+
 }
+
 
 .target-dream{
- font-size:19px;
- font-weight:900;
- margin-top:5px;
+
+    margin-top:5px;
+
+    font-size:17px;
+
+    font-weight:900;
+
 }
 
-.target-date{
- font-size:10px;
- opacity:.7;
- margin-top:4px;
+
+.target-edit{
+
+    border:1px solid rgba(255,255,255,.30);
+
+    border-radius:9px;
+
+    padding:7px 10px;
+
+    background:rgba(255,255,255,.10);
+
+    color:white;
+
+    font-size:10px;
+
+    font-weight:800;
+
+    cursor:pointer;
+
 }
 
-.countdown{
- display:grid;
- grid-template-columns:repeat(4,1fr);
- gap:7px;
- margin-top:17px;
+
+.timer{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(4,1fr);
+
+    gap:8px;
+
+    margin-top:17px;
+
 }
 
-.time-box{
- background:rgba(255,255,255,.13);
- border:1px solid rgba(255,255,255,.1);
- border-radius:11px;
- padding:10px 5px;
- text-align:center;
+
+.timer-box{
+
+    padding:10px 5px;
+
+    text-align:center;
+
+    border-radius:11px;
+
+    background:rgba(255,255,255,.12);
+
 }
 
-.time-number{
- font-size:22px;
- font-weight:900;
+
+.timer-number{
+
+    font-size:21px;
+
+    font-weight:900;
+
 }
 
-.time-label{
- font-size:8px;
- opacity:.72;
- margin-top:2px;
+
+.timer-text{
+
+    margin-top:2px;
+
+    font-size:8px;
+
+    opacity:.80;
+
+    text-transform:uppercase;
+
 }
 
-/* ================= TODAY TASK ================= */
 
-.task-card{
- background:var(--card);
- border:1px solid var(--border);
- border-radius:17px;
- padding:16px;
- box-shadow:var(--shadow);
- margin-bottom:17px;
+/* =====================================================
+   TODAY TASK
+===================================================== */
+
+.tasks-card{
+
+    margin-top:17px;
+
+    padding:16px;
+
+    border:1px solid #e0e7e2;
+
+    border-radius:17px;
+
+    background:white;
+
 }
+
+
+.task-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:9px;
+
+}
+
 
 .task{
- display:flex;
- align-items:center;
- gap:11px;
- padding:11px 0;
- border-bottom:1px solid var(--border);
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    padding:11px;
+
+    border-radius:11px;
+
+    background:#f7faf8;
+
 }
 
-.task:last-child{
- border-bottom:0;
+
+.task-icon{
+
+    width:34px;
+
+    height:34px;
+
+    flex-shrink:0;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:10px;
+
+    background:#e8f5e9;
+
+    font-size:16px;
+
 }
 
-.task-check{
- width:20px;
- height:20px;
- border:2px solid #b8c5bd;
- border-radius:6px;
- flex-shrink:0;
- cursor:pointer;
- display:flex;
- align-items:center;
- justify-content:center;
+
+.task-content{
+
+    flex:1;
+
 }
 
-.task.done .task-check{
- background:var(--green2);
- border-color:var(--green2);
- color:white;
+
+.task-title{
+
+    font-size:12px;
+
+    font-weight:800;
+
 }
 
-.task.done .task-name{
- text-decoration:line-through;
- color:var(--muted);
+
+.task-sub{
+
+    margin-top:3px;
+
+    font-size:9px;
+
+    color:#7c8780;
+
 }
 
-.task-name{
- flex:1;
- font-size:12px;
- font-weight:700;
+
+.task-status{
+
+    font-size:9px;
+
+    font-weight:900;
+
+    color:#198754;
+
 }
 
-.task-time{
- color:var(--muted);
- font-size:9px;
-}
 
-/* ================= STATS ================= */
+/* =====================================================
+   STATS
+===================================================== */
 
 .stats{
- display:grid;
- grid-template-columns:repeat(4,1fr);
- gap:11px;
- margin-bottom:18px;
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(2,1fr);
+
+    gap:11px;
+
+    margin-top:17px;
+
 }
+
 
 .stat{
- background:var(--card);
- border:1px solid var(--border);
- border-radius:15px;
- padding:15px;
- box-shadow:var(--shadow);
+
+    padding:15px;
+
+    border:1px solid #e0e7e2;
+
+    border-radius:16px;
+
+    background:white;
+
 }
+
 
 .stat-icon{
- font-size:20px;
+
+    font-size:20px;
+
 }
 
-.stat-label{
- color:var(--muted);
- font-size:9px;
- margin-top:7px;
- font-weight:700;
-}
 
 .stat-value{
- font-size:19px;
- font-weight:900;
- margin-top:4px;
+
+    margin-top:8px;
+
+    font-size:22px;
+
+    font-weight:900;
+
+    color:#0d6035;
+
 }
 
-/* ================= PROGRESS ================= */
+
+.stat-label{
+
+    margin-top:3px;
+
+    font-size:10px;
+
+    color:#7b857f;
+
+}
+
+
+/* =====================================================
+   PROGRESS
+===================================================== */
 
 .progress-card{
- background:var(--card);
- border:1px solid var(--border);
- border-radius:17px;
- padding:17px;
- box-shadow:var(--shadow);
- margin-bottom:17px;
+
+    margin-top:17px;
+
+    padding:17px;
+
+    border:1px solid #e0e7e2;
+
+    border-radius:17px;
+
+    background:white;
+
 }
 
-.progress-header{
- display:flex;
- justify-content:space-between;
- align-items:center;
+
+.progress-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:10px;
+
 }
 
-.progress-header h3{
- margin:0;
- font-size:14px;
+
+.progress-name{
+
+    font-size:13px;
+
+    font-weight:900;
+
 }
 
-.progress-big{
- font-size:18px;
- font-weight:900;
- color:var(--green2);
+
+.progress-percent{
+
+    font-size:14px;
+
+    font-weight:900;
+
+    color:#198754;
+
 }
 
-.big-progress{
- height:9px;
- background:var(--bg);
- border-radius:20px;
- overflow:hidden;
- margin-top:13px;
+
+.progress-track{
+
+    width:100%;
+
+    height:9px;
+
+    overflow:hidden;
+
+    border-radius:20px;
+
+    background:#e7ece8;
+
 }
 
-.big-progress div{
- height:100%;
- width:0%;
- background:linear-gradient(90deg,#0d5c36,#36ad69);
+
+.progress-fill{
+
+    width:0%;
+
+    height:100%;
+
+    border-radius:20px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #0d6035,
+            #2e9b62
+        );
+
+    transition:width .5s ease;
+
 }
 
-.progress-note{
- margin-top:7px;
- color:var(--muted);
- font-size:9px;
+
+.progress-sub{
+
+    margin-top:8px;
+
+    font-size:9px;
+
+    color:#7c8780;
+
 }
 
-/* ================= CONTINUE ================= */
+
+/* =====================================================
+   CONTINUE
+===================================================== */
 
 .continue-card{
- background:var(--card);
- border:1px solid var(--border);
- border-radius:17px;
- padding:17px;
- display:flex;
- align-items:center;
- gap:14px;
- box-shadow:var(--shadow);
- margin-bottom:17px;
+
+    margin-top:17px;
+
+    padding:17px;
+
+    border-radius:17px;
+
+    background:white;
+
+    border:1px solid #e0e7e2;
+
 }
+
+
+.continue-content{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
 
 .continue-icon{
- width:50px;
- height:50px;
- border-radius:13px;
- background:var(--green3);
- display:flex;
- align-items:center;
- justify-content:center;
- font-size:23px;
+
+    width:48px;
+
+    height:48px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:13px;
+
+    background:#e8f5e9;
+
+    font-size:22px;
+
 }
+
 
 .continue-info{
- flex:1;
+
+    flex:1;
+
 }
 
-.continue-info h3{
- margin:0;
- font-size:14px;
+
+.continue-title{
+
+    font-size:13px;
+
+    font-weight:900;
+
 }
 
-.continue-info p{
- margin:5px 0 0;
- color:var(--muted);
- font-size:10px;
+
+.continue-sub{
+
+    margin-top:4px;
+
+    font-size:10px;
+
+    color:#7b857f;
+
 }
+
 
 .continue-btn{
- border:0;
- background:var(--green);
- color:#fff;
- border-radius:10px;
- padding:10px 13px;
- font-size:10px;
- font-weight:900;
+
+    margin-top:14px;
+
+    width:100%;
+
+    height:43px;
+
+    border:0;
+
+    border-radius:11px;
+
+    background:#0d6035;
+
+    color:white;
+
+    font-size:12px;
+
+    font-weight:900;
+
+    cursor:pointer;
+
 }
 
-/* ================= LEARNING ================= */
 
-.learning-grid{
- display:grid;
- grid-template-columns:repeat(3,1fr);
- gap:11px;
- margin-bottom:18px;
-}
-
-.learning-card{
- background:var(--card);
- border:1px solid var(--border);
- border-radius:16px;
- padding:17px;
- box-shadow:var(--shadow);
- cursor:pointer;
- transition:.2s;
-}
-
-.learning-card:hover{
- transform:translateY(-2px);
-}
-
-.learning-icon{
- font-size:25px;
- margin-bottom:10px;
-}
-
-.learning-card h3{
- margin:0;
- font-size:13px;
-}
-
-.learning-card p{
- color:var(--muted);
- font-size:10px;
- line-height:1.45;
- margin:6px 0 0;
-}
-
-/* ================= PERFORMANCE ================= */
-
-.performance{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:11px;
- margin-bottom:18px;
-}
-
-.performance-card{
- background:var(--card);
- border:1px solid var(--border);
- border-radius:16px;
- padding:16px;
- box-shadow:var(--shadow);
-}
-
-.performance-card h3{
- margin:0;
- font-size:13px;
-}
-
-.performance-row{
- display:flex;
- justify-content:space-between;
- padding:9px 0;
- border-bottom:1px solid var(--border);
- font-size:10px;
-}
-
-.performance-row:last-child{
- border-bottom:0;
-}
-
-.score{
- font-weight:900;
- color:var(--green2);
-}
-
-/* ================= NOTIFICATION ================= */
+/* =====================================================
+   NOTIFICATION PANEL
+===================================================== */
 
 .notification-panel{
- position:fixed;
- top:76px;
- right:15px;
- width:330px;
- max-width:calc(100% - 30px);
- max-height:70vh;
- overflow:auto;
- background:var(--card);
- border:1px solid var(--border);
- border-radius:16px;
- box-shadow:0 15px 40px rgba(0,0,0,.18);
- z-index:70;
- display:none;
+
+    position:fixed;
+
+    top:72px;
+
+    right:14px;
+
+    z-index:150;
+
+    width:330px;
+
+    max-width:calc(100vw - 28px);
+
+    max-height:70vh;
+
+    overflow:auto;
+
+    display:none;
+
+    background:white;
+
+    border:1px solid #dfe7e1;
+
+    border-radius:17px;
+
+    box-shadow:
+        0 15px 40px rgba(0,0,0,.16);
+
 }
 
-.notification-panel.show{
- display:block;
+
+.notification-panel.active{
+    display:block;
 }
+
 
 .notification-head{
- padding:15px;
- border-bottom:1px solid var(--border);
- display:flex;
- justify-content:space-between;
+
+    position:sticky;
+
+    top:0;
+
+    z-index:2;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:15px;
+
+    background:white;
+
+    border-bottom:1px solid #edf1ee;
+
 }
+
 
 .notification-head strong{
- font-size:14px;
+
+    font-size:14px;
+
 }
 
-.notification-head button{
- border:0;
- background:transparent;
- color:var(--green2);
- font-size:10px;
- font-weight:900;
+
+.notification-close{
+
+    border:0;
+
+    background:none;
+
+    font-size:18px;
+
+    cursor:pointer;
+
 }
 
-.notification{
- padding:13px 15px;
- border-bottom:1px solid var(--border);
+
+.notification-item{
+
+    padding:13px 15px;
+
+    border-bottom:1px solid #edf1ee;
+
 }
 
-.notification:last-child{
- border-bottom:0;
-}
 
 .notification-title{
- font-size:11px;
- font-weight:900;
+
+    font-size:12px;
+
+    font-weight:900;
+
 }
+
 
 .notification-text{
- color:var(--muted);
- font-size:10px;
- margin-top:4px;
- line-height:1.4;
+
+    margin-top:4px;
+
+    font-size:10px;
+
+    line-height:1.5;
+
+    color:#727d76;
+
 }
 
-.notification-time{
- color:var(--muted);
- font-size:8px;
- margin-top:5px;
+
+.notification-empty{
+
+    padding:30px 15px;
+
+    text-align:center;
+
+    color:#7b857f;
+
+    font-size:11px;
+
 }
 
-/* ================= MOBILE ================= */
+
+/* =====================================================
+   BOTTOM NAVIGATION
+===================================================== */
 
 .bottom-nav{
- display:none;
-}
 
-@media(max-width:850px){
+    position:fixed;
 
- .main{
-  padding:14px;
-  padding-bottom:80px;
- }
+    left:0;
 
- .stats{
-  grid-template-columns:repeat(2,1fr);
- }
+    right:0;
 
- .learning-grid{
-  grid-template-columns:1fr;
- }
+    bottom:0;
 
- .performance{
-  grid-template-columns:1fr;
- }
+    z-index:120;
 
- .bottom-nav{
-  position:fixed;
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  left:0;
-  right:0;
-  bottom:0;
-  height:65px;
-  background:var(--card);
-  border-top:1px solid var(--border);
-  z-index:85;
-  box-shadow:0 -6px 20px rgba(0,0,0,.08);
- }
+    height:70px;
 
- .bottom-item{
-  border:0;
-  background:transparent;
-  color:var(--muted);
-  font-size:9px;
-  font-weight:800;
- }
+    display:grid;
 
- .bottom-item span{
-  display:block;
-  font-size:19px;
-  margin-bottom:3px;
- }
+    grid-template-columns:
+        repeat(4,1fr);
 
- .bottom-item.active{
-  color:var(--green2);
- }
+    background:white;
+
+    border-top:1px solid #dfe7e1;
+
+    box-shadow:
+        0 -5px 20px rgba(0,0,0,.06);
 
 }
 
-@media(max-width:500px){
 
- .header{
-  grid-template-columns:52px 1fr 52px;
-  padding:0 8px;
- }
+.nav-item{
 
- .main{
-  padding:12px;
- }
+    border:0;
 
- .course-card{
-  min-width:225px;
- }
+    background:white;
 
- .target-card{
-  padding:17px;
- }
+    color:#7b857f;
 
- .target-dream{
-  font-size:17px;
- }
+    display:flex;
 
- .time-number{
-  font-size:18px;
- }
+    flex-direction:column;
 
- .stat{
-  padding:13px;
- }
+    align-items:center;
 
- .stat-value{
-  font-size:17px;
- }
+    justify-content:center;
 
- .continue-card{
-  align-items:flex-start;
- }
+    gap:4px;
 
- .continue-btn{
-  align-self:center;
- }
+    cursor:pointer;
+
+    font-size:9px;
+
+    font-weight:800;
 
 }
 
-/* ================= LOADING ================= */
 
-.loading{
- padding:25px;
- text-align:center;
- color:var(--muted);
- font-size:12px;
+.nav-icon{
+
+    font-size:20px;
+
 }
 
-.empty{
- padding:25px;
- text-align:center;
- color:var(--muted);
- font-size:11px;
+
+.nav-item.active{
+
+    color:#0d6035;
+
 }
+
+
+.nav-item.active .nav-icon{
+
+    transform:translateY(-1px);
+
+}
+
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+.modal-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:500;
+
+    display:none;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:18px;
+
+    background:rgba(0,0,0,.45);
+
+}
+
+
+.modal-overlay.active{
+
+    display:flex;
+
+}
+
+
+.modal{
+
+    width:100%;
+
+    max-width:420px;
+
+    max-height:90vh;
+
+    overflow:auto;
+
+    padding:21px;
+
+    border-radius:19px;
+
+    background:white;
+
+    box-shadow:
+        0 20px 50px rgba(0,0,0,.20);
+
+}
+
+
+.modal h3{
+
+    font-size:18px;
+
+}
+
+
+.modal p{
+
+    margin-top:5px;
+
+    margin-bottom:17px;
+
+    font-size:10px;
+
+    color:#7b857f;
+
+}
+
+
+.modal-label{
+
+    display:block;
+
+    margin-bottom:6px;
+
+    font-size:11px;
+
+    font-weight:800;
+
+}
+
+
+.modal-input{
+
+    width:100%;
+
+    height:44px;
+
+    margin-bottom:14px;
+
+    padding:0 12px;
+
+    border:1px solid #d6dfd8;
+
+    border-radius:11px;
+
+    outline:none;
+
+    font-size:13px;
+
+}
+
+
+.modal-buttons{
+
+    display:flex;
+
+    gap:9px;
+
+}
+
+
+.modal-cancel,
+.modal-save{
+
+    flex:1;
+
+    height:43px;
+
+    border-radius:11px;
+
+    font-size:12px;
+
+    font-weight:900;
+
+    cursor:pointer;
+
+}
+
+
+.modal-cancel{
+
+    border:1px solid #d7dfd9;
+
+    background:white;
+
+    color:#59655d;
+
+}
+
+
+.modal-save{
+
+    border:0;
+
+    background:#0d6035;
+
+    color:white;
+
+}
+
+
+/* =====================================================
+   DESKTOP
+===================================================== */
+
+@media(min-width:800px){
+
+    .main{
+
+        padding-left:24px;
+
+        padding-right:24px;
+
+    }
+
+
+    .stats{
+
+        grid-template-columns:
+            repeat(4,1fr);
+
+    }
+
+
+    .tasks-card{
+
+        margin-top:20px;
+
+    }
+
+}
+
 </style>
+
 </head>
+
 
 <body>
 
-<!-- ================= SIDEBAR OVERLAY ================= -->
 
-<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<!-- =====================================================
+     OVERLAY
+===================================================== -->
 
-<!-- ================= SIDEBAR ================= -->
+<div
+    id="overlay"
+    class="overlay"
+></div>
 
-<aside class="sidebar" id="sidebar">
 
- <div class="side-top">
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
 
-  <div class="side-profile">
+<aside
+    id="sidebar"
+    class="sidebar"
+>
 
-   <div class="side-avatar" id="sideAvatar">M</div>
+    <button
+        id="sidebarClose"
+        class="sidebar-close"
+    >
+        ×
+    </button>
 
-   <div style="flex:1;min-width:0">
-    <div class="side-name" id="sideName">Student</div>
-    <div class="side-email" id="sideEmail">Loading...</div>
-   </div>
 
-   <button class="close-side" onclick="closeSidebar()">×</button>
+    <div class="sidebar-top">
 
-  </div>
+        <div class="sidebar-profile">
 
- </div>
+            <div
+                id="avatar"
+                class="profile-avatar"
+            >
+                M
+            </div>
 
- <div class="side-section">Profile</div>
+            <div>
 
- <button class="side-item" onclick="openProfile()">
-  <span class="side-icon">👤</span>
-  Profile Details
- </button>
+                <div
+                    id="sideName"
+                    class="sidebar-name"
+                >
+                    Student
+                </div>
 
- <button class="side-item" onclick="setTarget()">
-  <span class="side-icon">🎯</span>
-  Target Date & Dream
- </button>
+                <div
+                    id="sideEmail"
+                    class="sidebar-email"
+                >
+                    Loading...
+                </div>
 
- <div class="side-section">Appearance</div>
+            </div>
 
- <div class="theme-box">
+        </div>
 
-  <div class="theme-title">App Theme</div>
+    </div>
 
-  <div class="theme-buttons">
 
-   <button onclick="setTheme('light')">
-    ☀️ White
-   </button>
+    <div class="sidebar-section">
+        Account
+    </div>
 
-   <button onclick="setTheme('dark')">
-    🌙 Dark
-   </button>
 
-  </div>
+    <button
+        class="side-item"
+        onclick="openProfile()"
+    >
 
- </div>
+        <span class="side-icon">
+            👤
+        </span>
 
- <div class="side-section">Connect With Us</div>
+        Profile Details
 
- <div class="social-grid">
+    </button>
 
-  <!-- Replace these URLs later with your real links -->
 
-  <a class="social" href="https://youtube.com/" target="_blank">
-   ▶️ YouTube
-  </a>
+    <button
+        class="side-item"
+        onclick="openTargetModal()"
+    >
 
-  <a class="social" href="https://facebook.com/" target="_blank">
-   📘 Facebook
-  </a>
+        <span class="side-icon">
+            🎯
+        </span>
 
-  <a class="social" href="https://instagram.com/" target="_blank">
-   📸 Instagram
-  </a>
+        Target Date & Dream
 
-  <a class="social" href="https://chat.whatsapp.com/" target="_blank">
-   💬 WhatsApp
-  </a>
+    </button>
 
- </div>
 
- <div class="side-section">Account</div>
+    <div class="sidebar-section">
+        Settings
+    </div>
 
- <button class="side-item logout" onclick="logoutUser()">
-  <span class="side-icon">↪</span>
-  Logout
- </button>
 
- <div style="height:25px"></div>
+    <button
+        id="themeButton"
+        class="side-item"
+        onclick="toggleTheme()"
+    >
+
+        <span
+            id="themeIcon"
+            class="side-icon"
+        >
+            🌙
+        </span>
+
+        <span id="themeText">
+            Dark Mode
+        </span>
+
+    </button>
+
+
+    <div class="sidebar-section">
+        Connect With Us
+    </div>
+
+
+    <button
+        class="side-item"
+        onclick="openExternal('https://www.youtube.com/')"
+    >
+
+        <span class="side-icon">
+            ▶️
+        </span>
+
+        YouTube Channel
+
+    </button>
+
+
+    <button
+        class="side-item"
+        onclick="openExternal('https://www.facebook.com/')"
+    >
+
+        <span class="side-icon">
+            📘
+        </span>
+
+        Facebook Page
+
+    </button>
+
+
+    <button
+        class="side-item"
+        onclick="openExternal('https://www.instagram.com/')"
+    >
+
+        <span class="side-icon">
+            📸
+        </span>
+
+        Instagram
+
+    </button>
+
+
+    <button
+        class="side-item"
+        onclick="openExternal('https://chat.whatsapp.com/')"
+    >
+
+        <span class="side-icon">
+            💬
+        </span>
+
+        WhatsApp Community
+
+    </button>
+
+
+    <div class="sidebar-section">
+        Account
+    </div>
+
+
+    <button
+        class="side-item logout-item"
+        onclick="logoutStudent()"
+    >
+
+        <span class="side-icon">
+            🚪
+        </span>
+
+        Logout
+
+    </button>
 
 </aside>
 
-<!-- ================= HEADER ================= -->
 
-<header class="header">
+<!-- =====================================================
+     NOTIFICATION PANEL
+===================================================== -->
 
- <button class="menu-btn" onclick="openSidebar()">
-  ☰
- </button>
+<div
+    id="notificationPanel"
+    class="notification-panel"
+>
 
- <div class="student-heading">
-  <div class="hello">Assalamu Alaikum</div>
-  <div class="name" id="headerName">Student</div>
- </div>
+    <div class="notification-head">
 
- <button class="notification-btn" onclick="toggleNotifications()">
-  🔔
-  <span class="notification-dot" id="notificationDot"></span>
- </button>
+        <strong>
+            Notifications
+        </strong>
 
-</header>
+        <button
+            id="notificationClose"
+            class="notification-close"
+        >
+            ×
+        </button>
 
-<!-- ================= NOTIFICATION PANEL ================= -->
+    </div>
 
-<div class="notification-panel" id="notificationPanel">
 
- <div class="notification-head">
-  <strong>Notifications</strong>
-  <button onclick="markNotificationsRead()">Mark read</button>
- </div>
+    <div id="notificationList">
 
- <div id="notificationList">
-  <div class="loading">Loading...</div>
- </div>
+        <div class="notification-empty">
+            Loading notifications...
+        </div>
+
+    </div>
 
 </div>
 
-<!-- ================= MAIN ================= -->
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header class="header">
+
+
+    <div class="header-left">
+
+        <button
+            id="menuButton"
+            class="menu-btn"
+        >
+            ☰
+        </button>
+
+
+        <div class="header-brand">
+            mNEET-Pro
+        </div>
+
+    </div>
+
+
+    <button
+        id="notificationButton"
+        class="notification-btn"
+    >
+
+        🔔
+
+        <span
+            id="notificationBadge"
+            class="notification-badge"
+            style="display:none;"
+        >
+            0
+        </span>
+
+    </button>
+
+</header>
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
 
 <main class="main">
 
- <!-- COURSE SELECTION -->
-
- <section class="course-section">
 
-  <div class="section-title">
-   <h2>📚 Select Course</h2>
-   <span id="courseHint">Your purchased courses</span>
-  </div>
-
-  <div class="course-scroll" id="courseList">
-   <div class="loading">Loading courses...</div>
-  </div>
+    <!-- WELCOME -->
 
- </section>
+    <section class="welcome">
 
- <!-- TARGET -->
+        <div class="welcome-small">
+            Welcome back,
+        </div>
 
- <section class="target-card">
+        <div
+            id="studentName"
+            class="welcome-name"
+        >
+            Student
+        </div>
 
-  <div class="target-top">
+    </section>
 
-   <div>
-    <div class="target-label">My NEET Target</div>
 
-    <div class="target-dream" id="dreamText">
-     Set Your Dream 🎯
-    </div>
+    <!-- =================================================
+         COURSE SELECTION
+    ================================================== -->
 
-    <div class="target-date" id="targetDateText">
-     Target date not set
-    </div>
-   </div>
+    <section>
 
-   <button
-    onclick="setTarget()"
-    style="
-     border:1px solid rgba(255,255,255,.3);
-     background:rgba(255,255,255,.12);
-     color:#fff;
-     border-radius:9px;
-     padding:8px 10px;
-     font-size:10px;
-     font-weight:800;
-    "
-   >
-    Edit
-   </button>
+        <div class="section-title">
 
-  </div>
+            <h2>
+                Select Course
+            </h2>
 
-  <div class="countdown">
+            <span>
+                Your purchased courses
+            </span>
 
-   <div class="time-box">
-    <div class="time-number" id="days">0</div>
-    <div class="time-label">DAYS</div>
-   </div>
+        </div>
 
-   <div class="time-box">
-    <div class="time-number" id="hours">00</div>
-    <div class="time-label">HOURS</div>
-   </div>
-
-   <div class="time-box">
-    <div class="time-number" id="minutes">00</div>
-    <div class="time-label">MINUTES</div>
-   </div>
 
-   <div class="time-box">
-    <div class="time-number" id="seconds">00</div>
-    <div class="time-label">SECONDS</div>
-   </div>
+        <div class="course-box">
 
-  </div>
+            <select
+                id="courseSelect"
+                class="course-select"
+            >
 
- </section>
+                <option value="">
+                    Loading courses...
+                </option>
 
- <!-- TODAY TASK -->
+            </select>
 
- <div class="section-title">
-  <h2>📋 Today's Tasks</h2>
-  <span id="taskProgress">0% completed</span>
- </div>
+            <div class="course-arrow">
+               ⌄
+            </div>
 
- <section class="task-card" id="taskList">
+        </div>
 
-  <div class="task" data-task="1">
-   <div class="task-check" onclick="toggleTask(1)">✓</div>
-   <div class="task-name">Complete today's Biology practice</div>
-   <div class="task-time">Practice</div>
-  </div>
+    </section>
 
-  <div class="task" data-task="2">
-   <div class="task-check" onclick="toggleTask(2)">✓</div>
-   <div class="task-name">Read today's NCERT topic</div>
-   <div class="task-time">Reading</div>
-  </div>
 
-  <div class="task" data-task="3">
-   <div class="task-check" onclick="toggleTask(3)">✓</div>
-   <div class="task-name">Revise previous mistakes</div>
-   <div class="task-time">Revision</div>
-  </div>
+    <!-- =================================================
+         TARGET
+    ================================================== -->
 
-  <div class="task" data-task="4">
-   <div class="task-check" onclick="toggleTask(4)">✓</div>
-   <div class="task-name">Solve PYQ questions</div>
-   <div class="task-time">PYQ</div>
-  </div>
+    <section class="target-card">
 
- </section>
 
- <!-- STATS -->
+        <div class="target-top">
 
- <div class="section-title">
-  <h2>📊 Your Performance</h2>
- </div>
+            <div>
 
- <section class="stats">
+                <div class="target-label">
+                    My NEET Target
+                </div>
 
-  <div class="stat">
-   <div class="stat-icon">📝</div>
-   <div class="stat-label">Questions Attempted</div>
-   <div class="stat-value" id="questions">0</div>
-  </div>
+                <div
+                    id="targetDream"
+                    class="target-dream"
+                >
+                    Set your dream
+                </div>
 
-  <div class="stat">
-   <div class="stat-icon">🎯</div>
-   <div class="stat-label">Accuracy</div>
-   <div class="stat-value" id="accuracy">0%</div>
-  </div>
+            </div>
 
-  <div class="stat">
-   <div class="stat-icon">✅</div>
-   <div class="stat-label">Correct</div>
-   <div class="stat-value" id="correct">0</div>
-  </div>
 
-  <div class="stat">
-   <div class="stat-icon">🏆</div>
-   <div class="stat-label">Best Score</div>
-   <div class="stat-value" id="bestScore">—</div>
-  </div>
+            <button
+                class="target-edit"
+                onclick="openTargetModal()"
+            >
+                EDIT
+            </button>
 
- </section>
+        </div>
 
- <!-- PROGRESS -->
 
- <section class="progress-card">
+        <div class="timer">
 
-  <div class="progress-header">
-   <h3>📈 Overall Course Progress</h3>
-   <div class="progress-big" id="overallProgress">0%</div>
-  </div>
 
-  <div class="big-progress">
-   <div id="overallBar"></div>
-  </div>
+            <div class="timer-box">
 
-  <div class="progress-note" id="progressNote">
-   Select a course to start learning.
-  </div>
+                <div
+                    id="days"
+                    class="timer-number"
+                >
+                    0
+                </div>
 
- </section>
+                <div class="timer-text">
+                    Days
+                </div>
 
- <!-- CONTINUE -->
+            </div>
 
- <section class="continue-card">
 
-  <div class="continue-icon">▶️</div>
+            <div class="timer-box">
 
-  <div class="continue-info">
-   <h3 id="continueTitle">Continue Learning</h3>
-   <p id="continueText">
-    Select a course and start your preparation.
-   </p>
-  </div>
+                <div
+                    id="hours"
+                    class="timer-number"
+                >
+                    0
+                </div>
 
-  <button class="continue-btn" onclick="continueLearning()">
-   Continue →
-  </button>
+                <div class="timer-text">
+                    Hours
+                </div>
 
- </section>
+            </div>
 
- <!-- LEARNING -->
 
- <div class="section-title">
-  <h2>📚 Learning</h2>
- </div>
+            <div class="timer-box">
 
- <section class="learning-grid">
+                <div
+                    id="minutes"
+                    class="timer-number"
+                >
+                    0
+                </div>
 
-  <div class="learning-card" onclick="openCourse('topic')">
+                <div class="timer-text">
+                    Minutes
+                </div>
 
-   <div class="learning-icon">📖</div>
+            </div>
 
-   <h3>Topic Wise Practice</h3>
 
-   <p>
-    Chapter → Topic → Quiz + Notes PDF
-   </p>
+            <div class="timer-box">
 
-  </div>
+                <div
+                    id="seconds"
+                    class="timer-number"
+                >
+                    0
+                </div>
 
-  <div class="learning-card" onclick="openCourse('type')">
+                <div class="timer-text">
+                    Seconds
+                </div>
 
-   <div class="learning-icon">🧠</div>
+            </div>
 
-   <h3>Chapter Wise Practice</h3>
 
-   <p>
-    Assertion, Statement, Match, Diagram, PYQ & Rapid Revision
-   </p>
+        </div>
 
-  </div>
+    </section>
 
-  <div class="learning-card" onclick="openCourse('ncert')">
 
-   <div class="learning-icon">📚</div>
+    <!-- =================================================
+         TODAY TASK
+    ================================================== -->
 
-   <h3>NCERT Books</h3>
+    <section class="tasks-card">
 
-   <p>
-    Chapter-wise NCERT, PYQ PDF & PYQ Quiz
-   </p>
+        <div class="section-title">
 
-  </div>
+            <h2>
+                Today's Tasks
+            </h2>
 
- </section>
+            <span>
+                Your daily plan
+            </span>
 
- <!-- RECENT PERFORMANCE -->
+        </div>
 
- <div class="section-title">
-  <h2>🏆 Recent Performance</h2>
- </div>
 
- <section class="performance">
+        <div
+            id="taskList"
+            class="task-list"
+        >
 
-  <div class="performance-card">
+            <div class="task">
 
-   <h3>Latest Attempt</h3>
+                <div class="task-icon">
+                    📖
+                </div>
 
-   <div class="performance-row">
-    <span>Score</span>
-    <span class="score" id="lastScore">—</span>
-   </div>
+                <div class="task-content">
 
-   <div class="performance-row">
-    <span>Accuracy</span>
-    <span class="score" id="lastAccuracy">—</span>
-   </div>
+                    <div class="task-title">
+                        Continue your course
+                    </div>
 
-   <div class="performance-row">
-    <span>Questions</span>
-    <span id="lastQuestions">—</span>
-   </div>
+                    <div class="task-sub">
+                        Complete today's learning target
+                    </div>
 
-  </div>
+                </div>
 
-  <div class="performance-card">
+                <div class="task-status">
+                    Start
+                </div>
 
-   <h3>Study Summary</h3>
+            </div>
 
-   <div class="performance-row">
-    <span>Completed Topics</span>
-    <span id="completedTopics">0</span>
-   </div>
 
-   <div class="performance-row">
-    <span>Completed Quizzes</span>
-    <span id="completedQuizzes">0</span>
-   </div>
+            <div class="task">
 
-   <div class="performance-row">
-    <span>Study Days</span>
-    <span id="studyDays">0</span>
-   </div>
+                <div class="task-icon">
+                    📝
+                </div>
 
-  </div>
+                <div class="task-content">
 
- </section>
+                    <div class="task-title">
+                        Practice Questions
+                    </div>
 
- <!-- NOTIFICATION SUMMARY -->
+                    <div class="task-sub">
+                        Solve Biology questions
+                    </div>
 
- <div class="section-title">
+                </div>
 
-  <h2>🔔 Latest Updates</h2>
+                <div class="task-status">
+                    Practice
+                </div>
 
-  <button
-   onclick="toggleNotifications()"
-   style="
-    border:0;
-    background:transparent;
-    color:var(--green2);
-    font-size:10px;
-    font-weight:900;
-   "
-  >
-   View All
-  </button>
+            </div>
 
- </div>
 
- <section class="task-card" id="latestUpdates">
+            <div class="task">
 
-  <div class="empty">
-   No new updates.
-  </div>
+                <div class="task-icon">
+                    📚
+                </div>
 
- </section>
+                <div class="task-content">
+
+                    <div class="task-title">
+                        NCERT Reading
+                    </div>
+
+                    <div class="task-sub">
+                        Revise today's chapter
+                    </div>
+
+                </div>
+
+                <div class="task-status">
+                    Read
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =================================================
+         STATS
+    ================================================== -->
+
+    <section class="stats">
+
+
+        <div class="stat">
+
+            <div class="stat-icon">
+                📊
+            </div>
+
+            <div
+                id="progressValue"
+                class="stat-value"
+            >
+                0%
+            </div>
+
+            <div class="stat-label">
+                Course Progress
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-icon">
+                🏆
+            </div>
+
+            <div
+                id="lastScore"
+                class="stat-value"
+            >
+                —
+            </div>
+
+            <div class="stat-label">
+                Last Attempt
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-icon">
+                🎯
+            </div>
+
+            <div
+                id="accuracy"
+                class="stat-value"
+            >
+                0%
+            </div>
+
+            <div class="stat-label">
+                Accuracy
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-icon">
+                🔥
+            </div>
+
+            <div
+                id="streak"
+                class="stat-value"
+            >
+                0
+            </div>
+
+            <div class="stat-label">
+                Study Streak
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =================================================
+         PROGRESS
+    ================================================== -->
+
+    <section class="progress-card">
+
+        <div class="progress-row">
+
+            <div class="progress-name">
+                Overall Course Progress
+            </div>
+
+            <div
+                id="progressPercent"
+                class="progress-percent"
+            >
+                0%
+            </div>
+
+        </div>
+
+
+        <div class="progress-track">
+
+            <div
+                id="progressFill"
+                class="progress-fill"
+            ></div>
+
+        </div>
+
+
+        <div
+            id="progressSub"
+            class="progress-sub"
+        >
+            Start learning to build your progress.
+
+        </div>
+
+    </section>
+
+
+    <!-- =================================================
+         CONTINUE LEARNING
+    ================================================== -->
+
+    <section class="continue-card">
+
+
+        <div class="continue-content">
+
+
+            <div class="continue-icon">
+                ▶️
+            </div>
+
+
+            <div class="continue-info">
+
+                <div
+                    id="continueTitle"
+                    class="continue-title"
+                >
+                    Start Learning
+                </div>
+
+                <div
+                    id="continueSub"
+                    class="continue-sub"
+                >
+                    Select a course to continue.
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <button
+            class="continue-btn"
+            onclick="continueLearning()"
+        >
+            Continue Learning
+        </button>
+
+
+    </section>
+
 
 </main>
 
-<!-- ================= MOBILE NAV ================= -->
+
+<!-- =====================================================
+     BOTTOM NAVIGATION
+===================================================== -->
 
 <nav class="bottom-nav">
 
- <button class="bottom-item active" onclick="window.scrollTo({top:0,behavior:'smooth'})">
-  <span>🏠</span>
-  Home
- </button>
 
- <button class="bottom-item" onclick="window.location.href='courses.html'">
-  <span>📚</span>
-  Courses
- </button>
+    <button
+        class="nav-item active"
+        onclick="goHome()"
+    >
 
- <button class="bottom-item" onclick="toggleNotifications()">
-  <span>🔔</span>
-  Alerts
- </button>
+        <span class="nav-icon">
+            🏠
+        </span>
 
- <button class="bottom-item" onclick="openProfile()">
-  <span>👤</span>
-  Profile
- </button>
+        Home
+
+    </button>
+
+
+    <button
+        class="nav-item"
+        onclick="goCourses()"
+    >
+
+        <span class="nav-icon">
+            📚
+        </span>
+
+        Courses
+
+    </button>
+
+
+    <button
+        class="nav-item"
+        onclick="goPractice()"
+    >
+
+        <span class="nav-icon">
+            📝
+        </span>
+
+        Practice
+
+    </button>
+
+
+    <button
+        class="nav-item"
+        onclick="openProfile()"
+    >
+
+        <span class="nav-icon">
+            👤
+        </span>
+
+        Profile
+
+    </button>
+
 
 </nav>
 
-<!-- ================= FIREBASE ================= -->
 
-<script src="js/firebase.js"></script>
-<script src="js/auth.js"></script>
+<!-- =====================================================
+     TARGET MODAL
+===================================================== -->
+
+<div
+    id="targetModal"
+    class="modal-overlay"
+>
+
+    <div class="modal">
+
+        <h3>
+            Set Your Target
+        </h3>
+
+        <p>
+            Set your NEET target date and dream.
+        </p>
+
+
+        <label
+            class="modal-label"
+            for="targetDateInput"
+        >
+            Target Date
+        </label>
+
+
+        <input
+            id="targetDateInput"
+            class="modal-input"
+            type="date"
+        >
+
+
+        <label
+            class="modal-label"
+            for="targetDreamInput"
+        >
+            Target Dream
+        </label>
+
+
+        <input
+            id="targetDreamInput"
+            class="modal-input"
+            type="text"
+            placeholder="Example: NEET 2027 - AIIMS"
+        >
+
+
+        <div class="modal-buttons">
+
+            <button
+                class="modal-cancel"
+                onclick="closeTargetModal()"
+            >
+                Cancel
+            </button>
+
+
+            <button
+                class="modal-save"
+                onclick="saveTarget()"
+            >
+                Save Target
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
 
 <script>
-"use strict";
 
-/* ==========================================================
+/* =====================================================
+   FIREBASE CONFIG
+===================================================== */
+
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyApQOM_mtFZ16RiNJEaIUhb4iYFBIBRK58",
+
+    authDomain:
+        "mneet-spark.firebaseapp.com",
+
+    databaseURL:
+        "https://mneet-spark-default-rtdb.firebaseio.com",
+
+    projectId:
+        "mneet-spark",
+
+    storageBucket:
+        "mneet-spark.firebasestorage.app",
+
+    messagingSenderId:
+        "252201633700",
+
+    appId:
+        "1:252201633700:web:1a1e7a2cff1f0b168ea331"
+
+};
+
+
+/* =====================================================
+   FIREBASE INITIALIZE
+===================================================== */
+
+if(!firebase.apps.length){
+
+    firebase.initializeApp(
+        firebaseConfig
+    );
+
+}
+
+
+const auth =
+    firebase.auth();
+
+
+const db =
+    firebase.firestore();
+
+
+/* =====================================================
    GLOBAL DATA
-========================================================== */
+===================================================== */
 
 let currentUser = null;
-let selectedCourseId = null;
-let countdownInterval = null;
 
-const DEFAULT_TASKS = 4;
+let studentData = {};
+
+let selectedCourseId = "";
+
+let targetTimer = null;
 
 
-/* ==========================================================
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const sidebar =
+    document.getElementById(
+        "sidebar"
+    );
+
+const overlay =
+    document.getElementById(
+        "overlay"
+    );
+
+const notificationPanel =
+    document.getElementById(
+        "notificationPanel"
+    );
+
+const courseSelect =
+    document.getElementById(
+        "courseSelect"
+    );
+
+
+/* =====================================================
    SIDEBAR
-========================================================== */
+===================================================== */
+
+document
+    .getElementById("menuButton")
+    .addEventListener(
+        "click",
+        openSidebar
+    );
+
+
+document
+    .getElementById("sidebarClose")
+    .addEventListener(
+        "click",
+        closeSidebar
+    );
+
+
+overlay.addEventListener(
+    "click",
+    closeSidebar
+);
+
 
 function openSidebar(){
- document.getElementById("sidebar").classList.add("open");
- document.getElementById("overlay").classList.add("show");
+
+    sidebar.classList.add(
+        "active"
+    );
+
+    overlay.classList.add(
+        "active"
+    );
+
 }
+
 
 function closeSidebar(){
- document.getElementById("sidebar").classList.remove("open");
- document.getElementById("overlay").classList.remove("show");
-}
 
+    sidebar.classList.remove(
+        "active"
+    );
 
-/* ==========================================================
-   THEME
-========================================================== */
-
-function setTheme(theme){
-
- if(theme === "dark"){
-  document.body.classList.add("dark");
- }else{
-  document.body.classList.remove("dark");
- }
-
- localStorage.setItem("mneet_theme",theme);
-}
-
-(function loadTheme(){
- const theme = localStorage.getItem("mneet_theme") || "light";
- setTheme(theme);
-})();
-
-
-/* ==========================================================
-   PROFILE
-========================================================== */
-
-function openProfile(){
- window.location.href = "profile.html";
-}
-
-
-/* ==========================================================
-   LOGOUT
-========================================================== */
-
-function logoutUser(){
-
- if(!confirm("Are you sure you want to logout?")){
-  return;
- }
-
- if(typeof auth !== "undefined" && auth){
-
-  auth.signOut()
-   .then(function(){
-    window.location.href = "index.html";
-   })
-   .catch(function(error){
-    alert(error.message);
-   });
-
- }else{
-
-  window.location.href = "index.html";
-
- }
+    overlay.classList.remove(
+        "active"
+    );
 
 }
 
 
-/* ==========================================================
-   TARGET DATE + DREAM
-========================================================== */
+/* =====================================================
+   NOTIFICATION
+===================================================== */
 
-function setTarget(){
+document
+    .getElementById("notificationButton")
+    .addEventListener(
+        "click",
+        function(){
 
- const oldDream =
-  localStorage.getItem("mneet_dream") ||
-  "";
+            notificationPanel.classList.toggle(
+                "active"
+            );
 
- const oldDate =
-  localStorage.getItem("mneet_target_date") ||
-  "";
-
- const dream =
-  prompt(
-   "Enter your target/dream:",
-   oldDream
-  );
-
- if(dream === null){
-  return;
- }
-
- const date =
-  prompt(
-   "Enter target date (YYYY-MM-DD):",
-   oldDate
-  );
-
- if(date === null){
-  return;
- }
-
- if(!date){
-  alert("Please enter a target date.");
-  return;
- }
-
- const target =
-  new Date(date + "T23:59:59");
-
- if(isNaN(target.getTime())){
-  alert("Invalid date.");
-  return;
- }
-
- localStorage.setItem(
-  "mneet_dream",
-  dream || "NEET 2027"
- );
-
- localStorage.setItem(
-  "mneet_target_date",
-  date
- );
-
- loadTarget();
-}
+        }
+    );
 
 
-/* ==========================================================
-   TARGET LOAD
-========================================================== */
+document
+    .getElementById("notificationClose")
+    .addEventListener(
+        "click",
+        function(){
 
-function loadTarget(){
+            notificationPanel.classList.remove(
+                "active"
+            );
 
- const dream =
-  localStorage.getItem("mneet_dream") ||
-  "Set Your Dream 🎯";
+        }
+    );
 
- const date =
-  localStorage.getItem("mneet_target_date");
 
- document.getElementById(
-  "dreamText"
- ).textContent = dream;
+/* =====================================================
+   AUTH STATE
+===================================================== */
 
- if(date){
+auth.onAuthStateChanged(
+    async function(user){
 
-  const d = new Date(date + "T23:59:59");
+        if(!user){
 
-  document.getElementById(
-   "targetDateText"
-  ).textContent =
-   "Target: " +
-   d.toLocaleDateString(
-    "en-IN",
-    {
-     day:"2-digit",
-     month:"long",
-     year:"numeric"
+            window.location.replace(
+                "index.html"
+            );
+
+            return;
+
+        }
+
+
+        currentUser = user;
+
+
+        await loadStudent();
+
+        await loadCourses();
+
+        await loadNotifications();
+
+        loadTheme();
+
     }
-   );
-
-  startCountdown(d);
-
- }else{
-
-  document.getElementById(
-   "targetDateText"
-  ).textContent =
-   "Target date not set";
-
-  stopCountdown();
-
- }
-
-}
+);
 
 
-/* ==========================================================
-   COUNTDOWN
-========================================================== */
+/* =====================================================
+   LOAD STUDENT
+===================================================== */
 
-function startCountdown(target){
+async function loadStudent(){
 
- stopCountdown();
+    try{
 
- function update(){
-
-  const now = new Date().getTime();
-  const distance =
-   target.getTime() - now;
-
-  if(distance <= 0){
-
-   document.getElementById("days").textContent = "0";
-   document.getElementById("hours").textContent = "00";
-   document.getElementById("minutes").textContent = "00";
-   document.getElementById("seconds").textContent = "00";
-
-   return;
-
-  }
-
-  const days =
-   Math.floor(
-    distance /
-    (1000 * 60 * 60 * 24)
-   );
-
-  const hours =
-   Math.floor(
-    (distance %
-     (1000 * 60 * 60 * 24)) /
-     (1000 * 60 * 60)
-   );
-
-  const minutes =
-   Math.floor(
-    (distance %
-     (1000 * 60 * 60)) /
-     (1000 * 60)
-   );
-
-  const seconds =
-   Math.floor(
-    (distance %
-     (1000 * 60)) /
-     1000
-   );
-
-  document.getElementById("days")
-   .textContent = days;
-
-  document.getElementById("hours")
-   .textContent =
-    String(hours).padStart(2,"0");
-
-  document.getElementById("minutes")
-   .textContent =
-    String(minutes).padStart(2,"0");
-
-  document.getElementById("seconds")
-   .textContent =
-    String(seconds).padStart(2,"0");
-
- }
-
- update();
-
- countdownInterval =
-  setInterval(update,1000);
-}
+        const doc =
+            await db
+                .collection("students")
+                .doc(currentUser.uid)
+                .get();
 
 
-function stopCountdown(){
+        if(doc.exists){
 
- if(countdownInterval){
-  clearInterval(countdownInterval);
-  countdownInterval = null;
- }
+            studentData =
+                doc.data() || {};
 
-}
+        }else{
 
+            studentData = {
 
-/* ==========================================================
-   TODAY TASKS
-========================================================== */
+                name:
+                    currentUser.displayName ||
+                    "Student",
 
-function taskKey(id){
+                email:
+                    currentUser.email || "",
 
- const today =
-  new Date()
-   .toISOString()
-   .slice(0,10);
+                targetDate:
+                    "",
 
- return "mneet_task_" + today + "_" + id;
-}
+                targetDream:
+                    "",
 
+                selectedCourse:
+                    "",
 
-function toggleTask(id){
+                progress:
+                    0
 
- const key = taskKey(id);
+            };
 
- const current =
-  localStorage.getItem(key) === "1";
-
- localStorage.setItem(
-  key,
-  current ? "0" : "1"
- );
-
- loadTasks();
-}
+        }
 
 
-function loadTasks(){
+        const name =
+            studentData.name ||
+            currentUser.displayName ||
+            "Student";
 
- let done = 0;
 
- for(let i=1;i<=DEFAULT_TASKS;i++){
+        const email =
+            studentData.email ||
+            currentUser.email ||
+            "";
 
-  const element =
-   document.querySelector(
-    '.task[data-task="' + i + '"]'
-   );
 
-  if(!element) continue;
+        document
+            .getElementById("studentName")
+            .textContent =
+                name;
 
-  const completed =
-   localStorage.getItem(taskKey(i))
-   === "1";
 
-  if(completed){
-   done++;
-   element.classList.add("done");
-  }else{
-   element.classList.remove("done");
-  }
+        document
+            .getElementById("sideName")
+            .textContent =
+                name;
 
- }
 
- const percent =
-  Math.round(
-   (done / DEFAULT_TASKS) * 100
-  );
+        document
+            .getElementById("sideEmail")
+            .textContent =
+                email;
 
- document.getElementById(
-  "taskProgress"
- ).textContent =
-  percent + "% completed";
+
+        document
+            .getElementById("avatar")
+            .textContent =
+                name
+                    .charAt(0)
+                    .toUpperCase();
+
+
+        const progress =
+            Number(
+                studentData.progress || 0
+            );
+
+
+        setProgress(progress);
+
+
+        document
+            .getElementById("lastScore")
+            .textContent =
+                studentData.lastScore != null
+                    ? studentData.lastScore
+                    : "—";
+
+
+        document
+            .getElementById("accuracy")
+            .textContent =
+                studentData.accuracy != null
+                    ? studentData.accuracy + "%"
+                    : "0%";
+
+
+        document
+            .getElementById("streak")
+            .textContent =
+                studentData.streak != null
+                    ? studentData.streak
+                    : "0";
+
+
+        updateTargetUI();
+
+
+    }catch(error){
+
+        console.error(
+            "Student load error:",
+            error
+        );
+
+        document
+            .getElementById("studentName")
+            .textContent =
+                currentUser.displayName ||
+                "Student";
+
+    }
 
 }
 
 
-/* ==========================================================
-   COURSE SELECTION
-========================================================== */
-
-function saveSelectedCourse(courseId){
-
- selectedCourseId =
-  courseId;
-
- localStorage.setItem(
-  "mneet_selected_course",
-  courseId
- );
-
- document
-  .querySelectorAll(".course-card")
-  .forEach(function(card){
-
-   card.classList.remove("selected");
-
-  });
-
- const selected =
-  document.querySelector(
-   '[data-course-id="' +
-   courseId +
-   '"]'
-  );
-
- if(selected){
-  selected.classList.add("selected");
- }
-
- const title =
-  selected
-   ?.querySelector(".course-title")
-   ?.textContent ||
-  "Selected Course";
-
- document.getElementById(
-  "continueTitle"
- ).textContent =
-  "Continue " + title;
-
- document.getElementById(
-  "continueText"
- ).textContent =
-  "Continue your preparation from where you stopped.";
-
-}
-
-
-/* ==========================================================
+/* =====================================================
    LOAD COURSES
-========================================================== */
+===================================================== */
 
 async function loadCourses(){
 
- const container =
-  document.getElementById("courseList");
+    courseSelect.innerHTML =
+        '<option value="">Loading courses...</option>';
 
- try{
 
-  if(
-   typeof db === "undefined" ||
-   !db
-  ){
-   throw new Error("Firestore unavailable");
-  }
+    try{
 
-  const snapshot =
-   await db
-    .collection("courses")
-    .get();
+        /*
+         * First try courses collection.
+         */
 
-  if(snapshot.empty){
+        const snapshot =
+            await db
+                .collection("courses")
+                .get();
 
-   container.innerHTML =
-    '<div class="empty">No courses available yet.</div>';
 
-   return;
+        courseSelect.innerHTML = "";
 
-  }
 
-  container.innerHTML = "";
+        if(snapshot.empty){
 
-  let firstCourse = null;
+            courseSelect.innerHTML =
+                '<option value="">No course available</option>';
 
-  snapshot.forEach(function(doc){
+            updateContinueState();
 
-   const data =
-    doc.data() || {};
+            return;
 
-   const id =
-    doc.id;
+        }
 
-   if(!firstCourse){
-    firstCourse = id;
-   }
 
-   const title =
-    data.title ||
-    data.name ||
-    "NEET Biology Course";
+        snapshot.forEach(
+            function(doc){
 
-   const description =
-    data.description ||
-    "Complete NEET preparation course";
+                const data =
+                    doc.data() || {};
 
-   const progress =
-    Number(data.progress || 0);
 
-   const card =
-    document.createElement("div");
+                const option =
+                    document.createElement(
+                        "option"
+                    );
 
-   card.className =
-    "course-card";
 
-   card.dataset.courseId =
-    id;
+                option.value =
+                    doc.id;
 
-   card.innerHTML = `
-    <div class="course-check">✓</div>
 
-    <div class="course-title">
-     ${escapeHTML(title)}
-    </div>
+                option.textContent =
+                    data.title ||
+                    data.name ||
+                    "Biology Course";
 
-    <div class="course-desc">
-     ${escapeHTML(description)}
-    </div>
 
-    <div class="course-progress">
-     <div
-      class="course-progress-fill"
-      style="width:${Math.min(progress,100)}%"
-     ></div>
-    </div>
+                courseSelect.appendChild(
+                    option
+                );
 
-    <div class="course-footer">
+            }
+        );
 
-     <span class="course-percent">
-      ${progress}% Complete
-     </span>
 
-     <button
-      class="select-course"
-      onclick="selectCourse('${escapeAttribute(id)}')"
-     >
-      Select
-     </button>
+        let savedCourse =
+            studentData.selectedCourse || "";
 
-    </div>
-   `;
 
-   container.appendChild(card);
+        if(savedCourse){
 
-  });
+            const exists =
+                Array.from(
+                    courseSelect.options
+                ).some(
+                    option =>
+                        option.value ===
+                        savedCourse
+                );
 
-  const saved =
-   localStorage.getItem(
-    "mneet_selected_course"
-   );
 
-  if(saved){
+            if(exists){
 
-   const exists =
-    document.querySelector(
-     '[data-course-id="' +
-     saved +
-     '"]'
+                courseSelect.value =
+                    savedCourse;
+
+                selectedCourseId =
+                    savedCourse;
+
+            }
+
+        }
+
+
+        if(!selectedCourseId){
+
+            const first =
+                courseSelect.options[0];
+
+            if(first){
+
+                selectedCourseId =
+                    first.value;
+
+                courseSelect.value =
+                    selectedCourseId;
+
+            }
+
+        }
+
+
+        updateContinueState();
+
+
+    }catch(error){
+
+        console.error(
+            "Course load error:",
+            error
+        );
+
+
+        courseSelect.innerHTML =
+            '<option value="">Course loading failed</option>';
+
+    }
+
+}
+
+
+/* =====================================================
+   COURSE CHANGE
+===================================================== */
+
+courseSelect.addEventListener(
+    "change",
+    async function(){
+
+        selectedCourseId =
+            this.value;
+
+
+        if(!currentUser){
+
+            return;
+
+        }
+
+
+        try{
+
+            await db
+                .collection("students")
+                .doc(currentUser.uid)
+                .set({
+
+                    selectedCourse:
+                        selectedCourseId,
+
+                    updatedAt:
+                        firebase.firestore.FieldValue.serverTimestamp()
+
+                },{
+                    merge:true
+                });
+
+
+            studentData.selectedCourse =
+                selectedCourseId;
+
+
+            updateContinueState();
+
+
+        }catch(error){
+
+            console.error(
+                "Course save error:",
+                error
+            );
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   CONTINUE STATE
+===================================================== */
+
+function updateContinueState(){
+
+    const title =
+        document.getElementById(
+            "continueTitle"
+        );
+
+    const sub =
+        document.getElementById(
+            "continueSub"
+        );
+
+
+    if(!selectedCourseId){
+
+        title.textContent =
+            "Start Learning";
+
+        sub.textContent =
+            "Select a course to continue.";
+
+        return;
+
+    }
+
+
+    const selectedOption =
+        courseSelect.options[
+            courseSelect.selectedIndex
+        ];
+
+
+    const courseName =
+        selectedOption
+            ? selectedOption.textContent
+            : "Your Course";
+
+
+    title.textContent =
+        courseName;
+
+
+    sub.textContent =
+        "Continue your Biology preparation.";
+
+}
+
+
+/* =====================================================
+   PROGRESS
+===================================================== */
+
+function setProgress(value){
+
+    let progress =
+        Number(value);
+
+
+    if(isNaN(progress)){
+
+        progress = 0;
+
+    }
+
+
+    progress =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                progress
+            )
+        );
+
+
+    document
+        .getElementById("progressValue")
+        .textContent =
+            Math.round(progress) + "%";
+
+
+    document
+        .getElementById("progressPercent")
+        .textContent =
+            Math.round(progress) + "%";
+
+
+    document
+        .getElementById("progressFill")
+        .style.width =
+            progress + "%";
+
+
+    document
+        .getElementById("progressSub")
+        .textContent =
+            progress > 0
+                ? "Keep learning and complete your course."
+                : "Start learning to build your progress.";
+
+}
+
+
+/* =====================================================
+   TARGET UI
+===================================================== */
+
+function updateTargetUI(){
+
+    const targetDate =
+        studentData.targetDate || "";
+
+
+    const dream =
+        studentData.targetDream ||
+        "Set your dream";
+
+
+    document
+        .getElementById("targetDream")
+        .textContent =
+            dream;
+
+
+    document
+        .getElementById("targetDateInput")
+        .value =
+            targetDate;
+
+
+    document
+        .getElementById("targetDreamInput")
+        .value =
+            studentData.targetDream || "";
+
+
+    startTargetTimer(
+        targetDate
     );
 
-   if(exists){
-    saveSelectedCourse(saved);
-    return;
-   }
+}
 
-  }
 
-  if(firstCourse){
-   saveSelectedCourse(firstCourse);
-  }
+/* =====================================================
+   TARGET MODAL
+===================================================== */
 
- }catch(error){
+function openTargetModal(){
 
-  console.warn(
-   "Course loading:",
-   error
-  );
+    document
+        .getElementById("targetModal")
+        .classList.add("active");
 
-  container.innerHTML =
-   `
-   <div class="empty">
-    Course list is ready.
-    <br>
-    Course data will appear here after Firebase course setup.
-   </div>
-   `;
 
- }
+    closeSidebar();
 
 }
 
 
-function selectCourse(courseId){
+function closeTargetModal(){
 
- saveSelectedCourse(courseId);
-
- const title =
-  document.querySelector(
-   '[data-course-id="' +
-   courseId +
-   '"] .course-title'
-  )?.textContent ||
-  "Course";
-
- alert(
-  '"' +
-  title +
-  '" selected successfully.'
- );
+    document
+        .getElementById("targetModal")
+        .classList.remove("active");
 
 }
 
 
-/* ==========================================================
-   LEARNING NAVIGATION
-========================================================== */
+async function saveTarget(){
 
-function openCourse(type){
+    if(!currentUser){
 
- const course =
-  selectedCourseId ||
-  localStorage.getItem(
-   "mneet_selected_course"
-  );
+        return;
 
- if(!course){
+    }
 
-  alert(
-   "Please select a course first."
-  );
 
-  return;
+    const targetDate =
+        document
+            .getElementById(
+                "targetDateInput"
+            )
+            .value;
 
- }
 
- localStorage.setItem(
-  "mneet_learning_mode",
-  type
- );
+    const targetDream =
+        document
+            .getElementById(
+                "targetDreamInput"
+            )
+            .value
+            .trim();
 
- window.location.href =
-  "course.html";
+
+    if(!targetDate){
+
+        alert(
+            "Target date select করুন।"
+        );
+
+        return;
+
+    }
+
+
+    try{
+
+        await db
+            .collection("students")
+            .doc(currentUser.uid)
+            .set({
+
+                targetDate:
+                    targetDate,
+
+                targetDream:
+                    targetDream ||
+                    "NEET Target",
+
+                updatedAt:
+                    firebase.firestore.FieldValue.serverTimestamp()
+
+            },{
+                merge:true
+            });
+
+
+        studentData.targetDate =
+            targetDate;
+
+
+        studentData.targetDream =
+            targetDream ||
+            "NEET Target";
+
+
+        updateTargetUI();
+
+        closeTargetModal();
+
+
+    }catch(error){
+
+        console.error(
+            "Target save error:",
+            error
+        );
+
+
+        alert(
+            "Target save করা যায়নি। আবার চেষ্টা করুন।"
+        );
+
+    }
 
 }
 
 
-function continueLearning(){
+/* =====================================================
+   TARGET TIMER
+===================================================== */
 
- const course =
-  selectedCourseId ||
-  localStorage.getItem(
-   "mneet_selected_course"
-  );
+function startTargetTimer(
+    date
+){
 
- if(!course){
+    if(targetTimer){
 
-  alert(
-   "Please select a course first."
-  );
+        clearInterval(
+            targetTimer
+        );
 
-  return;
+    }
 
- }
 
- window.location.href =
-  "course.html";
+    if(!date){
+
+        setTimer(
+            0,
+            0,
+            0,
+            0
+        );
+
+        return;
+
+    }
+
+
+    function update(){
+
+        const target =
+            new Date(
+                date + "T23:59:59"
+            ).getTime();
+
+
+        const now =
+            Date.now();
+
+
+        let difference =
+            target - now;
+
+
+        if(difference < 0){
+
+            difference = 0;
+
+        }
+
+
+        const days =
+            Math.floor(
+                difference /
+                (1000 * 60 * 60 * 24)
+            );
+
+
+        const hours =
+            Math.floor(
+                (difference %
+                    (1000 * 60 * 60 * 24)) /
+                    (1000 * 60 * 60)
+            );
+
+
+        const minutes =
+            Math.floor(
+                (difference %
+                    (1000 * 60 * 60)) /
+                    (1000 * 60)
+            );
+
+
+        const seconds =
+            Math.floor(
+                (difference %
+                    (1000 * 60)) /
+                    1000
+            );
+
+
+        setTimer(
+            days,
+            hours,
+            minutes,
+            seconds
+        );
+
+    }
+
+
+    update();
+
+
+    targetTimer =
+        setInterval(
+            update,
+            1000
+        );
 
 }
 
 
-/* ==========================================================
+function setTimer(
+    days,
+    hours,
+    minutes,
+    seconds
+){
+
+    document
+        .getElementById("days")
+        .textContent =
+            days;
+
+
+    document
+        .getElementById("hours")
+        .textContent =
+            hours;
+
+
+    document
+        .getElementById("minutes")
+        .textContent =
+            minutes;
+
+
+    document
+        .getElementById("seconds")
+        .textContent =
+            seconds;
+
+}
+
+
+/* =====================================================
    NOTIFICATIONS
-========================================================== */
-
-const defaultNotifications = [
-
- {
-  title:"Welcome to mNEET-Pro",
-  text:"Your student dashboard is ready.",
-  time:"Just now"
- },
-
- {
-  title:"Set your NEET target",
-  text:"Set your target date and dream from the sidebar.",
-  time:"Today"
- },
-
- {
-  title:"Start your preparation",
-  text:"Select your course and continue learning.",
-  time:"Today"
- }
-
-];
-
-
-function toggleNotifications(){
-
- const panel =
-  document.getElementById(
-   "notificationPanel"
-  );
-
- panel.classList.toggle("show");
-
- if(panel.classList.contains("show")){
-  loadNotifications();
- }
-
-}
-
-
-function markNotificationsRead(){
-
- localStorage.setItem(
-  "mneet_notifications_read",
-  "1"
- );
-
- document.getElementById(
-  "notificationDot"
- ).style.display =
-  "none";
-
-}
-
+===================================================== */
 
 async function loadNotifications(){
 
- const list =
-  document.getElementById(
-   "notificationList"
-  );
+    const list =
+        document.getElementById(
+            "notificationList"
+        );
 
- const latest =
-  document.getElementById(
-   "latestUpdates"
-  );
 
- list.innerHTML = "";
+    try{
 
- try{
+        const snapshot =
+            await db
+                .collection("notifications")
+                .orderBy(
+                    "createdAt",
+                    "desc"
+                )
+                .limit(10)
+                .get();
 
-  if(
-   typeof db !== "undefined" &&
-   db
-  ){
 
-   const snap =
-    await db
-     .collection("notifications")
-     .orderBy("createdAt","desc")
-     .limit(20)
-     .get();
+        if(snapshot.empty){
 
-   if(!snap.empty){
+            list.innerHTML =
+                `
+                <div class="notification-empty">
+                    No new notifications.
+                </div>
+                `;
 
-    let html = "";
+            return;
 
-    snap.forEach(function(doc){
+        }
 
-     const d =
-      doc.data() || {};
 
-     html += `
-      <div class="notification">
+        list.innerHTML = "";
 
-       <div class="notification-title">
-        ${escapeHTML(
-         d.title ||
-         "Notification"
-        )}
-       </div>
 
-       <div class="notification-text">
-        ${escapeHTML(
-         d.message ||
-         d.text ||
-         ""
-        )}
-       </div>
+        let count = 0;
 
-       <div class="notification-time">
-        ${formatTime(d.createdAt)}
-       </div>
 
-      </div>
-     `;
+        snapshot.forEach(
+            function(doc){
 
-    });
+                const data =
+                    doc.data() || {};
 
-    list.innerHTML =
-     html;
 
-    latest.innerHTML =
-     html.slice(0,1800);
+                const item =
+                    document.createElement(
+                        "div"
+                    );
 
-    if(
-     localStorage.getItem(
-      "mneet_notifications_read"
-     ) !== "1"
-    ){
-     document.getElementById(
-      "notificationDot"
-     ).style.display =
-      "block";
+
+                item.className =
+                    "notification-item";
+
+
+                item.innerHTML =
+                    `
+                    <div class="notification-title">
+                        ${escapeHtml(
+                            data.title ||
+                            "Notification"
+                        )}
+                    </div>
+
+                    <div class="notification-text">
+                        ${escapeHtml(
+                            data.message ||
+                            data.text ||
+                            ""
+                        )}
+                    </div>
+                    `;
+
+
+                list.appendChild(
+                    item
+                );
+
+
+                count++;
+
+            }
+        );
+
+
+        const badge =
+            document.getElementById(
+                "notificationBadge"
+            );
+
+
+        if(count > 0){
+
+            badge.textContent =
+                count > 9
+                    ? "9+"
+                    : count;
+
+            badge.style.display =
+                "flex";
+
+        }
+
+    }catch(error){
+
+        console.error(
+            "Notification error:",
+            error
+        );
+
+
+        list.innerHTML =
+            `
+            <div class="notification-empty">
+                No notifications available.
+            </div>
+            `;
+
     }
 
-    return;
+}
 
-   }
 
-  }
+/* =====================================================
+   SAFE HTML
+===================================================== */
 
- }catch(error){
+function escapeHtml(
+    text
+){
 
-  console.warn(
-   "Notification loading:",
-   error
-  );
-
- }
-
- let html = "";
-
- defaultNotifications.forEach(function(n){
-
-  html += `
-   <div class="notification">
-
-    <div class="notification-title">
-     ${n.title}
-    </div>
-
-    <div class="notification-text">
-     ${n.text}
-    </div>
-
-    <div class="notification-time">
-     ${n.time}
-    </div>
-
-   </div>
-  `;
-
- });
-
- list.innerHTML =
-  html;
-
- latest.innerHTML =
-  html;
+    return String(text)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 
 }
 
 
-function formatTime(timestamp){
+/* =====================================================
+   THEME
+===================================================== */
 
- if(!timestamp){
-  return "Recently";
- }
+function loadTheme(){
 
- try{
+    const saved =
+        localStorage.getItem(
+            "mneet-theme"
+        );
 
-  const date =
-   timestamp.toDate
-    ? timestamp.toDate()
-    : new Date(timestamp);
 
-  return date.toLocaleString(
-   "en-IN",
-   {
-    day:"2-digit",
-    month:"short",
-    hour:"2-digit",
-    minute:"2-digit"
-   }
-  );
+    if(saved === "dark"){
 
- }catch(e){
+        applyDarkTheme();
 
-  return "Recently";
+    }else{
 
- }
+        applyLightTheme();
+
+    }
 
 }
 
 
-/* ==========================================================
-   USER DATA
-========================================================== */
+function toggleTheme(){
 
-async function loadUser(){
+    const current =
+        localStorage.getItem(
+            "mneet-theme"
+        );
 
- if(
-  typeof auth === "undefined" ||
-  !auth
- ){
-  return;
- }
 
- auth.onAuthStateChanged(
-  async function(user){
+    if(current === "dark"){
 
-   if(!user){
+        localStorage.setItem(
+            "mneet-theme",
+            "light"
+        );
+
+        applyLightTheme();
+
+    }else{
+
+        localStorage.setItem(
+            "mneet-theme",
+            "dark"
+        );
+
+        applyDarkTheme();
+
+    }
+
+}
+
+
+function applyDarkTheme(){
+
+    document.body.style.background =
+        "#101612";
+
+    document.body.style.color =
+        "#edf5ef";
+
+
+    document
+        .querySelectorAll(
+            ".header, .card, .stat, .progress-card, .continue-card, .tasks-card, .notification-panel, .modal, .bottom-nav"
+        )
+        .forEach(
+            function(el){
+
+                el.style.background =
+                    "#18221c";
+
+                el.style.borderColor =
+                    "#29372e";
+
+            }
+        );
+
+
+    document
+        .querySelectorAll(
+            ".section-title h2, .welcome-name, .stat-label, .continue-title, .task-title"
+        )
+        .forEach(
+            function(el){
+
+                el.style.color =
+                    "#edf5ef";
+
+            }
+        );
+
+
+    document
+        .getElementById("themeIcon")
+        .textContent =
+            "☀️";
+
+
+    document
+        .getElementById("themeText")
+        .textContent =
+            "White Mode";
+
+}
+
+
+function applyLightTheme(){
+
+    document.body.style.background =
+        "#f4f7f5";
+
+    document.body.style.color =
+        "#17221a";
+
+
+    document
+        .querySelectorAll(
+            ".header, .card, .stat, .progress-card, .continue-card, .tasks-card, .notification-panel, .modal, .bottom-nav"
+        )
+        .forEach(
+            function(el){
+
+                el.style.background =
+                    "#ffffff";
+
+                el.style.borderColor =
+                    "#e0e7e2";
+
+            }
+        );
+
+
+    document
+        .getElementById("themeIcon")
+        .textContent =
+            "🌙";
+
+
+    document
+        .getElementById("themeText")
+        .textContent =
+            "Dark Mode";
+
+}
+
+
+/* =====================================================
+   EXTERNAL LINKS
+===================================================== */
+
+function openExternal(
+    url
+){
+
+    window.open(
+        url,
+        "_blank",
+        "noopener"
+    );
+
+}
+
+
+/* =====================================================
+   PROFILE
+===================================================== */
+
+function openProfile(){
+
+    closeSidebar();
 
     window.location.href =
-     "index.html";
+        "profile.html";
 
-    return;
+}
 
-   }
 
-   currentUser =
-    user;
+/* =====================================================
+   CONTINUE LEARNING
+===================================================== */
 
-   let name =
-    user.displayName ||
-    (
-     user.email
-      ? user.email.split("@")[0]
-      : "Student"
-    );
+function continueLearning(){
 
-   let email =
-    user.email ||
-    "";
+    if(!selectedCourseId){
 
-   try{
+        alert(
+            "প্রথমে একটি course select করুন।"
+        );
 
-    if(
-     typeof db !== "undefined" &&
-     db
-    ){
-
-     const snap =
-      await db
-       .collection("users")
-       .doc(user.uid)
-       .get();
-
-     if(snap.exists){
-
-      const data =
-       snap.data() || {};
-
-      name =
-       data.name ||
-       data.fullName ||
-       name;
-
-      email =
-       data.email ||
-       email;
-
-      if(data.targetDate){
-
-       localStorage.setItem(
-        "mneet_target_date",
-        data.targetDate
-       );
-
-      }
-
-      if(data.targetDream){
-
-       localStorage.setItem(
-        "mneet_dream",
-        data.targetDream
-       );
-
-      }
-
-     }
+        return;
 
     }
 
-   }catch(error){
 
-    console.warn(
-     "User profile:",
-     error
+    localStorage.setItem(
+        "activeCourse",
+        selectedCourseId
     );
 
-   }
 
-   const letter =
-    name
-     .trim()
-     .charAt(0)
-     .toUpperCase() ||
-    "M";
-
-   document.getElementById(
-    "headerName"
-   ).textContent =
-    name;
-
-   document.getElementById(
-    "sideName"
-   ).textContent =
-    name;
-
-   document.getElementById(
-    "sideEmail"
-   ).textContent =
-    email;
-
-   document.getElementById(
-    "sideAvatar"
-   ).textContent =
-    letter;
-
-   loadTarget();
-   loadCourses();
-   loadNotifications();
-
-  }
- );
+    window.location.href =
+        "course.html";
 
 }
 
 
-/* ==========================================================
-   SAFE TEXT
-========================================================== */
+/* =====================================================
+   NAVIGATION
+===================================================== */
 
-function escapeHTML(value){
+function goHome(){
 
- return String(value)
-  .replace(/&/g,"&amp;")
-  .replace(/</g,"&lt;")
-  .replace(/>/g,"&gt;")
-  .replace(/"/g,"&quot;")
-  .replace(/'/g,"&#039;");
+    window.location.href =
+        "dashboard.html";
 
 }
 
 
-function escapeAttribute(value){
+function goCourses(){
 
- return String(value)
-  .replace(/'/g,"&#039;");
+    window.location.href =
+        "courses.html";
 
 }
 
 
-/* ==========================================================
-   INITIAL DATA
-========================================================== */
+function goPractice(){
 
-document.addEventListener(
- "DOMContentLoaded",
- function(){
+    /*
+     * Practice page পরে তৈরি হবে।
+     * আপাতত courses page-এ পাঠানো হচ্ছে,
+     * যাতে broken link না হয়।
+     */
 
-  loadTasks();
+    window.location.href =
+        "courses.html";
 
-  loadTarget();
-
-  loadUser();
-
- }
-);
+}
 
 
-/* Close notification when clicking elsewhere */
+/* =====================================================
+   LOGOUT
+===================================================== */
 
-document.addEventListener(
- "click",
- function(event){
+async function logoutStudent(){
 
-  const panel =
-   document.getElementById(
-    "notificationPanel"
-   );
+    const confirmed =
+        confirm(
+            "আপনি কি logout করতে চান?"
+        );
 
-  const button =
-   document.querySelector(
-    ".notification-btn"
-   );
 
-  if(
-   panel.classList.contains("show") &&
-   !panel.contains(event.target) &&
-   !button.contains(event.target)
-  ){
+    if(!confirmed){
 
-   panel.classList.remove("show");
+        return;
 
-  }
+    }
 
- }
-);
+
+    try{
+
+        await auth.signOut();
+
+
+        window.location.replace(
+            "index.html"
+        );
+
+
+    }catch(error){
+
+        console.error(
+            "Logout error:",
+            error
+        );
+
+
+        alert(
+            "Logout করা যায়নি। আবার চেষ্টা করুন।"
+        );
+
+    }
+
+}
 
 </script>
 
 </body>
+
 </html>
