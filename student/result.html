@@ -1,0 +1,24 @@
+
+<!doctype html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0d6035"><title>mNEET-Pro | Result</title>
+<link rel="icon" href="assets/favicon.png"><link rel="stylesheet" href="css/style.css">
+</head><body>
+<header class="topbar"><div class="brand">mNEET-Pro</div></header>
+<main class="container"><section class="result-hero"><div>Quiz Completed</div><div id="resultScore" class="result-score">0</div><div>Score</div></section>
+<div class="grid grid-2 result-grid"><div class="card result-item"><b id="resultCorrect">0</b>Correct</div><div class="card result-item"><b id="resultWrong">0</b>Incorrect</div><div class="card result-item"><b id="resultSkipped">0</b>Skipped</div><div class="card result-item"><b id="resultAccuracy">0%</b>Accuracy</div></div>
+<section class="card" style="margin-top:14px"><p style="font-size:11px;color:var(--muted)">Total Questions: <b id="resultTotal">0</b></p><div style="display:flex;gap:8px;margin-top:14px"><button class="primary-btn" onclick="retryQuiz()">Reattempt</button><button class="secondary-btn" onclick="goTo('dashboard.html')">Dashboard</button></div></section></main>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+
+<script src="js/firebase.js"></script>
+<script src="js/common.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/student.js"></script>
+<script src="js/result.js"></script>
+</body></html>
