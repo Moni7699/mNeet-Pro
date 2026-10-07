@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -12,285 +10,244 @@
 
     <meta
         name="theme-color"
-        content="#1b5e20"
+        content="#0f6b3c"
     >
 
     <title>mNEET-Pro | Student Login</title>
 
-
-    <!-- ==================================================
-         FIREBASE SDK
-    =================================================== -->
-
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-database-compat.js"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-storage-compat.js"></script>
-
-
-    <!-- ==================================================
-         MAIN CSS
-    =================================================== -->
-
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
-
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <style>
 
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-
         body {
-
-            margin: 0;
-
             min-height: 100vh;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #e8f5e9,
-                    #f4f6f9
-                );
-
             font-family:
                 Arial,
                 Helvetica,
                 sans-serif;
 
-            color: #17221a;
+            background:
+                linear-gradient(
+                    135deg,
+                    #e8f5e9 0%,
+                    #f5f8f6 50%,
+                    #eaf4ee 100%
+                );
 
+            color: #17221a;
         }
 
-
-        .login-page {
-
+        .page {
             min-height: 100vh;
 
             display: flex;
-
             align-items: center;
-
             justify-content: center;
 
-            padding: 22px;
-
+            padding: 20px;
         }
 
-
-        .login-container {
-
+        .container {
             width: 100%;
-
             max-width: 430px;
-
         }
 
+        /* =========================
+           BRAND
+        ========================= */
 
         .brand {
-
             text-align: center;
-
             margin-bottom: 22px;
-
         }
 
-
-        .brand-icon {
-
-            width: 68px;
-
-            height: 68px;
+        .logo {
+            width: 72px;
+            height: 72px;
 
             margin: 0 auto 12px;
 
-            border-radius: 20px;
-
             display: flex;
-
             align-items: center;
-
             justify-content: center;
+
+            border-radius: 22px;
 
             background:
                 linear-gradient(
                     135deg,
-                    #1b5e20,
-                    #2e7d32
+                    #0b572f,
+                    #16804a
                 );
 
-            color: #fff;
+            color: white;
 
-            font-size: 30px;
-
+            font-size: 32px;
             font-weight: 900;
 
             box-shadow:
-                0 10px 25px
-                rgba(27,94,32,.22);
-
+                0 12px 28px
+                rgba(11, 87, 47, 0.22);
         }
-
 
         .brand h1 {
-
-            margin: 0;
-
-            color: #1b5e20;
-
             font-size: 28px;
-
             font-weight: 900;
-
+            color: #0d6035;
         }
-
 
         .brand p {
+            margin-top: 6px;
 
-            margin: 6px 0 0;
-
-            color: #68756c;
-
-            font-size: 13px;
-
+            font-size: 12px;
+            color: #68766e;
         }
 
+        /* =========================
+           CARD
+        ========================= */
 
-        .login-card {
+        .card {
+            background: white;
 
-            background: #fff;
+            border: 1px solid #dfe8e1;
 
-            border-radius: 22px;
+            border-radius: 24px;
 
-            padding: 25px;
+            padding: 26px;
 
             box-shadow:
-                0 12px 35px
-                rgba(0,0,0,.09);
-
-            border:
-                1px solid #e1e8e2;
-
+                0 18px 45px
+                rgba(0, 0, 0, 0.09);
         }
 
-
-        .card-title {
-
-            margin-bottom: 20px;
-
-        }
-
-
-        .card-title h2 {
-
-            margin: 0;
-
+        .heading h2 {
             font-size: 22px;
-
             color: #17221a;
-
         }
 
+        .heading p {
+            margin-top: 6px;
+            margin-bottom: 22px;
 
-        .card-title p {
-
-            margin: 6px 0 0;
-
-            color: #718078;
-
-            font-size: 13px;
-
+            font-size: 12px;
+            color: #758078;
         }
 
+        /* =========================
+           MESSAGE
+        ========================= */
 
-        .form-group {
+        #message {
+            display: none;
 
-            margin-bottom: 15px;
+            padding: 12px 13px;
 
+            margin-bottom: 16px;
+
+            border-radius: 11px;
+
+            font-size: 12px;
+            line-height: 1.5;
+
+            font-weight: 700;
         }
 
+        #message.error {
+            display: block;
 
-        .form-group label {
+            color: #a52121;
+            background: #ffebee;
 
+            border: 1px solid #ffcdd2;
+        }
+
+        #message.success {
+            display: block;
+
+            color: #176b35;
+            background: #e8f5e9;
+
+            border: 1px solid #c8e6c9;
+        }
+
+        /* =========================
+           INPUT
+        ========================= */
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field label {
             display: block;
 
             margin-bottom: 7px;
 
-            font-size: 13px;
-
+            font-size: 12px;
             font-weight: 800;
 
             color: #34443a;
-
         }
 
-
-        .form-group input {
-
+        .input {
             width: 100%;
+            height: 48px;
 
-            padding: 14px;
+            padding: 0 14px;
 
-            border:
-                1px solid #d7ddd8;
+            border: 1px solid #d5ded8;
 
             border-radius: 12px;
 
-            outline: none;
-
-            font-size: 15px;
-
             background: #fbfcfb;
 
+            outline: none;
+
+            font-size: 14px;
+
+            color: #17221a;
         }
 
+        .input:focus {
+            border-color: #16804a;
 
-        .form-group input:focus {
-
-            border-color: #2e7d32;
-
-            background: #fff;
+            background: white;
 
             box-shadow:
                 0 0 0 3px
-                rgba(46,125,50,.10);
-
+                rgba(22, 128, 74, 0.10);
         }
 
+        /* =========================
+           PASSWORD
+        ========================= */
 
-        .password-row {
-
+        .password-wrap {
             position: relative;
-
         }
 
-
-        .password-row input {
-
-            padding-right: 55px;
-
+        .password-wrap .input {
+            padding-right: 52px;
         }
 
-
-        .password-toggle {
-
+        .eye {
             position: absolute;
 
-            right: 10px;
+            right: 7px;
+            top: 6px;
 
-            top: 50%;
-
-            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
 
             border: 0;
 
@@ -298,232 +255,191 @@
 
             cursor: pointer;
 
-            font-size: 18px;
-
+            font-size: 17px;
         }
 
+        /* =========================
+           FORGOT
+        ========================= */
 
-        .login-button {
+        .forgot-row {
+            display: flex;
+            justify-content: flex-end;
 
+            margin-top: -2px;
+            margin-bottom: 18px;
+        }
+
+        .forgot {
+            border: 0;
+
+            background: transparent;
+
+            color: #16804a;
+
+            font-size: 12px;
+            font-weight: 800;
+
+            cursor: pointer;
+        }
+
+        /* =========================
+           LOGIN BUTTON
+        ========================= */
+
+        .login-btn {
             width: 100%;
+            height: 49px;
 
             border: 0;
 
             border-radius: 13px;
 
-            padding: 14px;
-
             background:
                 linear-gradient(
                     135deg,
-                    #1b5e20,
-                    #2e7d32
+                    #0d6035,
+                    #198754
                 );
 
-            color: #fff;
+            color: white;
 
-            font-size: 15px;
-
+            font-size: 14px;
             font-weight: 900;
 
             cursor: pointer;
 
             box-shadow:
-                0 7px 16px
-                rgba(27,94,32,.18);
-
+                0 8px 18px
+                rgba(13, 96, 53, 0.20);
         }
 
+        .login-btn:active {
+            transform: scale(0.98);
+        }
 
-        .login-button:disabled {
-
-            opacity: .65;
-
+        .login-btn:disabled {
+            opacity: 0.65;
             cursor: not-allowed;
-
         }
 
-
-        .message {
-
+        .loading {
             display: none;
-
-            margin-bottom: 15px;
-
-            padding: 12px;
-
-            border-radius: 11px;
-
-            font-size: 13px;
-
-            line-height: 1.45;
-
-            font-weight: 700;
-
+            margin-right: 6px;
         }
 
-
-        .message.error {
-
-            display: block;
-
-            background: #ffebee;
-
-            color: #b3261e;
-
-        }
-
-
-        .message.success {
-
-            display: block;
-
-            background: #e8f5e9;
-
-            color: #1b5e20;
-
-        }
-
+        /* =========================
+           DIVIDER
+        ========================= */
 
         .divider {
-
             display: flex;
-
             align-items: center;
 
             gap: 10px;
 
-            margin: 21px 0;
+            margin: 22px 0;
 
-            color: #9aa49d;
+            color: #9aa49e;
 
-            font-size: 12px;
-
+            font-size: 10px;
         }
-
 
         .divider::before,
         .divider::after {
-
             content: "";
 
             flex: 1;
 
             height: 1px;
 
-            background: #e2e7e3;
-
+            background: #e2e8e3;
         }
 
+        /* =========================
+           SIGNUP
+        ========================= */
 
-        .signup-button {
-
+        .signup-btn {
             width: 100%;
+            height: 47px;
 
-            border:
-                1px solid #2e7d32;
+            border: 1px solid #16804a;
 
             border-radius: 13px;
 
-            padding: 13px;
+            background: white;
 
-            background: #fff;
+            color: #0d6035;
 
-            color: #1b5e20;
-
+            font-size: 13px;
             font-weight: 900;
 
             cursor: pointer;
-
         }
 
-
-        .forgot-button {
-
-            border: 0;
-
-            background: transparent;
-
-            color: #2e7d32;
-
-            font-size: 12px;
-
-            font-weight: 800;
-
-            cursor: pointer;
-
-            padding: 0;
-
+        .signup-btn:active {
+            transform: scale(0.98);
         }
 
+        /* =========================
+           FOOTER
+        ========================= */
 
-        .login-footer {
-
+        .footer {
             text-align: center;
 
-            margin-top: 18px;
+            margin-top: 17px;
 
-            color: #7a857d;
+            font-size: 10px;
 
-            font-size: 11px;
+            line-height: 1.6;
 
-            line-height: 1.5;
-
+            color: #7c8780;
         }
 
-
-        .loading {
-
-            display: none;
-
-            margin-right: 6px;
-
-        }
-
+        /* =========================
+           MOBILE
+        ========================= */
 
         @media (max-width: 480px) {
 
-            .login-page {
-
-                padding: 16px;
-
+            .page {
+                padding: 15px;
             }
 
-
-            .login-card {
-
-                padding: 20px;
-
+            .card {
+                padding: 21px;
+                border-radius: 21px;
             }
-
 
             .brand h1 {
-
                 font-size: 25px;
-
             }
 
+            .logo {
+                width: 66px;
+                height: 66px;
+                border-radius: 19px;
+            }
         }
 
     </style>
-
 </head>
-
 
 <body>
 
+<div class="page">
 
-<div class="login-page">
+    <div class="container">
 
-
-    <div class="login-container">
-
-
-        <!-- BRAND -->
+        <!-- =====================
+             BRAND
+        ====================== -->
 
         <div class="brand">
 
-            <div class="brand-icon">
+            <div class="logo">
                 M
             </div>
 
@@ -532,25 +448,26 @@
             </h1>
 
             <p>
-                Complete Learning Platform
+                NEET Biology Learning Platform
             </p>
 
         </div>
 
 
-        <!-- LOGIN CARD -->
+        <!-- =====================
+             LOGIN CARD
+        ====================== -->
 
-        <section class="login-card">
+        <div class="card">
 
-
-            <div class="card-title">
+            <div class="heading">
 
                 <h2>
                     Student Login
                 </h2>
 
                 <p>
-                    Login to continue your learning
+                    Login to continue your preparation
                 </p>
 
             </div>
@@ -558,21 +475,19 @@
 
             <!-- MESSAGE -->
 
-            <div
-                id="message"
-                class="message"
-            ></div>
+            <div id="message"></div>
 
 
             <!-- EMAIL -->
 
-            <div class="form-group">
+            <div class="field">
 
                 <label for="email">
                     Email Address
                 </label>
 
                 <input
+                    class="input"
                     id="email"
                     type="email"
                     placeholder="Enter your email"
@@ -584,15 +499,16 @@
 
             <!-- PASSWORD -->
 
-            <div class="form-group">
+            <div class="field">
 
                 <label for="password">
                     Password
                 </label>
 
-                <div class="password-row">
+                <div class="password-wrap">
 
                     <input
+                        class="input"
                         id="password"
                         type="password"
                         placeholder="Enter your password"
@@ -601,8 +517,8 @@
 
                     <button
                         type="button"
-                        class="password-toggle"
-                        id="togglePassword"
+                        class="eye"
+                        id="eye"
                         aria-label="Show password"
                     >
                         👁️
@@ -615,18 +531,12 @@
 
             <!-- FORGOT -->
 
-            <div
-                style="
-                    display:flex;
-                    justify-content:flex-end;
-                    margin-bottom:18px;
-                "
-            >
+            <div class="forgot-row">
 
                 <button
                     type="button"
-                    class="forgot-button"
-                    id="forgotPassword"
+                    class="forgot"
+                    id="forgot"
                 >
                     Forgot Password?
                 </button>
@@ -638,12 +548,12 @@
 
             <button
                 type="button"
-                class="login-button"
-                id="loginButton"
+                class="login-btn"
+                id="login"
             >
 
                 <span
-                    id="loginLoading"
+                    id="loading"
                     class="loading"
                 >
                     ⏳
@@ -663,249 +573,352 @@
             </div>
 
 
-            <!-- SIGNUP -->
+            <!-- SIGN UP -->
 
             <button
                 type="button"
-                class="signup-button"
-                id="signupButton"
+                class="signup-btn"
+                id="signup"
             >
                 Create Student Account
             </button>
 
+        </div>
 
-        </section>
 
-
-        <div class="login-footer">
+        <div class="footer">
 
             mNEET-Pro • Student Learning Platform
 
             <br>
 
-            Secure account authentication
+            Secure Firebase Authentication
 
         </div>
-
 
     </div>
 
 </div>
 
 
-<!-- ======================================================
-     FIREBASE + APP SCRIPTS
-======================================================= -->
-
-<script src="js/firebase.js"></script>
-
-<script src="js/auth.js"></script>
-
-
 <script>
 
-"use strict";
+/* =====================================================
+   FIREBASE CONFIG
+===================================================== */
+
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyApQOM_mtFZ16RiNJEaIUhb4iYFBIBRK58",
+
+    authDomain:
+        "mneet-spark.firebaseapp.com",
+
+    databaseURL:
+        "https://mneet-spark-default-rtdb.firebaseio.com",
+
+    projectId:
+        "mneet-spark",
+
+    storageBucket:
+        "mneet-spark.firebasestorage.app",
+
+    messagingSenderId:
+        "252201633700",
+
+    appId:
+        "1:252201633700:web:1a1e7a2cff1f0b168ea331"
+
+};
 
 
-// ==========================================================
-// ELEMENTS
-// ==========================================================
+/* =====================================================
+   INITIALIZE FIREBASE
+===================================================== */
 
-const emailInput =
-    document.getElementById(
-        "email"
+if (!firebase.apps.length) {
+
+    firebase.initializeApp(
+        firebaseConfig
     );
 
+}
 
-const passwordInput =
-    document.getElementById(
-        "password"
-    );
-
-
-const loginButton =
-    document.getElementById(
-        "loginButton"
-    );
+const auth =
+    firebase.auth();
 
 
-const signupButton =
-    document.getElementById(
-        "signupButton"
-    );
+/* =====================================================
+   ELEMENTS
+===================================================== */
 
+const email =
+    document.getElementById("email");
 
-const forgotButton =
-    document.getElementById(
-        "forgotPassword"
-    );
+const password =
+    document.getElementById("password");
 
+const login =
+    document.getElementById("login");
 
-const togglePassword =
-    document.getElementById(
-        "togglePassword"
-    );
+const signup =
+    document.getElementById("signup");
 
+const forgot =
+    document.getElementById("forgot");
 
-const messageBox =
-    document.getElementById(
-        "message"
-    );
+const eye =
+    document.getElementById("eye");
 
+const message =
+    document.getElementById("message");
+
+const loading =
+    document.getElementById("loading");
 
 const loginText =
-    document.getElementById(
-        "loginText"
-    );
+    document.getElementById("loginText");
 
 
-const loginLoading =
-    document.getElementById(
-        "loginLoading"
-    );
-
-
-// ==========================================================
-// MESSAGE
-// ==========================================================
+/* =====================================================
+   MESSAGE FUNCTION
+===================================================== */
 
 function showMessage(
-    message,
+    text,
     type
 ) {
 
-    messageBox.textContent =
-        message;
+    message.textContent = text;
 
-    messageBox.className =
-        "message " +
-        type;
+    message.className = type;
 
 }
 
 
-// ==========================================================
-// PASSWORD TOGGLE
-// ==========================================================
+/* =====================================================
+   FIREBASE ERROR
+===================================================== */
 
-togglePassword.addEventListener(
+function getErrorMessage(error) {
+
+    switch (error.code) {
+
+        case "auth/invalid-email":
+            return "Email addressটি সঠিক নয়।";
+
+        case "auth/user-not-found":
+            return "এই email দিয়ে কোনো account পাওয়া যায়নি।";
+
+        case "auth/wrong-password":
+            return "Password সঠিক নয়।";
+
+        case "auth/invalid-credential":
+            return "Email অথবা password সঠিক নয়।";
+
+        case "auth/user-disabled":
+            return "এই account disabled করা হয়েছে।";
+
+        case "auth/too-many-requests":
+            return "অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।";
+
+        case "auth/network-request-failed":
+            return "Internet connection check করুন।";
+
+        default:
+            return "Login করা যায়নি। আবার চেষ্টা করুন।";
+    }
+
+}
+
+
+/* =====================================================
+   SHOW / HIDE PASSWORD
+===================================================== */
+
+eye.addEventListener(
     "click",
     function () {
 
-        const isPassword =
-            passwordInput.type ===
-            "password";
+        if (
+            password.type === "password"
+        ) {
 
+            password.type = "text";
 
-        passwordInput.type =
-            isPassword
-                ? "text"
-                : "password";
+            eye.textContent = "🙈";
 
+        } else {
 
-        togglePassword.textContent =
-            isPassword
-                ? "🙈"
-                : "👁️";
+            password.type = "password";
+
+            eye.textContent = "👁️";
+
+        }
 
     }
 );
 
 
-// ==========================================================
-// LOGIN
-// ==========================================================
+/* =====================================================
+   LOGIN
+===================================================== */
 
-loginButton.addEventListener(
+login.addEventListener(
+    "click",
+    loginStudent
+);
+
+
+async function loginStudent() {
+
+    const emailValue =
+        email.value.trim();
+
+    const passwordValue =
+        password.value;
+
+
+    /* VALIDATION */
+
+    if (!emailValue) {
+
+        showMessage(
+            "Email address দিন।",
+            "error"
+        );
+
+        email.focus();
+
+        return;
+    }
+
+
+    if (!passwordValue) {
+
+        showMessage(
+            "Password দিন।",
+            "error"
+        );
+
+        password.focus();
+
+        return;
+    }
+
+
+    /* LOADING */
+
+    login.disabled = true;
+
+    loading.style.display = "inline";
+
+    loginText.textContent =
+        "Logging in...";
+
+
+    try {
+
+        await auth.signInWithEmailAndPassword(
+            emailValue,
+            passwordValue
+        );
+
+
+        showMessage(
+            "Login successful. Dashboard খুলছে...",
+            "success"
+        );
+
+
+        setTimeout(
+            function () {
+
+                window.location.href =
+                    "dashboard.html";
+
+            },
+            600
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Login Error:",
+            error
+        );
+
+
+        showMessage(
+            getErrorMessage(error),
+            "error"
+        );
+
+
+        login.disabled = false;
+
+        loading.style.display = "none";
+
+        loginText.textContent =
+            "Login";
+
+    }
+
+}
+
+
+/* =====================================================
+   FORGOT PASSWORD
+===================================================== */
+
+forgot.addEventListener(
     "click",
     async function () {
 
-        const email =
-            emailInput.value.trim();
-
-        const password =
-            passwordInput.value;
+        const emailValue =
+            email.value.trim();
 
 
-        if (!email) {
+        if (!emailValue) {
 
             showMessage(
-                "Email address দিন।",
+                "প্রথমে email address দিন।",
                 "error"
             );
 
-            emailInput.focus();
+            email.focus();
 
             return;
-
         }
-
-
-        if (!password) {
-
-            showMessage(
-                "Password দিন।",
-                "error"
-            );
-
-            passwordInput.focus();
-
-            return;
-
-        }
-
-
-        loginButton.disabled =
-            true;
-
-        loginLoading.style.display =
-            "inline";
-
-        loginText.textContent =
-            "Logging in...";
 
 
         try {
 
-            await studentLogin(
-                email,
-                password
+            await auth.sendPasswordResetEmail(
+                emailValue
             );
 
 
             showMessage(
-                "Login successful. Dashboard খুলছে...",
+                "Password reset email পাঠানো হয়েছে। আপনার inbox check করুন।",
                 "success"
-            );
-
-
-            setTimeout(
-                function () {
-
-                    window.location.href =
-                        "dashboard.html";
-
-                },
-                500
             );
 
 
         } catch (error) {
 
-            showMessage(
-                error.message,
-                "error"
+            console.error(
+                "Reset Error:",
+                error
             );
 
 
-            loginButton.disabled =
-                false;
-
-            loginLoading.style.display =
-                "none";
-
-            loginText.textContent =
-                "Login";
+            showMessage(
+                getErrorMessage(error),
+                "error"
+            );
 
         }
 
@@ -913,11 +926,11 @@ loginButton.addEventListener(
 );
 
 
-// ==========================================================
-// SIGNUP
-// ==========================================================
+/* =====================================================
+   CREATE ACCOUNT
+===================================================== */
 
-signupButton.addEventListener(
+signup.addEventListener(
     "click",
     function () {
 
@@ -928,71 +941,11 @@ signupButton.addEventListener(
 );
 
 
-// ==========================================================
-// FORGOT PASSWORD
-// ==========================================================
+/* =====================================================
+   ENTER KEY
+===================================================== */
 
-forgotButton.addEventListener(
-    "click",
-    async function () {
-
-        const email =
-            emailInput.value.trim();
-
-
-        if (!email) {
-
-            showMessage(
-                "প্রথমে আপনার email address দিন।",
-                "error"
-            );
-
-            emailInput.focus();
-
-            return;
-
-        }
-
-
-        try {
-
-            await auth.sendPasswordResetEmail(
-                email
-            );
-
-
-            showMessage(
-                "Password reset email পাঠানো হয়েছে। আপনার inbox check করুন।",
-                "success"
-            );
-
-        } catch (error) {
-
-            const formatted =
-                typeof formatAuthError ===
-                "function"
-                    ? formatAuthError(error)
-                    : new Error(
-                        error.message
-                    );
-
-
-            showMessage(
-                formatted.message,
-                "error"
-            );
-
-        }
-
-    }
-);
-
-
-// ==========================================================
-// ENTER KEY LOGIN
-// ==========================================================
-
-passwordInput.addEventListener(
+email.addEventListener(
     "keydown",
     function (event) {
 
@@ -1000,7 +953,7 @@ passwordInput.addEventListener(
             event.key === "Enter"
         ) {
 
-            loginButton.click();
+            password.focus();
 
         }
 
@@ -1008,22 +961,40 @@ passwordInput.addEventListener(
 );
 
 
-// ==========================================================
-// REDIRECT ALREADY LOGGED-IN USER
-// ==========================================================
+password.addEventListener(
+    "keydown",
+    function (event) {
 
-if (
-    typeof redirectIfLoggedIn ===
-    "function"
-) {
+        if (
+            event.key === "Enter"
+        ) {
 
-    redirectIfLoggedIn();
+            loginStudent();
 
-}
+        }
+
+    }
+);
+
+
+/* =====================================================
+   CHECK EXISTING LOGIN
+===================================================== */
+
+auth.onAuthStateChanged(
+    function (user) {
+
+        if (user) {
+
+            window.location.href =
+                "dashboard.html";
+
+        }
+
+    }
+);
 
 </script>
 
-
 </body>
-
 </html>
