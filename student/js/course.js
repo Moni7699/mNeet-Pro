@@ -1,57 +1,143 @@
-/* =========================================================
-   COURSE PAGE
-========================================================= */
-
 "use strict";
+
+/* =====================================================
+   mNEET-PRO
+   COURSE PAGE
+===================================================== */
+
+let courseUser = null;
 
 let activeCourseId = "";
 
-let activeCourseData = {};
+let activeCourseData = null;
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
 
-        auth.onAuthStateChanged(
-            async function(user) {
+/* =====================================================
+   AUTH
+===================================================== */
 
-                if (!user) {
+auth.onAuthStateChanged(async function(user){
 
-                    window.location.replace(
-                        "index.html"
-                    );
+    if(!user){
 
-                    return;
+        window.location.replace(
+            "index.html"
+        );
 
-                }
+        return;
 
-                activeCourseId =
-                    localStorage.getItem(
-                        "activeCourse"
-                    ) || "";
+    }
 
-                if (!activeCourseId) {
+    courseUser = user;
 
-                    window.location.replace(
-                        "courses.html"
-                    );
+    loadTheme();
 
-                    return;
+    activeCourseId =
+        getActiveCourse();
 
-                }
 
-                await loadCourse();
+    if(!activeCourseId){
 
-            }
+        alert(
+            "প্রথমে একটি course select করুন।"
+        );
+
+        window.location.replace(
+            "courses.html"
+        );
+
+        return;
+
+    }
+
+
+    await verifyPurchase();
+
+});
+
+
+/* =====================================================
+   VERIFY PURCHASE
+===================================================== */
+
+async function verifyPurchase(){
+
+    try{
+
+        const purchaseDoc =
+            await db
+                .collection("purchases")
+                .doc(courseUser.uid)
+                .get();
+
+
+        if(!purchaseDoc.exists){
+
+            alert(
+                "এই course-এর access পাওয়া যায়নি।"
+            );
+
+            window.location.replace(
+                "courses.html"
+            );
+
+            return;
+
+        }
+
+
+        const purchaseData =
+            purchaseDoc.data() || {};
+
+
+        if(
+            purchaseData[
+                activeCourseId
+            ] !== true
+        ){
+
+            alert(
+                "এই course এখনও purchased হয়নি।"
+            );
+
+            window.location.replace(
+                "courses.html"
+            );
+
+            return;
+
+        }
+
+
+        await loadCourse();
+
+    }catch(error){
+
+        console.error(
+            "Purchase verification error:",
+            error
+        );
+
+        alert(
+            "Course access verify করা যায়নি।"
+        );
+
+        window.location.replace(
+            "courses.html"
         );
 
     }
-);
+
+}
 
 
-async function loadCourse() {
+/* =====================================================
+   LOAD COURSE
+===================================================== */
 
-    try {
+async function loadCourse(){
+
+    try{
 
         const doc =
             await db
@@ -59,81 +145,107 @@ async function loadCourse() {
                 .doc(activeCourseId)
                 .get();
 
-        if (!doc.exists) {
+
+        if(!doc.exists){
 
             alert(
                 "Course পাওয়া যায়নি।"
             );
 
-            window.location.href =
-                "courses.html";
+            window.location.replace(
+                "courses.html"
+            );
 
             return;
 
         }
 
+
         activeCourseData =
             doc.data() || {};
 
-        updateCourseUI();
+
+        updateCourseHeader();
 
         await loadChapters();
 
-    } catch (error) {
+    }catch(error){
 
         console.error(
             "Course load error:",
             error
         );
 
-        alert(
-            "Course load করা যায়নি।"
-        );
+        showCourseError();
 
     }
 
 }
 
 
-function updateCourseUI() {
+/* =====================================================
+   COURSE HEADER
+===================================================== */
+
+function updateCourseHeader(){
 
     const title =
-        activeCourseData.title ||
-        activeCourseData.name ||
-        "Biology Course";
+        document.getElementById(
+            "courseTitle"
+        );
 
-    if ($("courseTitle")) {
+    const description =
+        document.getElementById(
+            "courseDescription"
+        );
 
-        $("courseTitle").textContent =
-            title;
+
+    if(title){
+
+        title.textContent =
+            activeCourseData.title ||
+            activeCourseData.name ||
+            "Biology Course";
 
     }
 
-    if ($("courseDescription")) {
 
-        $("courseDescription")
-            .textContent =
+    if(description){
+
+        description.textContent =
             activeCourseData.description ||
-            "NEET Biology preparation course.";
+            "NEET Biology Complete Course";
 
     }
 
 }
 
 
-async function loadChapters() {
+/* =====================================================
+   LOAD CHAPTERS
+===================================================== */
+
+async function loadChapters(){
 
     const container =
-        $("chapterList");
+        document.getElementById(
+            "chapterList"
+        );
 
-    if (!container) return;
 
-    showLoading(
-        container,
-        "Loading chapters..."
-    );
+    if(!container){
+        return;
+    }
 
-    try {
+
+    container.innerHTML = `
+        <div class="empty-state">
+            Loading chapters...
+        </div>
+    `;
+
+
+    try{
 
         const snapshot =
             await db
@@ -146,97 +258,291 @@ async function loadChapters() {
                 )
                 .get();
 
-        if (snapshot.empty) {
 
-            container.innerHTML =
-                `<div class="loading-text">
-                    No chapters added yet.
-                </div>`;
+        container.innerHTML = "";
+
+
+        if(snapshot.empty){
+
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div style="font-size:35px;">
+                        📚
+                    </div>
+
+                    <div style="margin-top:10px;">
+                        No chapters added yet.
+                    </div>
+                </div>
+            `;
 
             return;
 
         }
 
-        container.innerHTML = "";
 
-        snapshot.forEach(function(doc) {
+        snapshot.forEach(
+            function(doc){
 
-            const data =
-                doc.data() || {};
+                const chapter =
+                    doc.data() || {};
 
-            const item =
-                document.createElement(
-                    "div"
+                const card =
+                    createChapterCard(
+                        doc.id,
+                        chapter
+                    );
+
+                container.appendChild(
+                    card
                 );
 
-            item.className =
-                "chapter-item";
+            }
+        );
 
-            item.innerHTML = `
-                <div>
-                    <strong>
-                        ${escapeHtml(
-                            data.title ||
-                            data.name ||
-                            "Chapter"
-                        )}
-                    </strong>
+    }catch(error){
 
-                    <small>
-                        ${escapeHtml(
-                            data.description ||
-                            "Biology chapter"
-                        )}
-                    </small>
-                </div>
+        /*
+         * If order field is not available,
+         * retry without orderBy.
+         */
 
-                <button
-                    type="button"
-                    onclick="openChapter('${doc.id}')"
-                >
-                    Open
-                </button>
-            `;
-
-            container.appendChild(
-                item
-            );
-
-        });
-
-    } catch (error) {
-
-        console.error(
-            "Chapter error:",
+        console.warn(
+            "Ordered chapter query failed:",
             error
         );
 
-        container.innerHTML =
-            `<div class="loading-text">
-                Chapter loading failed.
-            </div>`;
+
+        try{
+
+            const snapshot =
+                await db
+                    .collection("courses")
+                    .doc(activeCourseId)
+                    .collection("chapters")
+                    .get();
+
+
+            container.innerHTML = "";
+
+
+            if(snapshot.empty){
+
+                container.innerHTML = `
+                    <div class="empty-state">
+                        No chapters available.
+                    </div>
+                `;
+
+                return;
+
+            }
+
+
+            snapshot.forEach(
+                function(doc){
+
+                    container.appendChild(
+                        createChapterCard(
+                            doc.id,
+                            doc.data() || {}
+                        )
+                    );
+
+                }
+            );
+
+        }catch(secondError){
+
+            console.error(
+                "Chapter load error:",
+                secondError
+            );
+
+            container.innerHTML = `
+                <div class="empty-state">
+                    Chapters load করা যায়নি।
+                </div>
+            `;
+
+        }
 
     }
 
 }
 
 
-function openChapter(chapterId) {
+/* =====================================================
+   CHAPTER CARD
+===================================================== */
 
-    if (!chapterId) return;
+function createChapterCard(
+    chapterId,
+    chapter
+){
+
+    const card =
+        document.createElement(
+            "div"
+        );
+
+
+    card.className =
+        "card";
+
+
+    card.style.marginBottom =
+        "12px";
+
+
+    const title =
+        escapeHtml(
+            chapter.title ||
+            chapter.name ||
+            "Biology Chapter"
+        );
+
+
+    const number =
+        chapter.number ||
+        chapter.order ||
+        "";
+
+
+    card.innerHTML = `
+
+        <div
+            style="
+                display:flex;
+                align-items:center;
+                gap:12px;
+            "
+        >
+
+            <div
+                style="
+                    width:45px;
+                    height:45px;
+                    border-radius:13px;
+                    background:#e8f5e9;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    color:#0d6035;
+                    font-size:16px;
+                    font-weight:900;
+                    flex-shrink:0;
+                "
+            >
+                ${
+                    number
+                        ? number
+                        : "📖"
+                }
+            </div>
+
+
+            <div style="flex:1;">
+
+                <div
+                    style="
+                        font-size:14px;
+                        font-weight:900;
+                    "
+                >
+                    ${title}
+                </div>
+
+
+                <div
+                    style="
+                        margin-top:4px;
+                        color:#7b857f;
+                        font-size:10px;
+                    "
+                >
+                    Open chapter topics
+                </div>
+
+            </div>
+
+
+            <div
+                style="
+                    color:#198754;
+                    font-size:22px;
+                "
+            >
+                ›
+            </div>
+
+        </div>
+
+    `;
+
+
+    card.addEventListener(
+        "click",
+        function(){
+
+            openChapter(
+                chapterId
+            );
+
+        }
+    );
+
+
+    return card;
+
+}
+
+
+/* =====================================================
+   OPEN CHAPTER
+===================================================== */
+
+function openChapter(
+    chapterId
+){
+
+    if(!chapterId){
+        return;
+    }
+
 
     localStorage.setItem(
         "activeChapter",
         chapterId
     );
 
-    /*
-     * Future chapter.html এখানে connect হবে।
-     * এখন course page-এ থাকছে যাতে broken page না হয়।
-     */
 
-    alert(
-        "Chapter selected. Chapter learning page পরের ধাপে connect হবে।"
-    );
+    window.location.href =
+        "topics.html";
+
+}
+
+
+/* =====================================================
+   ERROR
+===================================================== */
+
+function showCourseError(){
+
+    const container =
+        document.getElementById(
+            "chapterList"
+        );
+
+
+    if(container){
+
+        container.innerHTML = `
+            <div class="empty-state">
+                Course load করা যায়নি।
+            </div>
+        `;
+
+    }
 
 }
