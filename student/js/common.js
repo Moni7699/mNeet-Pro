@@ -1,747 +1,24 @@
+
 "use strict";
 
-/* =========================================================
-   mNEET-Pro
-   COMMON.JS
-   Shared Firebase + Student Utilities
-========================================================= */
-
-
-/* =========================================================
-   FIREBASE CONFIG
-========================================================= */
-
-const firebaseConfig = {
-
-    apiKey:
-        "AIzaSyApQOM_mtFZ16RiNJEaIUhb4iYFBIBRK58",
-
-    authDomain:
-        "mneet-spark.firebaseapp.com",
-
-    databaseURL:
-        "https://mneet-spark-default-rtdb.firebaseio.com",
-
-    projectId:
-        "mneet-spark",
-
-    storageBucket:
-        "mneet-spark.firebasestorage.app",
-
-    messagingSenderId:
-        "252201633700",
-
-    appId:
-        "1:252201633700:web:1a1e7a2cff1f0b168ea331"
-};
-
-
-/* =========================================================
-   FIREBASE INITIALIZE
-========================================================= */
-
-if (
-    typeof firebase !== "undefined" &&
-    firebase.apps.length === 0
-) {
-    firebase.initializeApp(firebaseConfig);
-}
-
-
-/* =========================================================
-   FIREBASE SERVICES
-========================================================= */
-
-const auth =
-    typeof firebase !== "undefined"
-        ? firebase.auth()
-        : null;
-
-const db =
-    typeof firebase !== "undefined"
-        ? firebase.firestore()
-        : null;
-
-
-/* =========================================================
-   OPTIONAL SERVICES
-========================================================= */
-
-let realtimeDB = null;
-let storage = null;
-
-if (
-    typeof firebase !== "undefined" &&
-    typeof firebase.database === "function"
-) {
-    realtimeDB = firebase.database();
-}
-
-if (
-    typeof firebase !== "undefined" &&
-    typeof firebase.storage === "function"
-) {
-    storage = firebase.storage();
-}
-
-
-/* =========================================================
-   CURRENT USER
-========================================================= */
-
 function getCurrentUser() {
-
-    if (!auth) {
-        return null;
-    }
-
     return auth.currentUser || null;
 }
 
-
-/* =========================================================
-   REQUIRE LOGIN
-========================================================= */
-
-function requireLogin(
-    redirectPage = "index.html"
-) {
-
-    if (!auth) {
-        window.location.replace(redirectPage);
-        return;
-    }
-
+function requireLogin(redirectPage = "index.html") {
     auth.onAuthStateChanged(function(user) {
-
-        if (!user) {
-            window.location.replace(redirectPage);
-        }
-
+        if (!user) window.location.replace(redirectPage);
     });
 }
 
-
-/* =========================================================
-   REDIRECT IF LOGGED IN
-========================================================= */
-
-function redirectIfLoggedIn(
-    page = "dashboard.html"
-) {
-
-    if (!auth) {
-        return;
-    }
-
+function redirectIfLoggedIn(page = "dashboard.html") {
     auth.onAuthStateChanged(function(user) {
-
-        if (user) {
-            window.location.replace(page);
-        }
-
+        if (user) window.location.replace(page);
     });
 }
 
-
-/* =========================================================
-   AUTH ERROR
-========================================================= */
-
-function formatAuthError(error) {
-
-    const code =
-        error && error.code
-            ? error.code
-            : "";
-
-    const messages = {
-
-        "auth/invalid-email":
-            "Email address সঠিক নয়।",
-
-        "auth/user-not-found":
-            "এই email দিয়ে কোনো account পাওয়া যায়নি।",
-
-        "auth/wrong-password":
-            "Password ভুল হয়েছে।",
-
-        "auth/invalid-credential":
-            "Email অথবা password সঠিক নয়।",
-
-        "auth/user-disabled":
-            "এই account বর্তমানে disabled।",
-
-        "auth/too-many-requests":
-            "অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
-
-        "auth/network-request-failed":
-            "Internet connection check করুন।",
-
-        "auth/email-already-in-use":
-            "এই email দিয়ে ইতিমধ্যে account আছে।",
-
-        "auth/weak-password":
-            "Password আরও শক্তিশালী দিন।",
-
-        "auth/operation-not-allowed":
-            "এই authentication method Firebase-এ enable করা নেই।"
-
-    };
-
-    return new Error(
-        messages[code] ||
-        (
-            error && error.message
-                ? error.message
-                : "Authentication error হয়েছে।"
-        )
-    );
-}
-
-
-/* =========================================================
-   STUDENT LOGIN
-========================================================= */
-
-async function studentLogin(
-    email,
-    password
-) {
-
-    if (!auth) {
-        throw new Error(
-            "Firebase Authentication পাওয়া যায়নি।"
-        );
-    }
-
-    email =
-        String(email || "").trim();
-
-    password =
-        String(password || "");
-
-    if (!email) {
-        throw new Error(
-            "Email address দিন।"
-        );
-    }
-
-    if (!password) {
-        throw new Error(
-            "Password দিন।"
-        );
-    }
-
-    try {
-
-        const result =
-            await auth.signInWithEmailAndPassword(
-                email,
-                password
-            );
-
-        return result.user;
-
-    } catch (error) {
-
-        throw formatAuthError(error);
-    }
-}
-
-
-/* =========================================================
-   STUDENT SIGNUP
-========================================================= */
-
-async function studentSignup(
-    name,
-    email,
-    password
-) {
-
-    if (!auth || !db) {
-        throw new Error(
-            "Firebase service পাওয়া যায়নি।"
-        );
-    }
-
-    name =
-        String(name || "").trim();
-
-    email =
-        String(email || "").trim();
-
-    password =
-        String(password || "");
-
-    if (!name) {
-        throw new Error(
-            "Name দিন।"
-        );
-    }
-
-    if (!email) {
-        throw new Error(
-            "Email দিন।"
-        );
-    }
-
-    if (!password) {
-        throw new Error(
-            "Password দিন।"
-        );
-    }
-
-    try {
-
-        const result =
-            await auth.createUserWithEmailAndPassword(
-                email,
-                password
-            );
-
-        const user =
-            result.user;
-
-        await user.updateProfile({
-            displayName: name
-        });
-
-        await db
-            .collection("students")
-            .doc(user.uid)
-            .set({
-
-                uid:
-                    user.uid,
-
-                name:
-                    name,
-
-                email:
-                    email,
-
-                targetDate:
-                    "",
-
-                targetDream:
-                    "",
-
-                selectedCourse:
-                    "",
-
-                progress:
-                    0,
-
-                lastScore:
-                    null,
-
-                accuracy:
-                    0,
-
-                streak:
-                    0,
-
-                createdAt:
-                    firebase.firestore.FieldValue.serverTimestamp(),
-
-                updatedAt:
-                    firebase.firestore.FieldValue.serverTimestamp()
-
-            }, {
-                merge: true
-            });
-
-        return user;
-
-    } catch (error) {
-
-        throw formatAuthError(error);
-    }
-}
-
-
-/* =========================================================
-   PASSWORD RESET
-========================================================= */
-
-async function resetStudentPassword(
-    email
-) {
-
-    if (!auth) {
-        throw new Error(
-            "Firebase Authentication পাওয়া যায়নি।"
-        );
-    }
-
-    try {
-
-        await auth.sendPasswordResetEmail(
-            String(email || "").trim()
-        );
-
-    } catch (error) {
-
-        throw formatAuthError(error);
-    }
-}
-
-
-/* =========================================================
-   LOGOUT
-========================================================= */
-
-async function studentLogout() {
-
-    if (!auth) {
-        return;
-    }
-
-    try {
-
-        await auth.signOut();
-
-        localStorage.removeItem("activeCourse");
-        localStorage.removeItem("activeChapter");
-        localStorage.removeItem("activeTopic");
-
-        window.location.replace(
-            "index.html"
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Logout error:",
-            error
-        );
-
-        alert(
-            "Logout করা যায়নি। আবার চেষ্টা করুন।"
-        );
-    }
-}
-
-
-/* =========================================================
-   GET STUDENT DATA
-========================================================= */
-
-async function getStudentData(
-    uid = null
-) {
-
-    if (!db) {
-        return null;
-    }
-
-    const user =
-        getCurrentUser();
-
-    uid =
-        uid ||
-        (
-            user
-                ? user.uid
-                : null
-        );
-
-    if (!uid) {
-        return null;
-    }
-
-    try {
-
-        const snap =
-            await db
-                .collection("students")
-                .doc(uid)
-                .get();
-
-        if (!snap.exists) {
-            return null;
-        }
-
-        return {
-            id: snap.id,
-            ...snap.data()
-        };
-
-    } catch (error) {
-
-        console.error(
-            "Student data error:",
-            error
-        );
-
-        return null;
-    }
-}
-
-
-/* =========================================================
-   SAVE STUDENT DATA
-========================================================= */
-
-async function saveStudentData(
-    data
-) {
-
-    if (!db) {
-        throw new Error(
-            "Firestore পাওয়া যায়নি।"
-        );
-    }
-
-    const user =
-        getCurrentUser();
-
-    if (!user) {
-        throw new Error(
-            "Student login করা নেই।"
-        );
-    }
-
-    await db
-        .collection("students")
-        .doc(user.uid)
-        .set(
-            {
-                ...data,
-
-                updatedAt:
-                    firebase.firestore
-                        .FieldValue
-                        .serverTimestamp()
-            },
-            {
-                merge: true
-            }
-        );
-
-    return true;
-}
-
-
-/* =========================================================
-   GET ALL COURSES
-========================================================= */
-
-async function getCourses() {
-
-    if (!db) {
-        return [];
-    }
-
-    try {
-
-        const snapshot =
-            await db
-                .collection("courses")
-                .get();
-
-        const courses = [];
-
-        snapshot.forEach(function(doc) {
-
-            courses.push({
-
-                id:
-                    doc.id,
-
-                ...(
-                    doc.data() || {}
-                )
-
-            });
-
-        });
-
-        return courses;
-
-    } catch (error) {
-
-        console.error(
-            "Courses error:",
-            error
-        );
-
-        return [];
-    }
-}
-
-
-/* =========================================================
-   GET COURSE
-========================================================= */
-
-async function getCourse(
-    courseId
-) {
-
-    if (!db || !courseId) {
-        return null;
-    }
-
-    try {
-
-        const snap =
-            await db
-                .collection("courses")
-                .doc(courseId)
-                .get();
-
-        if (!snap.exists) {
-            return null;
-        }
-
-        return {
-
-            id:
-                snap.id,
-
-            ...(
-                snap.data() || {}
-            )
-
-        };
-
-    } catch (error) {
-
-        console.error(
-            "Course error:",
-            error
-        );
-
-        return null;
-    }
-}
-
-
-/* =========================================================
-   COURSE STORAGE
-========================================================= */
-
-function setActiveCourse(
-    courseId
-) {
-
-    if (!courseId) {
-        return;
-    }
-
-    localStorage.setItem(
-        "activeCourse",
-        courseId
-    );
-}
-
-
-function getActiveCourse() {
-
-    return (
-        localStorage.getItem(
-            "activeCourse"
-        ) || ""
-    );
-}
-
-
-function clearActiveCourse() {
-
-    localStorage.removeItem(
-        "activeCourse"
-    );
-}
-
-
-/* =========================================================
-   CHAPTER STORAGE
-========================================================= */
-
-function setActiveChapter(
-    chapterId
-) {
-
-    if (!chapterId) {
-        return;
-    }
-
-    localStorage.setItem(
-        "activeChapter",
-        chapterId
-    );
-}
-
-
-function getActiveChapter() {
-
-    return (
-        localStorage.getItem(
-            "activeChapter"
-        ) || ""
-    );
-}
-
-
-function clearActiveChapter() {
-
-    localStorage.removeItem(
-        "activeChapter"
-    );
-}
-
-
-/* =========================================================
-   TOPIC STORAGE
-========================================================= */
-
-function setActiveTopic(
-    topicId
-) {
-
-    if (!topicId) {
-        return;
-    }
-
-    localStorage.setItem(
-        "activeTopic",
-        topicId
-    );
-}
-
-
-function getActiveTopic() {
-
-    return (
-        localStorage.getItem(
-            "activeTopic"
-        ) || ""
-    );
-}
-
-
-function clearActiveTopic() {
-
-    localStorage.removeItem(
-        "activeTopic"
-    );
-}
-
-
-/* =========================================================
-   HTML ESCAPE
-========================================================= */
-
-function escapeHTML(
-    value
-) {
-
-    return String(
-        value ?? ""
-    )
+function escapeHTML(value) {
+    return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -749,287 +26,249 @@ function escapeHTML(
         .replace(/'/g, "&#039;");
 }
 
-
-/* =========================================================
-   SAFE NUMBER
-========================================================= */
-
-function safeNumber(
-    value,
-    fallback = 0
-) {
-
-    const n =
-        Number(value);
-
-    return Number.isFinite(n)
-        ? n
-        : fallback;
+function safePercentage(value) {
+    let n = Number(value);
+    if (!Number.isFinite(n)) n = 0;
+    return Math.round(Math.max(0, Math.min(100, n)));
 }
 
-
-/* =========================================================
-   SAFE PERCENTAGE
-========================================================= */
-
-function safePercentage(
-    value
-) {
-
-    let n =
-        Number(value);
-
-    if (!Number.isFinite(n)) {
-        n = 0;
-    }
-
-    n =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                n
-            )
-        );
-
-    return Math.round(n);
-}
-
-
-/* =========================================================
-   DATE FORMAT
-========================================================= */
-
-function formatDate(
-    value
-) {
-
-    if (!value) {
-        return "—";
-    }
-
-    let date;
-
-    if (
-        value &&
-        typeof value.toDate === "function"
-    ) {
-
-        date =
-            value.toDate();
-
-    } else {
-
-        date =
-            new Date(value);
-    }
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "—";
-    }
-
-    return date.toLocaleDateString(
-        "en-IN",
-        {
-            day: "2-digit",
-            month: "short",
-            year: "numeric"
-        }
-    );
-}
-
-
-/* =========================================================
-   TIME FORMAT
-========================================================= */
-
-function formatTime(
-    value
-) {
-
-    if (!value) {
-        return "—";
-    }
-
-    let date;
-
-    if (
-        value &&
-        typeof value.toDate === "function"
-    ) {
-
-        date =
-            value.toDate();
-
-    } else {
-
-        date =
-            new Date(value);
-    }
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "—";
-    }
-
-    return date.toLocaleTimeString(
-        "en-IN",
-        {
-            hour: "2-digit",
-            minute: "2-digit"
-        }
-    );
-}
-
-
-/* =========================================================
-   LOCAL STORAGE
-========================================================= */
-
-function getLocal(
-    key,
-    fallback = ""
-) {
-
+function getLocal(key, fallback = "") {
     try {
-
-        const value =
-            localStorage.getItem(key);
-
-        return value !== null
-            ? value
-            : fallback;
-
-    } catch (error) {
-
+        const value = localStorage.getItem(key);
+        return value === null ? fallback : value;
+    } catch (_) {
         return fallback;
     }
 }
 
+function setLocal(key, value) {
+    try { localStorage.setItem(key, String(value)); return true; }
+    catch (_) { return false; }
+}
 
-function setLocal(
-    key,
-    value
-) {
+function removeLocal(key) {
+    try { localStorage.removeItem(key); } catch (_) {}
+}
 
+function setActiveCourse(id) { if (id) setLocal("activeCourse", id); }
+function getActiveCourse() { return getLocal("activeCourse", ""); }
+function clearActiveCourse() { removeLocal("activeCourse"); }
+
+function setActiveChapter(id) { if (id) setLocal("activeChapter", id); }
+function getActiveChapter() { return getLocal("activeChapter", ""); }
+function clearActiveChapter() { removeLocal("activeChapter"); }
+
+function setActiveTopic(id) { if (id) setLocal("activeTopic", id); }
+function getActiveTopic() { return getLocal("activeTopic", ""); }
+function clearActiveTopic() { removeLocal("activeTopic"); }
+
+function setActiveQuiz(id) { if (id) setLocal("activeQuiz", id); }
+function getActiveQuiz() { return getLocal("activeQuiz", ""); }
+
+function goTo(page) { if (page) window.location.href = page; }
+
+function openExternalLink(url) {
+    if (url) window.open(url, "_blank", "noopener,noreferrer");
+}
+
+function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value ?? "";
+}
+
+function formatDate(value) {
+    if (!value) return "—";
+    let d = typeof value.toDate === "function" ? value.toDate() : new Date(value);
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString("en-IN", {day:"2-digit", month:"short", year:"numeric"});
+}
+
+function formatTime(value) {
+    if (!value) return "—";
+    let d = typeof value.toDate === "function" ? value.toDate() : new Date(value);
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toLocaleTimeString("en-IN", {hour:"2-digit", minute:"2-digit"});
+}
+
+function formatAuthError(error) {
+    const code = error?.code || "";
+    const messages = {
+        "auth/invalid-email": "Email address সঠিক নয়।",
+        "auth/user-not-found": "এই email দিয়ে কোনো account পাওয়া যায়নি।",
+        "auth/wrong-password": "Password ভুল হয়েছে।",
+        "auth/invalid-credential": "Email অথবা password সঠিক নয়।",
+        "auth/user-disabled": "এই account বর্তমানে disabled।",
+        "auth/too-many-requests": "অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
+        "auth/network-request-failed": "Internet connection check করুন।",
+        "auth/email-already-in-use": "এই email দিয়ে আগে থেকেই account আছে।",
+        "auth/weak-password": "Password কমপক্ষে 6 characters দিন।",
+        "auth/operation-not-allowed": "Firebase Authentication method enable করা নেই।"
+    };
+    return new Error(messages[code] || error?.message || "Authentication error হয়েছে।");
+}
+
+async function getStudentData(uid) {
+    uid = uid || getCurrentUser()?.uid;
+    if (!uid) return null;
     try {
-
-        localStorage.setItem(
-            key,
-            String(value)
-        );
-
-        return true;
-
-    } catch (error) {
-
-        console.error(
-            "Storage error:",
-            error
-        );
-
-        return false;
+        const snap = await db.collection("students").doc(uid).get();
+        return snap.exists ? {id:snap.id, ...snap.data()} : null;
+    } catch (e) {
+        console.error(e);
+        return null;
     }
 }
 
+async function saveStudentData(data) {
+    const user = getCurrentUser();
+    if (!user) throw new Error("Student login করা নেই।");
+    await db.collection("students").doc(user.uid).set({
+        ...data,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge:true});
+}
 
-function removeLocal(
-    key
-) {
+async function getCourses() {
+    const snap = await db.collection("courses").get();
+    return snap.docs.map(d => ({id:d.id, ...d.data()}));
+}
 
+async function getCourse(courseId) {
+    if (!courseId) return null;
+    const snap = await db.collection("courses").doc(courseId).get();
+    return snap.exists ? {id:snap.id, ...snap.data()} : null;
+}
+
+/* Supports the project's intended purchases/{uid} document:
+   { courseId: true, anotherCourseId: true }.
+   Also supports an optional purchasedCourses array/object. */
+async function getPurchasedCourseIds(uid) {
+    uid = uid || getCurrentUser()?.uid;
+    if (!uid) return [];
     try {
+        const snap = await db.collection("purchases").doc(uid).get();
+        if (!snap.exists) return [];
+        const data = snap.data() || {};
+        const ids = new Set();
 
-        localStorage.removeItem(key);
+        Object.keys(data).forEach(k => {
+            if (typeof data[k] === "boolean" && data[k] === true) ids.add(k);
+        });
 
-    } catch (error) {
+        if (Array.isArray(data.purchasedCourses)) {
+            data.purchasedCourses.forEach(x => ids.add(String(x)));
+        }
 
-        console.error(
-            "Storage remove error:",
-            error
-        );
+        if (data.purchasedCourses && typeof data.purchasedCourses === "object" && !Array.isArray(data.purchasedCourses)) {
+            Object.keys(data.purchasedCourses).forEach(k => {
+                if (data.purchasedCourses[k] === true) ids.add(k);
+            });
+        }
+
+        return [...ids];
+    } catch (e) {
+        console.error("Purchase load error:", e);
+        return [];
     }
 }
 
+async function hasCourseAccess(courseId, uid) {
+    if (!courseId) return false;
+    const ids = await getPurchasedCourseIds(uid);
+    return ids.includes(courseId);
+}
 
-/* =========================================================
-   NAVIGATION
-========================================================= */
+async function getChapters(courseId) {
+    if (!courseId) return [];
+    const snap = await db.collection("courses").doc(courseId).collection("chapters").get();
+    return snap.docs.map(d => ({id:d.id, ...d.data()}));
+}
 
-function goTo(
-    page
-) {
+async function getTopics(courseId, chapterId) {
+    if (!courseId || !chapterId) return [];
+    const snap = await db.collection("courses").doc(courseId)
+        .collection("chapters").doc(chapterId)
+        .collection("topics").get();
+    return snap.docs.map(d => ({id:d.id, ...d.data()}));
+}
 
-    if (!page) {
-        return;
+async function getTopic(courseId, chapterId, topicId) {
+    const snap = await db.collection("courses").doc(courseId)
+        .collection("chapters").doc(chapterId)
+        .collection("topics").doc(topicId).get();
+    return snap.exists ? {id:snap.id, ...snap.data()} : null;
+}
+
+async function getQuizQuestions(courseId, chapterId, topicId) {
+    const base = db.collection("courses").doc(courseId)
+        .collection("chapters").doc(chapterId)
+        .collection("topics").doc(topicId);
+
+    let snap = await base.collection("quizzes").get();
+    if (snap.empty) snap = await base.collection("quiz").get();
+
+    return snap.docs.map(d => ({id:d.id, ...d.data()}));
+}
+
+function questionOptions(q) {
+    if (Array.isArray(q.options)) return q.options;
+    return [q.option1, q.option2, q.option3, q.option4].filter(v => v !== undefined && v !== "");
+}
+
+function correctIndex(q) {
+    /* Teacher-facing data can use correctIndex (0..3) or
+       correctOption/correctAnswer (1..4 or A..D). */
+    if (q.correctIndex !== undefined) {
+        const n = Number(q.correctIndex);
+        if (Number.isFinite(n) && n >= 0 && n <= 3) return n;
     }
 
-    window.location.href =
-        page;
-}
+    for (const raw of [q.correctOption, q.correctAnswer]) {
+        if (raw === undefined || raw === null || raw === "") continue;
+        const s = String(raw).trim().toUpperCase();
 
+        if (/^[ABCD]$/.test(s)) return "ABCD".indexOf(s);
 
-/* =========================================================
-   EXTERNAL LINK
-========================================================= */
-
-function openExternalLink(
-    url
-) {
-
-    if (!url) {
-        return;
+        const n = Number(s);
+        if (Number.isFinite(n) && n >= 1 && n <= 4) return n - 1;
     }
 
-    window.open(
-        url,
-        "_blank",
-        "noopener,noreferrer"
-    );
+    return -1;
 }
 
-
-/* =========================================================
-   TODAY KEY
-========================================================= */
-
-function getTodayKey() {
-
-    const date =
-        new Date();
-
-    return (
-        date.getFullYear() +
-        "-" +
-        String(
-            date.getMonth() + 1
-        ).padStart(2, "0") +
-        "-" +
-        String(
-            date.getDate()
-        ).padStart(2, "0")
-    );
+function questionText(q) {
+    return q.question || q.text || q.questionText || "";
 }
 
-
-/* =========================================================
-   LOG
-========================================================= */
-
-function appLog(
-    ...messages
-) {
-
-    console.log(
-        "[mNEET-Pro]",
-        ...messages
-    );
+function questionImage(q) {
+    return q.imageUrl || q.questionImage || q.image || "";
 }
+
+function solutionText(q) {
+    return q.solution || q.explanation || q.answerExplanation || "";
+}
+
+function solutionUrl(q) {
+    return q.solutionUrl || q.ncertUrl || q.referenceUrl || "";
+}
+
+function calculateProgress(completed, total) {
+    return total > 0 ? safePercentage((completed / total) * 100) : 0;
+}
+
+async function saveAttempt(data) {
+    const user = getCurrentUser();
+    if (!user) return;
+    await db.collection("students").doc(user.uid)
+        .collection("attempts").add({
+            ...data,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+}
+
+function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+function appLog(...args) { console.log("[mNEET-Pro]", ...args); }
