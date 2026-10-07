@@ -1,6 +1,7 @@
-/* =========================================================
-   mNEET-Pro FIREBASE
-========================================================= */
+/* =====================================================
+   mNEET-PRO
+   FIREBASE INITIALIZATION
+===================================================== */
 
 "use strict";
 
@@ -29,20 +30,55 @@ const firebaseConfig = {
 
 };
 
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+
+/* =====================================================
+   INITIALIZE
+===================================================== */
+
+if(
+    typeof firebase !== "undefined" &&
+    !firebase.apps.length
+){
+
+    firebase.initializeApp(
+        firebaseConfig
+    );
+
 }
 
-const auth = firebase.auth();
 
-const db = firebase.firestore();
+/* =====================================================
+   SERVICES
+===================================================== */
 
-const database =
-    firebase.database
-        ? firebase.database()
-        : null;
+const auth =
+    firebase.auth();
 
-const storage =
-    firebase.storage
-        ? firebase.storage()
-        : null;
+const db =
+    firebase.firestore();
+
+
+/* =====================================================
+   OPTIONAL SERVICES
+===================================================== */
+
+let realtimeDB = null;
+let storage = null;
+
+if(
+    typeof firebase.database === "function"
+){
+
+    realtimeDB =
+        firebase.database();
+
+}
+
+if(
+    typeof firebase.storage === "function"
+){
+
+    storage =
+        firebase.storage();
+
+}
