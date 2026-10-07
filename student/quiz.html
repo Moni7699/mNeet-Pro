@@ -1,0 +1,3212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<meta name="theme-color"
+      content="#0d6035">
+
+<title>mNEET-Pro | Quiz</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<style>
+
+/* =====================================================
+   RESET
+===================================================== */
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    min-height:100vh;
+    background:#f3f6f4;
+    color:#18221b;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+button{
+    font-family:inherit;
+    -webkit-tap-highlight-color:transparent;
+}
+
+
+/* =====================================================
+   TOP BAR
+===================================================== */
+
+.topbar{
+    position:sticky;
+    top:0;
+    z-index:100;
+    min-height:64px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:10px 13px;
+    background:#fff;
+    border-bottom:1px solid #dce5de;
+    box-shadow:0 4px 16px rgba(0,0,0,.06);
+}
+
+.top-left{
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.back-btn{
+    width:40px;
+    height:40px;
+    border:0;
+    border-radius:11px;
+    background:#edf5ef;
+    color:#0d6035;
+    font-size:21px;
+    cursor:pointer;
+}
+
+.quiz-title-box{
+    min-width:0;
+}
+
+.quiz-label{
+    font-size:8px;
+    color:#78837c;
+    font-weight:800;
+    text-transform:uppercase;
+}
+
+.quiz-title{
+    max-width:180px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    margin-top:3px;
+    font-size:12px;
+    font-weight:900;
+}
+
+.submit-top{
+    flex-shrink:0;
+    height:38px;
+    padding:0 12px;
+    border:0;
+    border-radius:10px;
+    background:#d32f2f;
+    color:#fff;
+    font-size:9px;
+    font-weight:900;
+    cursor:pointer;
+}
+
+
+/* =====================================================
+   TIMER AREA
+===================================================== */
+
+.timer-area{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+    padding:11px 13px;
+    background:#fff;
+    border-bottom:1px solid #e1e8e3;
+}
+
+.timer-card{
+    padding:10px;
+    border-radius:12px;
+    text-align:center;
+    background:#f5f8f6;
+}
+
+.timer-label{
+    font-size:7px;
+    color:#78837c;
+    font-weight:800;
+    text-transform:uppercase;
+}
+
+.timer-value{
+    margin-top:4px;
+    font-size:18px;
+    font-weight:900;
+    color:#0d6035;
+}
+
+.timer-card.warning .timer-value{
+    color:#d97706;
+}
+
+.timer-card.danger .timer-value{
+    color:#d32f2f;
+}
+
+
+/* =====================================================
+   PROGRESS
+===================================================== */
+
+.quiz-progress{
+    padding:10px 13px 0;
+    background:#fff;
+}
+
+.progress-info{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:8px;
+    font-weight:800;
+    color:#68756c;
+}
+
+.progress-track{
+    height:7px;
+    margin-top:7px;
+    overflow:hidden;
+    border-radius:20px;
+    background:#e5ece7;
+}
+
+.progress-fill{
+    width:0;
+    height:100%;
+    border-radius:20px;
+    background:#0d6035;
+    transition:.25s;
+}
+
+
+/* =====================================================
+   MAIN
+===================================================== */
+
+.main{
+    width:100%;
+    max-width:900px;
+    margin:auto;
+    padding:15px 13px 100px;
+}
+
+
+/* =====================================================
+   QUESTION CARD
+===================================================== */
+
+.question-card{
+    padding:18px;
+    border:1px solid #dce5de;
+    border-radius:18px;
+    background:#fff;
+    box-shadow:0 5px 18px rgba(0,0,0,.04);
+}
+
+.question-number{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:26px;
+    padding:0 9px;
+    border-radius:8px;
+    background:#e8f5e9;
+    color:#0d6035;
+    font-size:8px;
+    font-weight:900;
+}
+
+.question-text{
+    margin-top:15px;
+    font-size:16px;
+    line-height:1.55;
+    font-weight:800;
+}
+
+.question-image{
+    display:none;
+    width:100%;
+    max-height:300px;
+    object-fit:contain;
+    margin-top:15px;
+    border-radius:10px;
+    background:#f7f9f7;
+}
+
+
+/* =====================================================
+   OPTIONS
+===================================================== */
+
+.options{
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+    margin-top:20px;
+}
+
+.option{
+    position:relative;
+    width:100%;
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:13px;
+    border:1px solid #d7e0d9;
+    border-radius:12px;
+    background:#fbfcfb;
+    cursor:pointer;
+    text-align:left;
+    transition:.15s;
+}
+
+.option:hover{
+    border-color:#7baa8a;
+}
+
+.option.selected{
+    border-color:#0d6035;
+    background:#edf7f0;
+}
+
+.option.correct{
+    border-color:#18864b;
+    background:#e4f6ea;
+    color:#126437;
+}
+
+.option.wrong{
+    border-color:#d32f2f;
+    background:#ffebee;
+    color:#a51f1f;
+}
+
+.option.locked{
+    cursor:default;
+}
+
+.option-letter{
+    width:28px;
+    height:28px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:8px;
+    background:#edf1ee;
+    color:#405047;
+    font-size:10px;
+    font-weight:900;
+}
+
+.option.selected .option-letter{
+    background:#0d6035;
+    color:#fff;
+}
+
+.option.correct .option-letter{
+    background:#18864b;
+    color:#fff;
+}
+
+.option.wrong .option-letter{
+    background:#d32f2f;
+    color:#fff;
+}
+
+.option-text{
+    padding-top:4px;
+    font-size:12px;
+    line-height:1.45;
+    font-weight:700;
+}
+
+
+/* =====================================================
+   ANSWER FEEDBACK
+===================================================== */
+
+.feedback{
+    display:none;
+    margin-top:13px;
+    padding:12px;
+    border-radius:11px;
+    font-size:10px;
+    line-height:1.5;
+    font-weight:700;
+}
+
+.feedback.show{
+    display:block;
+}
+
+.feedback.correct{
+    background:#e8f5e9;
+    color:#176c38;
+}
+
+.feedback.wrong{
+    background:#ffebee;
+    color:#a51f1f;
+}
+
+
+/* =====================================================
+   SOLUTION
+===================================================== */
+
+.solution{
+    display:none;
+    margin-top:10px;
+    padding:13px;
+    border-radius:12px;
+    background:#f0f4ff;
+    border:1px solid #d8e0ff;
+}
+
+.solution.show{
+    display:block;
+}
+
+.solution-title{
+    font-size:10px;
+    font-weight:900;
+    color:#3549a5;
+}
+
+.solution-text{
+    margin-top:6px;
+    font-size:10px;
+    line-height:1.55;
+    color:#44506f;
+}
+
+.ncert-link{
+    display:inline-block;
+    margin-top:8px;
+    padding:7px 10px;
+    border-radius:8px;
+    background:#536dfe;
+    color:#fff;
+    text-decoration:none;
+    font-size:8px;
+    font-weight:900;
+}
+
+
+/* =====================================================
+   ACTIONS
+===================================================== */
+
+.action-area{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+    margin-top:14px;
+}
+
+.action-btn{
+    min-height:45px;
+    border:0;
+    border-radius:11px;
+    font-size:10px;
+    font-weight:900;
+    cursor:pointer;
+}
+
+.prev-btn{
+    background:#e7ede9;
+    color:#34443a;
+}
+
+.next-btn{
+    background:#0d6035;
+    color:#fff;
+}
+
+.submit-answer{
+    grid-column:1 / -1;
+    background:#1769aa;
+    color:#fff;
+}
+
+.action-btn:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+}
+
+
+/* =====================================================
+   QUESTION NAVIGATOR
+===================================================== */
+
+.navigator-card{
+    margin-top:15px;
+    padding:15px;
+    border:1px solid #dce5de;
+    border-radius:17px;
+    background:#fff;
+}
+
+.navigator-title{
+    font-size:11px;
+    font-weight:900;
+}
+
+.navigator-subtitle{
+    margin-top:3px;
+    font-size:8px;
+    color:#7a857e;
+}
+
+.navigator{
+    display:grid;
+    grid-template-columns:
+        repeat(6,1fr);
+    gap:7px;
+    margin-top:12px;
+}
+
+.q-number{
+    height:35px;
+    border:0;
+    border-radius:8px;
+    background:#edf1ee;
+    color:#46554b;
+    font-size:9px;
+    font-weight:900;
+    cursor:pointer;
+}
+
+.q-number.current{
+    background:#0d6035;
+    color:#fff;
+}
+
+.q-number.answered{
+    background:#d9f0df;
+    color:#126437;
+}
+
+.q-number.correct{
+    background:#18864b;
+    color:#fff;
+}
+
+.q-number.wrong{
+    background:#d32f2f;
+    color:#fff;
+}
+
+
+/* =====================================================
+   LOADING
+===================================================== */
+
+.loading{
+    padding:60px 20px;
+    text-align:center;
+    color:#748078;
+    font-size:10px;
+}
+
+.spinner{
+    width:35px;
+    height:35px;
+    margin:0 auto 12px;
+    border:4px solid #dce8df;
+    border-top-color:#0d6035;
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+
+/* =====================================================
+   ERROR
+===================================================== */
+
+.error-box{
+    padding:25px;
+    text-align:center;
+    border-radius:16px;
+    background:#fff;
+    border:1px solid #e0e6e1;
+}
+
+.error-icon{
+    font-size:35px;
+}
+
+.error-box h3{
+    margin-top:8px;
+    font-size:15px;
+}
+
+.error-box p{
+    margin-top:5px;
+    font-size:9px;
+    color:#78837c;
+}
+
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+.toast{
+    position:fixed;
+    left:50%;
+    bottom:20px;
+    z-index:500;
+    width:calc(100% - 30px);
+    max-width:400px;
+    padding:12px 15px;
+    border-radius:11px;
+    background:#17221a;
+    color:#fff;
+    text-align:center;
+    font-size:9px;
+    font-weight:700;
+    opacity:0;
+    pointer-events:none;
+    transform:translate(-50%,20px);
+    transition:.25s;
+}
+
+.toast.show{
+    opacity:1;
+    transform:translate(-50%,0);
+}
+
+
+/* =====================================================
+   DESKTOP
+===================================================== */
+
+@media(min-width:700px){
+
+    .timer-area{
+        grid-template-columns:200px 200px;
+        justify-content:center;
+    }
+
+    .question-text{
+        font-size:18px;
+    }
+
+    .option-text{
+        font-size:13px;
+    }
+
+    .navigator{
+        grid-template-columns:
+            repeat(10,1fr);
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     TOP BAR
+===================================================== -->
+
+<header class="topbar">
+
+    <div class="top-left">
+
+        <button
+            id="backButton"
+            class="back-btn"
+        >
+            ←
+        </button>
+
+        <div class="quiz-title-box">
+
+            <div class="quiz-label">
+                NEET BIOLOGY • QUIZ
+            </div>
+
+            <div
+                id="quizTitle"
+                class="quiz-title"
+            >
+                Loading...
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <button
+        id="submitTop"
+        class="submit-top"
+    >
+        Submit Quiz
+    </button>
+
+</header>
+
+
+<!-- =====================================================
+     TIMER
+===================================================== -->
+
+<section class="timer-area">
+
+    <div
+        id="questionTimerCard"
+        class="timer-card"
+    >
+
+        <div class="timer-label">
+            Question Time
+        </div>
+
+        <div
+            id="questionTimer"
+            class="timer-value"
+        >
+            01:00
+        </div>
+
+    </div>
+
+
+    <div
+        id="totalTimerCard"
+        class="timer-card"
+    >
+
+        <div class="timer-label">
+            Total Time
+        </div>
+
+        <div
+            id="totalTimer"
+            class="timer-value"
+        >
+            00:00
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     QUIZ PROGRESS
+===================================================== -->
+
+<section class="quiz-progress">
+
+    <div class="progress-info">
+
+        <span id="questionCounter">
+            Question 0 / 0
+        </span>
+
+        <span id="answeredCounter">
+            Answered: 0
+        </span>
+
+    </div>
+
+    <div class="progress-track">
+
+        <div
+            id="progressFill"
+            class="progress-fill"
+        ></div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<main class="main">
+
+
+    <div id="quizContainer">
+
+        <div class="loading">
+
+            <div class="spinner"></div>
+
+            Loading questions...
+
+        </div>
+
+    </div>
+
+
+    <!-- QUESTION NAVIGATOR -->
+
+    <section class="navigator-card">
+
+        <div class="navigator-title">
+            Question Navigator
+        </div>
+
+        <div class="navigator-subtitle">
+            Green = answered • Red = incorrect
+        </div>
+
+        <div
+            id="navigator"
+            class="navigator"
+        ></div>
+
+    </section>
+
+
+</main>
+
+
+<div
+    id="toast"
+    class="toast"
+></div>
+
+
+<script>
+
+/* =====================================================
+   FIREBASE
+===================================================== */
+
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyApQOM_mtFZ16RiNJEaIUhb4iYFBIBRK58",
+
+    authDomain:
+        "mneet-spark.firebaseapp.com",
+
+    databaseURL:
+        "https://mneet-spark-default-rtdb.firebaseio.com",
+
+    projectId:
+        "mneet-spark",
+
+    storageBucket:
+        "mneet-spark.firebasestorage.app",
+
+    messagingSenderId:
+        "252201633700",
+
+    appId:
+        "1:252201633700:web:1a1e7a2cff1f0b168ea331"
+
+};
+
+
+if(!firebase.apps.length){
+
+    firebase.initializeApp(
+        firebaseConfig
+    );
+
+}
+
+
+const auth =
+    firebase.auth();
+
+const db =
+    firebase.firestore();
+
+
+/* =====================================================
+   QUIZ VARIABLES
+===================================================== */
+
+let currentUser = null;
+
+let courseId = null;
+
+let chapterId = null;
+
+let topicId = null;
+
+let questions = [];
+
+let currentIndex = 0;
+
+let answers = {};
+
+let submitted = {};
+
+let questionTimeLeft = 60;
+
+let perQuestionTime = 60;
+
+let totalSeconds = 0;
+
+let totalTimerInterval = null;
+
+let questionTimerInterval = null;
+
+let quizStarted = false;
+
+let quizFinished = false;
+
+let attemptNumber = 1;
+
+
+/* =====================================================
+   LOCAL STORAGE KEY
+===================================================== */
+
+function stateKey(){
+
+    return (
+        "quizState_" +
+        courseId +
+        "_" +
+        chapterId +
+        "_" +
+        topicId
+    );
+
+}
+
+
+/* =====================================================
+   AUTH
+===================================================== */
+
+auth.onAuthStateChanged(
+    async function(user){
+
+        if(!user){
+
+            window.location.replace(
+                "index.html"
+            );
+
+            return;
+
+        }
+
+        currentUser = user;
+
+        courseId =
+            localStorage.getItem(
+                "activeCourse"
+            );
+
+        chapterId =
+            localStorage.getItem(
+                "activeChapter"
+            );
+
+        topicId =
+            localStorage.getItem(
+                "activeTopic"
+            );
+
+
+        if(
+            !courseId ||
+            !chapterId ||
+            !topicId
+        ){
+
+            showFatalError(
+                "Course, chapter অথবা topic পাওয়া যায়নি।"
+            );
+
+            return;
+
+        }
+
+
+        await loadQuiz();
+
+    }
+);
+
+
+/* =====================================================
+   LOAD QUIZ
+===================================================== */
+
+async function loadQuiz(){
+
+    try{
+
+        /*
+         * Primary structure:
+         *
+         * courses/{course}/chapters/{chapter}
+         * /topics/{topic}/quizzes
+         */
+
+        let snapshot =
+            await db
+                .collection("courses")
+                .doc(courseId)
+                .collection("chapters")
+                .doc(chapterId)
+                .collection("topics")
+                .doc(topicId)
+                .collection("quizzes")
+                .get();
+
+
+        questions = [];
+
+
+        snapshot.forEach(
+            function(doc){
+
+                const data =
+                    doc.data() || {};
+
+                questions.push({
+
+                    id:doc.id,
+
+                    ...data
+
+                });
+
+            }
+        );
+
+
+        /*
+         * Compatibility:
+         * কিছু ক্ষেত্রে quiz singular হতে পারে।
+         */
+
+        if(!questions.length){
+
+            const quizDoc =
+                await db
+                    .collection("courses")
+                    .doc(courseId)
+                    .collection("chapters")
+                    .doc(chapterId)
+                    .collection("topics")
+                    .doc(topicId)
+                    .collection("quiz")
+                    .get();
+
+
+            quizDoc.forEach(
+                function(doc){
+
+                    questions.push({
+
+                        id:doc.id,
+
+                        ...doc.data()
+
+                    });
+
+                }
+            );
+
+        }
+
+
+        /*
+         * If questions are directly stored
+         * as an array in topic document.
+         */
+
+        if(!questions.length){
+
+            const topicDoc =
+                await db
+                    .collection("courses")
+                    .doc(courseId)
+                    .collection("chapters")
+                    .doc(chapterId)
+                    .collection("topics")
+                    .doc(topicId)
+                    .get();
+
+
+            if(topicDoc.exists){
+
+                const topicData =
+                    topicDoc.data() || {};
+
+
+                if(
+                    Array.isArray(
+                        topicData.questions
+                    )
+                ){
+
+                    questions =
+                        topicData.questions.map(
+                            function(q,index){
+
+                                return {
+
+                                    id:
+                                        q.id ||
+                                        String(index),
+
+                                    ...q
+
+                                };
+
+                            }
+                        );
+
+                }
+
+            }
+
+        }
+
+
+        if(!questions.length){
+
+            showFatalError(
+                "এই topic-এর কোনো question পাওয়া যায়নি।"
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * Normalize questions.
+         */
+
+        questions =
+            questions.map(
+                normalizeQuestion
+            );
+
+
+        /*
+         * Shuffle is NOT used.
+         * Teacher question order remains unchanged.
+         */
+
+        await loadAttemptNumber();
+
+        loadSavedState();
+
+        renderQuiz();
+
+        startTimers();
+
+    }catch(error){
+
+        console.error(
+            "Quiz load error:",
+            error
+        );
+
+        showFatalError(
+            "Quiz load করতে সমস্যা হয়েছে।"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   NORMALIZE QUESTION
+===================================================== */
+
+function normalizeQuestion(
+    q
+){
+
+    let options = [];
+
+
+    if(
+        Array.isArray(q.options)
+    ){
+
+        options =
+            q.options;
+
+    }else{
+
+        options = [
+
+            q.option1 ||
+            q.a ||
+            "",
+
+            q.option2 ||
+            q.b ||
+            "",
+
+            q.option3 ||
+            q.c ||
+            "",
+
+            q.option4 ||
+            q.d ||
+            ""
+
+        ];
+
+    }
+
+
+    options =
+        options.map(
+            function(option){
+
+                if(
+                    typeof option ===
+                    "object"
+                ){
+
+                    return (
+                        option.text ||
+                        option.value ||
+                        ""
+                    );
+
+                }
+
+                return String(
+                    option || ""
+                );
+
+            }
+        );
+
+
+    let correct =
+        q.correctAnswer;
+
+
+    if(
+        correct === undefined ||
+        correct === null
+    ){
+
+        correct =
+            q.correct;
+
+    }
+
+
+    if(
+        correct === undefined ||
+        correct === null
+    ){
+
+        correct =
+            q.answer;
+
+    }
+
+
+    /*
+     * Convert A/B/C/D into 0/1/2/3
+     */
+
+    if(
+        typeof correct === "string"
+    ){
+
+        const clean =
+            correct
+                .trim()
+                .toUpperCase();
+
+
+        if(
+            ["A","B","C","D"]
+                .includes(clean)
+        ){
+
+            correct =
+                ["A","B","C","D"]
+                    .indexOf(clean);
+
+        }else if(
+            !isNaN(
+                Number(clean)
+            )
+        ){
+
+            correct =
+                Number(clean);
+
+            /*
+             * If teacher stores 1-4.
+             */
+
+            if(
+                correct >= 1 &&
+                correct <= 4
+            ){
+
+                correct -= 1;
+
+            }
+
+        }
+
+    }
+
+
+    if(
+        typeof correct === "number" &&
+        correct >= 1 &&
+        correct <= 4
+    ){
+
+        /*
+         * Most likely 1-based.
+         */
+
+        if(
+            q.answerIndex === undefined
+        ){
+
+            correct -= 1;
+
+        }
+
+    }
+
+
+    return {
+
+        id:
+            q.id || "",
+
+        question:
+            q.question ||
+            q.questionText ||
+            q.text ||
+            "Question",
+
+        image:
+            q.image ||
+            q.imageUrl ||
+            "",
+
+        options:options,
+
+        correct:
+            Number.isInteger(correct)
+                ? correct
+                : -1,
+
+        explanation:
+            q.explanation ||
+            q.solution ||
+            "",
+
+        ncert:
+            q.ncert ||
+            q.ncertPage ||
+            q.reference ||
+            "",
+
+        ncertUrl:
+            q.ncertUrl ||
+            q.solutionUrl ||
+            ""
+
+    };
+
+}
+
+
+/* =====================================================
+   ATTEMPT NUMBER
+===================================================== */
+
+async function loadAttemptNumber(){
+
+    try{
+
+        const ref =
+            db
+                .collection("users")
+                .doc(currentUser.uid)
+                .collection("courses")
+                .doc(courseId)
+                .collection("topics")
+                .doc(topicId)
+                .collection("attempts");
+
+
+        const snapshot =
+            await ref
+                .get();
+
+
+        attemptNumber =
+            snapshot.size + 1;
+
+
+    }catch(error){
+
+        attemptNumber = 1;
+
+    }
+
+
+    /*
+     * Adaptive timer:
+     *
+     * Attempts 1-3 = 60 sec/question
+     * Attempts 4+ = 30 sec/question
+     */
+
+    perQuestionTime =
+        attemptNumber >= 4
+            ? 30
+            : 60;
+
+}
+
+
+/* =====================================================
+   SAVED STATE
+===================================================== */
+
+function loadSavedState(){
+
+    try{
+
+        const saved =
+            localStorage.getItem(
+                stateKey()
+            );
+
+
+        if(!saved){
+
+            answers = {};
+
+            submitted = {};
+
+            currentIndex = 0;
+
+            totalSeconds = 0;
+
+            return;
+
+        }
+
+
+        const state =
+            JSON.parse(
+                saved
+            );
+
+
+        answers =
+            state.answers || {};
+
+        submitted =
+            state.submitted || {};
+
+        currentIndex =
+            Number(
+                state.currentIndex || 0
+            );
+
+        totalSeconds =
+            Number(
+                state.totalSeconds || 0
+            );
+
+
+        if(
+            currentIndex >=
+            questions.length
+        ){
+
+            currentIndex = 0;
+
+        }
+
+    }catch(error){
+
+        answers = {};
+
+        submitted = {};
+
+        currentIndex = 0;
+
+        totalSeconds = 0;
+
+    }
+
+}
+
+
+/* =====================================================
+   SAVE STATE
+===================================================== */
+
+function saveState(){
+
+    if(quizFinished){
+
+        return;
+
+    }
+
+
+    const state = {
+
+        answers:answers,
+
+        submitted:submitted,
+
+        currentIndex:currentIndex,
+
+        totalSeconds:totalSeconds,
+
+        savedAt:
+            Date.now()
+
+    };
+
+
+    localStorage.setItem(
+        stateKey(),
+        JSON.stringify(state)
+    );
+
+}
+
+
+/* =====================================================
+   RENDER QUIZ
+===================================================== */
+
+function renderQuiz(){
+
+    const q =
+        questions[currentIndex];
+
+
+    if(!q){
+
+        return;
+
+    }
+
+
+    document
+        .getElementById(
+            "quizTitle"
+        )
+        .textContent =
+            localStorage.getItem(
+                "activeTopic"
+            ) ||
+            "NEET Biology Quiz";
+
+
+    document
+        .getElementById(
+            "questionCounter"
+        )
+        .textContent =
+            "Question " +
+            (currentIndex + 1) +
+            " / " +
+            questions.length;
+
+
+    const answeredCount =
+        Object.keys(
+            submitted
+        ).length;
+
+
+    document
+        .getElementById(
+            "answeredCounter"
+        )
+        .textContent =
+            "Answered: " +
+            answeredCount;
+
+
+    const percent =
+        (
+            (currentIndex + 1) /
+            questions.length
+        ) * 100;
+
+
+    document
+        .getElementById(
+            "progressFill"
+        )
+        .style.width =
+            percent + "%";
+
+
+    const selected =
+        answers[q.id];
+
+
+    const isSubmitted =
+        submitted[q.id] === true;
+
+
+    const container =
+        document.getElementById(
+            "quizContainer"
+        );
+
+
+    container.innerHTML =
+        `
+
+        <section class="question-card">
+
+            <div class="question-number">
+                Q ${currentIndex + 1}
+            </div>
+
+
+            <div class="question-text">
+                ${escapeHtml(q.question)}
+            </div>
+
+
+            ${
+                q.image
+                    ? `
+                    <img
+                        class="question-image"
+                        style="display:block"
+                        src="${escapeAttribute(q.image)}"
+                        alt="Question image"
+                    >
+                    `
+                    : ""
+            }
+
+
+            <div class="options">
+
+                ${q.options.map(
+                    function(option,index){
+
+                        return createOptionHtml(
+                            q,
+                            option,
+                            index,
+                            selected,
+                            isSubmitted
+                        );
+
+                    }
+                ).join("")}
+
+            </div>
+
+
+            <div
+                id="feedback"
+                class="feedback ${
+                    isSubmitted
+                        ? "show " +
+                          (
+                            selected === q.correct
+                                ? "correct"
+                                : "wrong"
+                          )
+                        : ""
+                }"
+            >
+
+                ${
+                    isSubmitted
+                        ? (
+                            selected === q.correct
+                                ? "✓ Correct Answer"
+                                : (
+                                    "✗ Incorrect. Correct answer: " +
+                                    getOptionLetter(
+                                        q.correct
+                                    )
+                                )
+                          )
+                        : ""
+                }
+
+            </div>
+
+
+            <div
+                id="solution"
+                class="solution ${
+                    isSubmitted && (
+                        selected !== q.correct
+                    )
+                        ? "show"
+                        : ""
+                }"
+            >
+
+                <div class="solution-title">
+                    Solution
+                </div>
+
+                <div class="solution-text">
+
+                    ${
+                        q.explanation
+                            ? escapeHtml(
+                                q.explanation
+                              )
+                            : "Solution will be added soon."
+                    }
+
+                </div>
+
+
+                ${
+                    q.ncertUrl
+                        ? `
+                        <a
+                            class="ncert-link"
+                            href="${escapeAttribute(q.ncertUrl)}"
+                            target="_blank"
+                        >
+                            Open NCERT Reference
+                        </a>
+                        `
+                        : ""
+                }
+
+            </div>
+
+
+            <div class="action-area">
+
+                <button
+                    id="prevButton"
+                    class="action-btn prev-btn"
+                    ${
+                        currentIndex === 0
+                            ? "disabled"
+                            : ""
+                    }
+                >
+                    ← Previous
+                </button>
+
+
+                <button
+                    id="nextButton"
+                    class="action-btn next-btn"
+                    ${
+                        currentIndex ===
+                        questions.length - 1
+                            ? "disabled"
+                            : ""
+                    }
+                >
+                    Next →
+                </button>
+
+
+                <button
+                    id="submitAnswer"
+                    class="action-btn submit-answer"
+                    ${
+                        isSubmitted
+                            ? "disabled"
+                            : ""
+                    }
+                >
+                    ${
+                        isSubmitted
+                            ? "Answer Submitted ✓"
+                            : "Submit Answer"
+                    }
+                </button>
+
+            </div>
+
+        </section>
+
+        `;
+
+
+    attachQuestionEvents();
+
+    renderNavigator();
+
+    resetQuestionTimer();
+
+}
+
+
+/* =====================================================
+   OPTION HTML
+===================================================== */
+
+function createOptionHtml(
+    q,
+    option,
+    index,
+    selected,
+    isSubmitted
+){
+
+    let classes =
+        "option";
+
+
+    if(
+        selected === index
+    ){
+
+        classes +=
+            " selected";
+
+    }
+
+
+    if(isSubmitted){
+
+        if(
+            index === q.correct
+        ){
+
+            classes +=
+                " correct";
+
+        }
+
+
+        if(
+            index === selected &&
+            selected !== q.correct
+        ){
+
+            classes +=
+                " wrong";
+
+        }
+
+        classes +=
+            " locked";
+
+    }
+
+
+    return `
+
+        <button
+            type="button"
+            class="${classes}"
+            data-option="${index}"
+        >
+
+            <span class="option-letter">
+                ${getOptionLetter(index)}
+            </span>
+
+            <span class="option-text">
+                ${escapeHtml(option)}
+            </span>
+
+        </button>
+
+    `;
+
+}
+
+
+/* =====================================================
+   OPTION LETTER
+===================================================== */
+
+function getOptionLetter(
+    index
+){
+
+    return [
+        "1",
+        "2",
+        "3",
+        "4"
+    ][index] || "?";
+
+}
+
+
+/* =====================================================
+   QUESTION EVENTS
+===================================================== */
+
+function attachQuestionEvents(){
+
+    document
+        .querySelectorAll(
+            ".option"
+        )
+        .forEach(
+            function(button){
+
+                button.addEventListener(
+                    "click",
+                    function(){
+
+                        selectOption(
+                            Number(
+                                button.dataset.option
+                            )
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "submitAnswer"
+        )
+        .addEventListener(
+            "click",
+            submitCurrentAnswer
+        );
+
+
+    document
+        .getElementById(
+            "prevButton"
+        )
+        .addEventListener(
+            "click",
+            previousQuestion
+        );
+
+
+    document
+        .getElementById(
+            "nextButton"
+        )
+        .addEventListener(
+            "click",
+            nextQuestion
+        );
+
+}
+
+
+/* =====================================================
+   SELECT OPTION
+===================================================== */
+
+function selectOption(
+    optionIndex
+){
+
+    const q =
+        questions[currentIndex];
+
+
+    if(
+        submitted[q.id]
+    ){
+
+        return;
+
+    }
+
+
+    answers[q.id] =
+        optionIndex;
+
+
+    document
+        .querySelectorAll(
+            ".option"
+        )
+        .forEach(
+            function(button){
+
+                button.classList.remove(
+                    "selected"
+                );
+
+            }
+        );
+
+
+    const selectedButton =
+        document.querySelector(
+            '[data-option="' +
+            optionIndex +
+            '"]'
+        );
+
+
+    if(selectedButton){
+
+        selectedButton.classList.add(
+            "selected"
+        );
+
+    }
+
+
+    saveState();
+
+}
+
+
+/* =====================================================
+   SUBMIT CURRENT ANSWER
+===================================================== */
+
+function submitCurrentAnswer(){
+
+    const q =
+        questions[currentIndex];
+
+
+    if(
+        submitted[q.id]
+    ){
+
+        return;
+
+    }
+
+
+    if(
+        answers[q.id] === undefined
+    ){
+
+        showToast(
+            "প্রথমে একটি answer select করুন।"
+        );
+
+        return;
+
+    }
+
+
+    submitted[q.id] =
+        true;
+
+
+    saveState();
+
+
+    stopQuestionTimer();
+
+
+    renderQuiz();
+
+
+    updateAnsweredCounter();
+
+}
+
+
+/* =====================================================
+   UPDATE COUNTER
+===================================================== */
+
+function updateAnsweredCounter(){
+
+    document
+        .getElementById(
+            "answeredCounter"
+        )
+        .textContent =
+            "Answered: " +
+            Object.keys(
+                submitted
+            ).length;
+
+}
+
+
+/* =====================================================
+   NEXT
+===================================================== */
+
+function nextQuestion(){
+
+    if(
+        currentIndex >=
+        questions.length - 1
+    ){
+
+        showToast(
+            "এটাই শেষ question। Submit Quiz করুন।"
+        );
+
+        return;
+
+    }
+
+
+    currentIndex++;
+
+    saveState();
+
+    renderQuiz();
+
+}
+
+
+/* =====================================================
+   PREVIOUS
+===================================================== */
+
+function previousQuestion(){
+
+    if(
+        currentIndex <= 0
+    ){
+
+        return;
+
+    }
+
+
+    currentIndex--;
+
+    saveState();
+
+    renderQuiz();
+
+}
+
+
+/* =====================================================
+   NAVIGATOR
+===================================================== */
+
+function renderNavigator(){
+
+    const navigator =
+        document.getElementById(
+            "navigator"
+        );
+
+
+    navigator.innerHTML = "";
+
+
+    questions.forEach(
+        function(q,index){
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "q-number";
+
+
+            if(
+                index === currentIndex
+            ){
+
+                button.classList.add(
+                    "current"
+                );
+
+            }
+
+
+            if(
+                submitted[q.id]
+            ){
+
+                if(
+                    answers[q.id] ===
+                    q.correct
+                ){
+
+                    button.classList.add(
+                        "correct"
+                    );
+
+                }else{
+
+                    button.classList.add(
+                        "wrong"
+                    );
+
+                }
+
+            }else if(
+                answers[q.id] !== undefined
+            ){
+
+                button.classList.add(
+                    "answered"
+                );
+
+            }
+
+
+            button.textContent =
+                index + 1;
+
+
+            button.addEventListener(
+                "click",
+                function(){
+
+                    currentIndex =
+                        index;
+
+                    saveState();
+
+                    renderQuiz();
+
+                }
+            );
+
+
+            navigator.appendChild(
+                button
+            );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   QUESTION TIMER
+===================================================== */
+
+function resetQuestionTimer(){
+
+    stopQuestionTimer();
+
+
+    questionTimeLeft =
+        perQuestionTime;
+
+
+    updateQuestionTimer();
+
+
+    /*
+     * If already submitted,
+     * don't start timer.
+     */
+
+    const q =
+        questions[currentIndex];
+
+
+    if(
+        submitted[q.id]
+    ){
+
+        return;
+
+    }
+
+
+    questionTimerInterval =
+        setInterval(
+            function(){
+
+                questionTimeLeft--;
+
+                updateQuestionTimer();
+
+
+                if(
+                    questionTimeLeft <= 0
+                ){
+
+                    autoSubmitByTime();
+
+                }
+
+            },
+            1000
+        );
+
+}
+
+
+/* =====================================================
+   AUTO SUBMIT BY TIME
+===================================================== */
+
+function autoSubmitByTime(){
+
+    stopQuestionTimer();
+
+
+    const q =
+        questions[currentIndex];
+
+
+    if(
+        submitted[q.id]
+    ){
+
+        return;
+
+    }
+
+
+    submitted[q.id] =
+        true;
+
+
+    saveState();
+
+
+    showToast(
+        "Time up! Answer submitted."
+    );
+
+
+    renderQuiz();
+
+}
+
+
+/* =====================================================
+   UPDATE QUESTION TIMER
+===================================================== */
+
+function updateQuestionTimer(){
+
+    const element =
+        document.getElementById(
+            "questionTimer"
+        );
+
+
+    element.textContent =
+        formatTime(
+            questionTimeLeft
+        );
+
+
+    const card =
+        document.getElementById(
+            "questionTimerCard"
+        );
+
+
+    card.classList.remove(
+        "warning",
+        "danger"
+    );
+
+
+    if(
+        questionTimeLeft <= 10
+    ){
+
+        card.classList.add(
+            "danger"
+        );
+
+    }else if(
+        questionTimeLeft <= 20
+    ){
+
+        card.classList.add(
+            "warning"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   TOTAL TIMER
+===================================================== */
+
+function startTimers(){
+
+    if(quizStarted){
+
+        return;
+
+    }
+
+
+    quizStarted = true;
+
+
+    updateTotalTimer();
+
+
+    totalTimerInterval =
+        setInterval(
+            function(){
+
+                totalSeconds++;
+
+                updateTotalTimer();
+
+                saveState();
+
+            },
+            1000
+        );
+
+}
+
+
+/* =====================================================
+   STOP QUESTION TIMER
+===================================================== */
+
+function stopQuestionTimer(){
+
+    if(
+        questionTimerInterval
+    ){
+
+        clearInterval(
+            questionTimerInterval
+        );
+
+        questionTimerInterval =
+            null;
+
+    }
+
+}
+
+
+/* =====================================================
+   UPDATE TOTAL TIMER
+===================================================== */
+
+function updateTotalTimer(){
+
+    document
+        .getElementById(
+            "totalTimer"
+        )
+        .textContent =
+            formatTime(
+                totalSeconds
+            );
+
+}
+
+
+/* =====================================================
+   FORMAT TIME
+===================================================== */
+
+function formatTime(
+    seconds
+){
+
+    seconds =
+        Math.max(
+            0,
+            Number(seconds) || 0
+        );
+
+
+    const minutes =
+        Math.floor(
+            seconds / 60
+        );
+
+
+    const secs =
+        seconds % 60;
+
+
+    return (
+        String(minutes)
+            .padStart(2,"0") +
+        ":" +
+        String(secs)
+            .padStart(2,"0")
+    );
+
+}
+
+
+/* =====================================================
+   SUBMIT QUIZ
+===================================================== */
+
+document
+    .getElementById(
+        "submitTop"
+    )
+    .addEventListener(
+        "click",
+        submitQuiz
+    );
+
+
+async function submitQuiz(){
+
+    if(quizFinished){
+
+        return;
+
+    }
+
+
+    const unanswered =
+        questions.filter(
+            function(q){
+
+                return !submitted[q.id];
+
+            }
+        ).length;
+
+
+    if(unanswered > 0){
+
+        const confirmed =
+            confirm(
+                unanswered +
+                " question unanswered আছে। তারপরও Submit করবেন?"
+            );
+
+
+        if(!confirmed){
+
+            return;
+
+        }
+
+    }
+
+
+    quizFinished = true;
+
+
+    stopQuestionTimer();
+
+
+    if(totalTimerInterval){
+
+        clearInterval(
+            totalTimerInterval
+        );
+
+        totalTimerInterval =
+            null;
+
+    }
+
+
+    let correct = 0;
+
+    let wrong = 0;
+
+    let skipped = 0;
+
+
+    questions.forEach(
+        function(q){
+
+            if(
+                !submitted[q.id]
+            ){
+
+                skipped++;
+
+                return;
+
+            }
+
+
+            if(
+                answers[q.id] ===
+                q.correct
+            ){
+
+                correct++;
+
+            }else{
+
+                wrong++;
+
+            }
+
+        }
+    );
+
+
+    const total =
+        questions.length;
+
+
+    const accuracy =
+        total > 0
+            ? Math.round(
+                (correct / total) * 100
+              )
+            : 0;
+
+
+    const score =
+        (correct * 4) -
+        (wrong * 1);
+
+
+    await saveResult({
+
+        score:score,
+
+        correct:correct,
+
+        wrong:wrong,
+
+        skipped:skipped,
+
+        accuracy:accuracy,
+
+        total:total,
+
+        time:totalSeconds,
+
+        attempt:attemptNumber
+
+    });
+
+
+    localStorage.removeItem(
+        stateKey()
+    );
+
+
+    showResult({
+
+        score:score,
+
+        correct:correct,
+
+        wrong:wrong,
+
+        skipped:skipped,
+
+        accuracy:accuracy,
+
+        total:total,
+
+        time:totalSeconds,
+
+        attempt:attemptNumber
+
+    });
+
+}
+
+
+/* =====================================================
+   SAVE RESULT
+===================================================== */
+
+async function saveResult(
+    result
+){
+
+    try{
+
+        const attemptRef =
+            db
+                .collection("users")
+                .doc(currentUser.uid)
+                .collection("courses")
+                .doc(courseId)
+                .collection("topics")
+                .doc(topicId)
+                .collection("attempts")
+                .doc();
+
+
+        await attemptRef.set({
+
+            ...result,
+
+            createdAt:
+                firebase.firestore
+                    .FieldValue
+                    .serverTimestamp()
+
+        });
+
+
+        /*
+         * Also save a simple progress document.
+         */
+
+        await db
+            .collection("progress")
+            .doc(
+                currentUser.uid +
+                "_" +
+                courseId
+            )
+            .set({
+
+                lastScore:
+                    result.score,
+
+                accuracy:
+                    result.accuracy,
+
+                lastTopicId:
+                    topicId,
+
+                completedTopics:
+                    firebase.firestore
+                        .FieldValue
+                        .increment(
+                            result.accuracy >= 40
+                                ? 1
+                                : 0
+                        ),
+
+                updatedAt:
+                    firebase.firestore
+                        .FieldValue
+                        .serverTimestamp()
+
+            },{
+                merge:true
+            });
+
+
+    }catch(error){
+
+        console.error(
+            "Result save error:",
+            error
+        );
+
+        /*
+         * Quiz result still shown
+         * even if Firestore rules
+         * temporarily block saving.
+         */
+
+    }
+
+}
+
+
+/* =====================================================
+   RESULT SCREEN
+===================================================== */
+
+function showResult(
+    result
+){
+
+    const container =
+        document.getElementById(
+            "quizContainer"
+        );
+
+
+    container.innerHTML =
+        `
+
+        <section class="question-card"
+                 style="text-align:center">
+
+            <div style="
+                font-size:42px;
+                margin-bottom:10px;
+            ">
+                🎯
+            </div>
+
+
+            <div style="
+                font-size:21px;
+                font-weight:900;
+                color:#0d6035;
+            ">
+                Quiz Completed
+            </div>
+
+
+            <div style="
+                margin-top:7px;
+                font-size:10px;
+                color:#78837c;
+            ">
+                Attempt ${result.attempt}
+            </div>
+
+
+            <div style="
+                margin-top:22px;
+                font-size:38px;
+                font-weight:900;
+            ">
+                ${result.score}
+            </div>
+
+
+            <div style="
+                margin-top:3px;
+                font-size:9px;
+                color:#78837c;
+            ">
+                Score
+            </div>
+
+
+            <div style="
+                display:grid;
+                grid-template-columns:
+                    repeat(2,1fr);
+                gap:8px;
+                margin-top:22px;
+                text-align:center;
+            ">
+
+                <div style="
+                    padding:13px;
+                    border-radius:11px;
+                    background:#e8f5e9;
+                ">
+                    <b style="font-size:18px">
+                        ${result.correct}
+                    </b>
+                    <br>
+                    <small>Correct</small>
+                </div>
+
+
+                <div style="
+                    padding:13px;
+                    border-radius:11px;
+                    background:#ffebee;
+                ">
+                    <b style="font-size:18px">
+                        ${result.wrong}
+                    </b>
+                    <br>
+                    <small>Incorrect</small>
+                </div>
+
+
+                <div style="
+                    padding:13px;
+                    border-radius:11px;
+                    background:#f1f3f2;
+                ">
+                    <b style="font-size:18px">
+                        ${result.skipped}
+                    </b>
+                    <br>
+                    <small>Skipped</small>
+                </div>
+
+
+                <div style="
+                    padding:13px;
+                    border-radius:11px;
+                    background:#eef3ff;
+                ">
+                    <b style="font-size:18px">
+                        ${result.accuracy}%
+                    </b>
+                    <br>
+                    <small>Accuracy</small>
+                </div>
+
+            </div>
+
+
+            <div style="
+                margin-top:15px;
+                padding:11px;
+                border-radius:10px;
+                background:#f5f8f6;
+                font-size:10px;
+            ">
+                Total Time:
+                <b>
+                    ${formatTime(result.time)}
+                </b>
+            </div>
+
+
+            <div style="
+                display:grid;
+                grid-template-columns:1fr 1fr;
+                gap:8px;
+                margin-top:16px;
+            ">
+
+                <button
+                    onclick="reattemptQuiz()"
+                    style="
+                        height:43px;
+                        border:0;
+                        border-radius:10px;
+                        background:#0d6035;
+                        color:#fff;
+                        font-size:9px;
+                        font-weight:900;
+                    "
+                >
+                    Reattempt
+                </button>
+
+
+                <button
+                    onclick="goCourse()"
+                    style="
+                        height:43px;
+                        border:0;
+                        border-radius:10px;
+                        background:#e5ebe7;
+                        color:#34443a;
+                        font-size:9px;
+                        font-weight:900;
+                    "
+                >
+                    Back to Course
+                </button>
+
+            </div>
+
+        </section>
+
+        `;
+
+
+    document
+        .getElementById(
+            "navigator"
+        )
+        .innerHTML =
+            "";
+
+}
+
+
+/* =====================================================
+   REATTEMPT
+===================================================== */
+
+function reattemptQuiz(){
+
+    localStorage.removeItem(
+        stateKey()
+    );
+
+
+    location.reload();
+
+}
+
+
+/* =====================================================
+   BACK BUTTON
+===================================================== */
+
+document
+    .getElementById(
+        "backButton"
+    )
+    .addEventListener(
+        "click",
+        function(){
+
+            if(
+                confirm(
+                    "Quiz থেকে বের হতে চান? Current progress save থাকবে।"
+                )
+            ){
+
+                goCourse();
+
+            }
+
+        }
+    );
+
+
+function goCourse(){
+
+    window.location.href =
+        "course.html";
+
+}
+
+
+/* =====================================================
+   FATAL ERROR
+===================================================== */
+
+function showFatalError(
+    message
+){
+
+    stopQuestionTimer();
+
+
+    if(totalTimerInterval){
+
+        clearInterval(
+            totalTimerInterval
+        );
+
+    }
+
+
+    document
+        .getElementById(
+            "quizContainer"
+        )
+        .innerHTML =
+        `
+
+        <div class="error-box">
+
+            <div class="error-icon">
+                ⚠️
+            </div>
+
+            <h3>
+                Quiz unavailable
+            </h3>
+
+            <p>
+                ${escapeHtml(message)}
+            </p>
+
+            <button
+                onclick="goCourse()"
+                style="
+                    margin-top:15px;
+                    height:40px;
+                    padding:0 18px;
+                    border:0;
+                    border-radius:10px;
+                    background:#0d6035;
+                    color:#fff;
+                    font-size:9px;
+                    font-weight:900;
+                "
+            >
+                Back to Course
+            </button>
+
+        </div>
+
+        `;
+
+
+    document
+        .getElementById(
+            "navigator"
+        )
+        .innerHTML =
+            "";
+
+}
+
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+let toastTimer = null;
+
+
+function showToast(
+    message
+){
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+
+    toast.textContent =
+        message;
+
+
+    toast.classList.add(
+        "show"
+    );
+
+
+    clearTimeout(
+        toastTimer
+    );
+
+
+    toastTimer =
+        setTimeout(
+            function(){
+
+                toast.classList.remove(
+                    "show"
+                );
+
+            },
+            2500
+        );
+
+}
+
+
+/* =====================================================
+   SECURITY HELPERS
+===================================================== */
+
+function escapeHtml(
+    value
+){
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+function escapeAttribute(
+    value
+){
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =====================================================
+   PREVENT ACCIDENTAL REFRESH
+===================================================== */
+
+window.addEventListener(
+    "beforeunload",
+    function(event){
+
+        if(
+            quizStarted &&
+            !quizFinished
+        ){
+
+            saveState();
+
+            event.preventDefault();
+
+            event.returnValue = "";
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+</html>
