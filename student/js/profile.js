@@ -1,181 +1,36 @@
-/* =========================================================
-   STUDENT PROFILE
-========================================================= */
 
 "use strict";
 
-let profileUser = null;
+let profileData={};
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
+document.addEventListener("DOMContentLoaded",()=>{
+    auth.onAuthStateChanged(async user=>{
+        if(!user){goTo("index.html");return;}
+        profileData=await getStudentData(user.uid)||{};
+        renderProfile();
+    });
+});
 
-        auth.onAuthStateChanged(
-            async function(user) {
-
-                if (!user) {
-
-                    window.location.replace(
-                        "index.html"
-                    );
-
-                    return;
-
-                }
-
-                profileUser = user;
-
-                await loadProfile();
-
-            }
-        );
-
-    }
-);
-
-
-async function loadProfile() {
-
-    try {
-
-        const doc =
-            await db
-                .collection("students")
-                .doc(profileUser.uid)
-                .get();
-
-        const data =
-            doc.exists
-                ? doc.data()
-                : {};
-
-        const name =
-            data.name ||
-            profileUser.displayName ||
-            "Student";
-
-        const email =
-            data.email ||
-            profileUser.email ||
-            "";
-
-        const phone =
-            data.phone ||
-            "";
-
-        if ($("profileName")) {
-
-            $("profileName").textContent =
-                name;
-
-        }
-
-        if ($("profileEmail")) {
-
-            $("profileEmail").textContent =
-                email;
-
-        }
-
-        if ($("profilePhone")) {
-
-            $("profilePhone").textContent =
-                phone || "Not added";
-
-        }
-
-        if ($("profileAvatar")) {
-
-            $("profileAvatar").textContent =
-                name
-                    .charAt(0)
-                    .toUpperCase();
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Profile error:",
-            error
-        );
-
-    }
-
+function renderProfile(){
+    const name=profileData.name||auth.currentUser?.displayName||"Student";
+    document.querySelectorAll("[data-profile-name]").forEach(e=>e.textContent=name);
+    document.querySelectorAll("[data-profile-email]").forEach(e=>e.textContent=profileData.email||auth.currentUser?.email||"");
+    const avatar=document.getElementById("profileAvatar"); if(avatar)avatar.textContent=name.charAt(0).toUpperCase();
+    const input=document.getElementById("profileName");if(input)input.value=name;
+    const dream=document.getElementById("profileDream");if(dream)dream.value=profileData.targetDream||"";
+    const date=document.getElementById("profileTargetDate");if(date)date.value=profileData.targetDate||"";
 }
 
-
-/* =========================================================
-   PROFILE UPDATE
-========================================================= */
-
-async function saveProfile() {
-
-    if (!profileUser) return;
-
-    const name =
-        $("profileNameInput")
-            ? $("profileNameInput")
-                .value
-                .trim()
-            : "";
-
-    const phone =
-        $("profilePhoneInput")
-            ? $("profilePhoneInput")
-                .value
-                .trim()
-            : "";
-
-    if (!name) {
-
-        alert(
-            "Name দিন।"
-        );
-
-        return;
-
-    }
-
-    try {
-
-        await db
-            .collection("students")
-            .doc(profileUser.uid)
-            .set(
-                {
-                    name: name,
-                    phone: phone,
-                    email:
-                        profileUser.email ||
-                        "",
-                    updatedAt:
-                        firebase.firestore
-                            .FieldValue
-                            .serverTimestamp()
-                },
-                {
-                    merge: true
-                }
-            );
-
-        alert(
-            "Profile updated successfully."
-        );
-
-        await loadProfile();
-
-    } catch (error) {
-
-        console.error(
-            "Profile update error:",
-            error
-        );
-
-        alert(
-            "Profile update করা যায়নি।"
-        );
-
-    }
-
+async function saveProfile(){
+    const name=document.getElementById("profileName")?.value.trim();
+    const dream=document.getElementById("profileDream")?.value.trim();
+    const date=document.getElementById("profileTargetDate")?.value;
+    if(!name){alert("Name দিন।");return;}
+    try{
+        await auth.currentUser.updateProfile({displayName:name});
+        await saveStudentData({name,targetDream:dream||"",targetDate:date||""});
+        alert("Profile updated successfully.");
+        profileData={...profileData,name,targetDream:dream||"",targetDate:date||""};
+        renderProfile();
+    }catch(e){alert(e.message||"Profile update করা যায়নি।");}
 }
