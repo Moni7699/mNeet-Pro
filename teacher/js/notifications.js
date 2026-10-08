@@ -1,1 +1,1 @@
-
+requireTeacher();
