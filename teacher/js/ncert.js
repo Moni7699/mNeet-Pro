@@ -1,0 +1,1 @@
+requireTeacher();async function saveNCERT(){await db.collection("courses").doc(cid()).collection("chapters").doc(chid()).collection("ncert").add({title:$("#title").value,url:$("#url").value,createdBy:auth.currentUser.uid});toast("NCERT saved")}
