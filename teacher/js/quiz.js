@@ -1,0 +1,1 @@
+requireTeacher();async function load(){let s=await db.collection("courses").doc(cid()).collection("chapters").doc(chid()).collection("topics").doc(tid()).collection("quiz").get(),r=$("#rows");r.innerHTML="";s.forEach(d=>r.insertAdjacentHTML("beforeend",`<div class=row><b>${esc(d.data().question||"Question")}</b></div>`))}document.addEventListener("DOMContentLoaded",load);
