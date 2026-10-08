@@ -1,0 +1,1 @@
+requireAdmin().then(async()=>{let s=await db.collection('purchases').get();rows($('#rows'),s.docs.map(d=>{let x=d.data();return `<tr><td>${esc(x.userId||x.studentId||d.id)}</td><td>${esc(x.courseId||x.course||'—')}</td><td>${x.status===false?'Inactive':'Purchased'}</td><td>${dateText(x.createdAt||x.purchasedAt)}</td></tr>`}))})
