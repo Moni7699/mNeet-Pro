@@ -1,1 +1,1 @@
-
+requireTeacher();document.addEventListener("DOMContentLoaded",async()=>{try{$("#courseCount").textContent=(await db.collection("courses").get()).size;$("#studentCount").textContent=(await db.collection("students").get()).size}catch(e){console.error(e)}});
