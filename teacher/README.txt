@@ -1,0 +1,1 @@
+Teacher panel files for mNEET-Pro. Upload the entire teacher folder. Firestore paths use courses/{courseId}/chapters/{chapterId}/topics/{topicId}/quiz, notes, ncert and pyq. Add Firebase Security Rules before production.
