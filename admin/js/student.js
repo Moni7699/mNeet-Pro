@@ -1,0 +1,1 @@
+requireAdmin().then(async()=>{let id=param('id'),d=await db.collection('students').doc(id).get();if(!d.exists)return toast('Student not found','error');$('#info').innerHTML=Object.entries(d.data()).map(([k,v])=>`<div><b>${esc(k)}</b><br>${esc(v&&v.toDate?dateText(v):v??'—')}</div>`).join('')})
