@@ -1,1 +1,1 @@
-
+requireTeacher();async function load(){let s=await db.collection("courses").get(),r=$("#rows");r.innerHTML="";s.forEach(d=>r.insertAdjacentHTML("beforeend",`<div class=row><div><b>${esc(d.data().title||d.data().name||"Course")}</b></div><button onclick="set('teacherCourse','${d.id}');go('course.html')">Open</button></div>`))}document.addEventListener("DOMContentLoaded",load);
