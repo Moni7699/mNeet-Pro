@@ -1,1 +1,0 @@
-requireAdmin().then(async()=>{let ns=['courses','students','purchases','notifications'];let v=await Promise.all(ns.map(async n=>(await db.collection(n).get()).size));$("#stats").innerHTML=ns.map((n,i)=>`<div class="card"><span>${n}</span><b>${v[i]}</b></div>`).join('')})
