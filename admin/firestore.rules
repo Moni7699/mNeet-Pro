@@ -1,0 +1,95 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Admin verification
+    function isAdmin() {
+      return request.auth != null
+        && exists(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        )
+        && get(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        ).data.role == "admin"
+        && get(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        ).data.status == "active";
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read: if request.auth != null
+        && (request.auth.uid == userId || isAdmin());
+
+      // Users cannot grant themselves admin privileges.
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.role == "student"
+        && request.resource.data.status == "active";
+
+      // Only admin can change profiles or roles.
+      allow update, delete: if isAdmin();
+    }
+
+    // Courses
+    match /courses/{courseId} {
+      allow read: if isAdmin()
+        || (resource.data.status == "active"
+            && request.auth != null);
+
+      allow create, update, delete: if isAdmin();
+
+      match /{document=**} {
+        allow read, write: if isAdmin();
+      }
+    }
+
+    // Student purchases and payment requests
+    match /purchases/{purchaseId} {
+      allow read: if isAdmin()
+        || (request.auth != null
+            && resource.data.userId == request.auth.uid);
+
+      // Payment approvals are admin-controlled.
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isAdmin()
+        || (request.auth != null
+            && resource.data.userId == request.auth.uid);
+
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "pending";
+
+      allow update, delete: if isAdmin();
+    }
+
+    // Quiz attempts and results
+    match /quizAttempts/{attemptId} {
+      allow read: if isAdmin()
+        || (request.auth != null
+            && resource.data.userId == request.auth.uid);
+
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update, delete: if isAdmin();
+    }
+
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read: if isAdmin()
+        || request.auth != null;
+
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
