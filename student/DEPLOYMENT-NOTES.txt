@@ -1,0 +1,5 @@
+mNEET-Pro Student Panel
+
+Upload the included student/ folder into the matching folder of your repository. Keep the project root entry page and the other panel folders for navigation.
+Firebase config: student/js/firebase.js. Confirm projectId and enable Authentication (Email/Password), Firestore and Storage as needed.
+This package has not been tested against your live Firebase project. Verify all workflows and Security Rules before using real student data/payments or publishing.
