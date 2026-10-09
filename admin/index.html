@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#1b5e20"
+  >
+
+  <title>mNEET-Pro | Admin Panel</title>
+
+  <link
+    rel="stylesheet"
+    href="./css/admin.css"
+  >
+</head>
+
+<body>
+
+  <!-- =========================
+       AUTHENTICATION SECTION
+  ========================== -->
+
+  <main id="authView" class="auth-shell">
+
+    <section class="auth-brand">
+
+      <div class="brand-mark">m</div>
+
+      <p class="eyebrow">
+        ADMIN CONTROL CENTER
+      </p>
+
+      <h1>mNEET-Pro</h1>
+
+      <p>
+        Manage courses, chapters, topics, quizzes,
+        students and purchases from one place.
+      </p>
+
+    </section>
+
+    <section class="auth-card">
+
+      <div class="auth-tabs">
+
+        <button
+          type="button"
+          class="tab active"
+          data-auth-tab="signin"
+        >
+          Sign In
+        </button>
+
+        <button
+          type="button"
+          class="tab"
+          data-auth-tab="signup"
+        >
+          Sign Up
+        </button>
+
+      </div>
+
+
+      <!-- SIGN IN FORM -->
+
+      <form
+        id="signinForm"
+        class="auth-form"
+      >
+
+        <h2>Welcome Back</h2>
+
+        <p class="muted">
+          Sign in to your authorized admin account.
+        </p>
+
+        <label for="loginEmail">
+          Email
+
+          <input
+            id="loginEmail"
+            type="email"
+            placeholder="Enter your email"
+            autocomplete="username"
+            required
+          >
+        </label>
+
+        <label for="loginPassword">
+          Password
+
+          <input
+            id="loginPassword"
+            type="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            minlength="6"
+            required
+          >
+        </label>
+
+        <button
+          type="submit"
+          class="btn primary full"
+        >
+          Sign In
+        </button>
+
+        <button
+          type="button"
+          id="forgotBtn"
+          class="text-btn"
+        >
+          Forgot Password?
+        </button>
+
+      </form>
+
+
+      <!-- SIGN UP FORM -->
+
+      <form
+        id="signupForm"
+        class="auth-form hidden"
+      >
+
+        <h2>Create Account</h2>
+
+        <p class="muted">
+          New accounts require admin authorization.
+        </p>
+
+        <label for="signupName">
+          Full Name
+
+          <input
+            id="signupName"
+            type="text"
+            placeholder="Enter full name"
+            maxlength="100"
+            autocomplete="name"
+            required
+          >
+        </label>
+
+        <label for="signupPhone">
+          Phone Number
+
+          <input
+            id="signupPhone"
+            type="tel"
+            placeholder="Enter phone number"
+            maxlength="25"
+            autocomplete="tel"
+            required
+          >
+        </label>
+
+        <label for="signupEmail">
+          Email
+
+          <input
+            id="signupEmail"
+            type="email"
+            placeholder="Enter email"
+            autocomplete="email"
+            required
+          >
+        </label>
+
+        <label for="signupPassword">
+          Password
+
+          <input
+            id="signupPassword"
+            type="password"
+            placeholder="Create password"
+            minlength="8"
+            autocomplete="new-password"
+            required
+          >
+        </label>
+
+        <label for="signupConfirm">
+          Confirm Password
+
+          <input
+            id="signupConfirm"
+            type="password"
+            placeholder="Confirm password"
+            minlength="8"
+            autocomplete="new-password"
+            required
+          >
+        </label>
+
+        <button
+          type="submit"
+          class="btn primary full"
+        >
+          Create Account
+        </button>
+
+        <p class="muted small">
+          Already registered?
+
+          <button
+            type="button"
+            id="goSignin"
+            class="text-btn inline"
+          >
+            Sign In
+          </button>
+        </p>
+
+      </form>
+
+      <div
+        id="authMessage"
+        class="message"
+        role="status"
+      ></div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================
+       MAIN ADMIN APPLICATION
+  ========================== -->
+
+  <div
+    id="appView"
+    class="app hidden"
+  >
+
+    <div
+      id="scrim"
+      class="scrim"
+    ></div>
+
+
+    <!-- SIDEBAR -->
+
+    <aside
+      id="sidebar"
+      class="sidebar"
+    >
+
+      <div class="side-brand">
+
+        <div class="brand-mark small-mark">
+          m
+        </div>
+
+        <div>
+          <b>mNEET-Pro</b>
+          <small>ADMIN PANEL</small>
+        </div>
+
+        <button
+          type="button"
+          id="closeSidebar"
+          class="icon-btn mobile-only"
+          aria-label="Close menu"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <!-- ADMIN PROFILE -->
+
+      <div class="admin-mini">
+
+        <img
+          id="sidePhoto"
+          src="./assets/avatar.svg"
+          alt="Admin profile"
+        >
+
+        <div class="admin-mini-info">
+
+          <b id="sideName">
+            Admin
+          </b>
+
+          <span id="sideEmail">
+            —
+          </span>
+
+          <span id="sidePhone">
+            —
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- NAVIGATION -->
+
+      <nav
+        id="navMenu"
+        class="nav-menu"
+      >
+
+        <button
+          type="button"
+          class="nav-item active"
+          data-page="dashboard"
+        >
+          <span>▦</span>
+          <span>Dashboard</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          id="sidebarThemeToggle"
+        >
+          <span>☾</span>
+          <span>Dark / Light Mode</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="courses"
+        >
+          <span>▤</span>
+          <span>Courses</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="chapters"
+        >
+          <span>▥</span>
+          <span>Chapters</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="topics"
+        >
+          <span>▧</span>
+          <span>Topics</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="quizzes"
+        >
+          <span>☷</span>
+          <span>Quizzes</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="questions"
+        >
+          <span>✎</span>
+          <span>Questions</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="notes"
+        >
+          <span>▱</span>
+          <span>Notes</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="ncert"
+        >
+          <span>▱</span>
+          <span>NCERT</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="pyq"
+        >
+          <span>▱</span>
+          <span>PYQ</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="students"
+        >
+          <span>♙</span>
+          <span>Students</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="purchases"
+        >
+          <span>₹</span>
+          <span>Purchases</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="notifications"
+        >
+          <span>♧</span>
+          <span>Notification</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="profile"
+        >
+          <span>◎</span>
+          <span>Profile</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="settings"
+        >
+          <span>⚙</span>
+          <span>Setting</span>
+        </button>
+
+
+        <button
+          type="button"
+          id="sidebarLogout"
+          class="nav-item logout-nav"
+        >
+          <span>↪</span>
+          <span>Logout</span>
+        </button>
+
+      </nav>
+
+
+      <div class="side-foot">
+        mNEET-Pro • Admin Control
+      </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+
+    <section class="main-area">
+
+
+      <!-- TOP BAR -->
+
+      <header class="topbar">
+
+        <button
+          type="button"
+          id="menuToggle"
+          class="icon-btn menu-toggle"
+          aria-label="Open sidebar"
+        >
+          ☰
+        </button>
+
+
+        <div class="top-title">
+
+          <span class="eyebrow">
+            CONTROL CENTER
+          </span>
+
+          <h1 id="pageTitle">
+            Dashboard
+          </h1>
+
+        </div>
+
+
+        <div class="top-actions">
+
+          <button
+            type="button"
+            id="themeToggle"
+            class="icon-btn"
+            title="Toggle dark/light mode"
+            aria-label="Toggle dark/light mode"
+          >
+            ☾
+          </button>
+
+
+          <button
+            type="button"
+            id="topNotifications"
+            class="icon-btn notification-btn"
+            title="Notifications"
+            aria-label="Notifications"
+          >
+            ♧
+
+            <span
+              id="unreadDot"
+              class="dot hidden"
+            ></span>
+
+          </button>
+
+
+          <div
+            class="top-admin"
+            id="topAdminName"
+          >
+            Admin
+          </div>
+
+
+          <button
+            type="button"
+            id="topLogout"
+            class="btn ghost"
+          >
+            Logout
+          </button>
+
+        </div>
+
+      </header>
+
+
+      <!-- PAGE CONTENT -->
+
+      <main
+        id="pageContent"
+        class="page-content"
+      >
+
+        <div class="loading">
+          Loading admin dashboard...
+        </div>
+
+      </main>
+
+    </section>
+
+  </div>
+
+
+  <!-- NOTIFICATION / MESSAGE -->
+
+  <div
+    id="toast"
+    class="toast"
+    role="status"
+  ></div>
+
+
+  <!-- MODAL CONTAINER -->
+
+  <div id="modalRoot"></div>
+
+
+  <!-- JAVASCRIPT ENTRY POINT -->
+
+  <script
+    type="module"
+    src="./js/app.js"
+  ></script>
+
+</body>
+
+</html>
