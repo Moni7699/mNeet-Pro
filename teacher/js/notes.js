@@ -1,1 +1,0 @@
-requireTeacher();async function saveNotes(){await db.collection("courses").doc(cid()).collection("chapters").doc(chid()).collection("topics").doc(tid()).collection("notes").add({title:$("#title").value,url:$("#url").value,createdBy:auth.currentUser.uid,createdAt:firebase.firestore.FieldValue.serverTimestamp()});toast("Notes saved")}

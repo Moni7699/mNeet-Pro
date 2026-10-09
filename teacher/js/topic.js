@@ -1,1 +1,0 @@
-requireTeacher();async function load(){let r=db.collection("courses").doc(cid()).collection("chapters").doc(chid()).collection("topics").doc(tid()),d=await r.get();if(d.exists)$("#title").textContent=d.data().title||d.data().name}document.addEventListener("DOMContentLoaded",load);

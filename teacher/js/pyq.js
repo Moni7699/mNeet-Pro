@@ -1,1 +1,0 @@
-requireTeacher();async function savePYQ(){await db.collection("courses").doc(cid()).collection("chapters").doc(chid()).collection("pyq").add({title:$("#title").value,url:$("#url").value,createdBy:auth.currentUser.uid});toast("PYQ saved")}

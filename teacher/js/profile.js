@@ -1,1 +1,0 @@
-requireTeacher();async function saveProfile(){let n=$("#name").value.trim();await auth.currentUser.updateProfile({displayName:n});await db.collection("teachers").doc(auth.currentUser.uid).set({name:n},{merge:true});toast("Saved")}
