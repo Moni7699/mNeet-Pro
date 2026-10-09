@@ -1,50 +1,5 @@
-
-<!doctype html>
-<html lang="en"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0d6035"><title>mNEET-Pro | Login</title>
-<link rel="icon" href="assets/favicon.png"><link rel="stylesheet" href="css/style.css">
-</head><body>
-<main class="auth-page"><section class="auth-card">
-<div class="auth-logo">mNEET-Pro</div><p class="auth-sub">NEET Biology Learning Platform</p>
-<form id="loginForm" class="form">
-<div class="form-group"><label>Email</label><input id="loginEmail" class="input" type="email" required autocomplete="email"></div>
-<div class="form-group"><label>Password</label><input id="loginPassword" class="input" type="password" required autocomplete="current-password"></div>
-<button class="primary-btn" style="width:100%">Login</button>
-</form>
-<div class="auth-links"><a href="signup.html">Create account</a><a href="#" id="forgotBtn">Forgot password?</a></div>
-<p id="loginMessage" style="margin-top:14px;text-align:center;font-size:11px;color:#d32f2f"></p>
-</section></main>
-
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-
-<script src="js/firebase.js"></script>
-<script src="js/common.js"></script>
-<script src="js/auth.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function(){
-    redirectIfLoggedIn();
-    document.getElementById("loginForm").addEventListener("submit", async function(e){
-        e.preventDefault();
-        const m=document.getElementById("loginMessage");
-        m.textContent="Logging in...";
-        try {
-            await studentLogin(document.getElementById("loginEmail").value, document.getElementById("loginPassword").value);
-            window.location.replace("dashboard.html");
-        } catch(err) { m.textContent=err.message; }
-    });
-    document.getElementById("forgotBtn").addEventListener("click", async function(e){
-        e.preventDefault();
-        const email=document.getElementById("loginEmail").value.trim();
-        if(!email){ alert("আগে email দিন।"); return; }
-        try { await resetStudentPassword(email); alert("Password reset email পাঠানো হয়েছে।"); }
-        catch(err) { alert(err.message); }
-    });
-});
-</script>
-</body></html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#146c43"><title>Login | mNEET-Pro</title><link rel="stylesheet" href="css/style.css"><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script><script src="js/firebase.js"></script><script src="js/common.js"></script></head><body><header><span class="brand">mNEET-Pro</span></header><main class="wrap narrow"><section class="card"><h1>Welcome back</h1><p class="muted">Sign in to continue your NEET Biology practice.</p><form id="login"><label>Email</label><input name="email" type="email" autocomplete="email" required><label>Password</label><input name="password" type="password" autocomplete="current-password" required minlength="6"><button class="full" type="submit">Login</button></form><p><a href="signup.html">Create student account</a></p><p><a href="#" id="reset">Forgot password?</a></p></section></main><script>
+const {msg,go}=MN; auth.onAuthStateChanged(u=>{if(u)location.href='dashboard.html'});
+document.querySelector('#login').addEventListener('submit',async e=>{e.preventDefault();let f=e.currentTarget;try{await auth.signInWithEmailAndPassword(f.email.value.trim(),f.password.value);location.href='dashboard.html'}catch(err){msg(err.message,true)}});
+document.querySelector('#reset').addEventListener('click',async e=>{e.preventDefault();let email=document.querySelector('[name=email]').value.trim();if(!email){msg('Age email field-e email likhun.',true);return}try{await auth.sendPasswordResetEmail(email);msg('Password reset email pathano hoyeche. Inbox check korun.')}catch(err){msg(err.message,true)}});
+</script></body></html>
