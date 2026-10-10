@@ -1,0 +1,1061 @@
+/* =====================================================
+   mNEET COMMON DESIGN SYSTEM
+   File: common.css
+   Shared by Admin Panel and Student Panel
+   Colour palette: Green + White only
+===================================================== */
+
+/* =====================================================
+   1. DARK THEME DEFAULT
+===================================================== */
+
+:root {
+  color-scheme: dark;
+
+  --mn-bg: #071A12;
+  --mn-bg-secondary: #091F15;
+  --mn-card: #0D2419;
+  --mn-card-hover: #123321;
+
+  --mn-primary: #16A34A;
+  --mn-primary-hover: #22C55E;
+  --mn-primary-active: #15803D;
+
+  --mn-text: #FFFFFF;
+  --mn-text-secondary: #D1D5DB;
+  --mn-text-muted: #A7B5AC;
+
+  --mn-input-bg: #10291D;
+  --mn-border: #28513A;
+  --mn-border-focus: #22C55E;
+
+  --mn-overlay: rgba(0, 0, 0, 0.65);
+  --mn-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+
+  --mn-radius-sm: 8px;
+  --mn-radius-md: 14px;
+  --mn-radius-lg: 20px;
+  --mn-radius-pill: 999px;
+
+  --mn-space-1: 4px;
+  --mn-space-2: 8px;
+  --mn-space-3: 12px;
+  --mn-space-4: 16px;
+  --mn-space-5: 20px;
+  --mn-space-6: 24px;
+  --mn-space-8: 32px;
+  --mn-space-10: 40px;
+
+  --mn-font: Arial, Helvetica, sans-serif;
+
+  --mn-transition: 180ms ease;
+}
+
+
+/* =====================================================
+   2. LIGHT THEME
+===================================================== */
+
+html[data-theme="light"],
+body[data-theme="light"],
+[data-theme="light"] {
+  color-scheme: light;
+
+  --mn-bg: #FFFFFF;
+  --mn-bg-secondary: #F4FBF6;
+  --mn-card: #FFFFFF;
+  --mn-card-hover: #E8F7EC;
+
+  --mn-primary: #15803D;
+  --mn-primary-hover: #16A34A;
+  --mn-primary-active: #166534;
+
+  --mn-text: #FFFFFF;
+  --mn-text-secondary: #D1D5DB;
+  --mn-text-muted: #A7B5AC;
+
+  --mn-input-bg: #FFFFFF;
+  --mn-border: #B7DCC3;
+  --mn-border-focus: #15803D;
+
+  --mn-overlay: rgba(0, 0, 0, 0.45);
+  --mn-shadow: 0 8px 24px rgba(21, 128, 61, 0.10);
+}
+
+
+/* =====================================================
+   3. RESET AND BASE
+===================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+
+  background: var(--mn-bg);
+  color: var(--mn-text);
+
+  font-family: var(--mn-font);
+  font-size: 15px;
+  line-height: 1.6;
+
+  transition:
+    background var(--mn-transition),
+    color var(--mn-transition);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+img,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+a {
+  color: var(--mn-primary-hover);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 0;
+  color: var(--mn-text);
+  line-height: 1.3;
+}
+
+p {
+  margin-top: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+
+/* =====================================================
+   4. ACCESSIBILITY
+===================================================== */
+
+:focus-visible {
+  outline: 2px solid var(--mn-primary-hover);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--mn-primary);
+  color: #FFFFFF;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* =====================================================
+   5. COMMON LAYOUT
+===================================================== */
+
+.mn-container {
+  width: min(100% - 32px, 1200px);
+  margin-inline: auto;
+}
+
+.mn-page {
+  width: 100%;
+  min-width: 0;
+  padding: var(--mn-space-6);
+}
+
+.mn-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mn-space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--mn-space-6);
+}
+
+.mn-page-title {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 800;
+}
+
+.mn-page-subtitle {
+  margin: 6px 0 0;
+  color: var(--mn-text-secondary);
+}
+
+.mn-section {
+  margin-bottom: var(--mn-space-8);
+}
+
+.mn-section-title {
+  margin-bottom: var(--mn-space-4);
+  font-size: 20px;
+  font-weight: 750;
+}
+
+.mn-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--mn-space-4);
+}
+
+.mn-flex {
+  display: flex;
+  align-items: center;
+  gap: var(--mn-space-3);
+}
+
+.mn-flex-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--mn-space-3);
+}
+
+.mn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mn-space-3);
+}
+
+.mn-grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+
+/* =====================================================
+   6. CARDS
+===================================================== */
+
+.mn-card {
+  min-width: 0;
+  padding: var(--mn-space-5);
+
+  background: var(--mn-card);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-md);
+
+  box-shadow: var(--mn-shadow);
+
+  transition:
+    background var(--mn-transition),
+    border-color var(--mn-transition),
+    transform var(--mn-transition);
+}
+
+.mn-card-hover:hover {
+  background: var(--mn-card-hover);
+  transform: translateY(-2px);
+}
+
+.mn-card-title {
+  margin-bottom: var(--mn-space-2);
+  font-size: 17px;
+  font-weight: 750;
+}
+
+.mn-card-description {
+  margin-bottom: 0;
+  color: var(--mn-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+
+/* =====================================================
+   7. BUTTONS
+===================================================== */
+
+.mn-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mn-space-2);
+
+  min-height: 42px;
+  padding: 10px 16px;
+
+  border: 1px solid transparent;
+  border-radius: var(--mn-radius-sm);
+
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+
+  transition:
+    background var(--mn-transition),
+    border-color var(--mn-transition),
+    transform var(--mn-transition);
+}
+
+.mn-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.mn-btn-primary {
+  background: var(--mn-primary);
+  border-color: var(--mn-primary);
+  color: #FFFFFF;
+}
+
+.mn-btn-primary:hover:not(:disabled) {
+  background: var(--mn-primary-hover);
+  border-color: var(--mn-primary-hover);
+}
+
+.mn-btn-outline {
+  background: transparent;
+  border-color: var(--mn-border);
+  color: var(--mn-text);
+}
+
+.mn-btn-outline:hover:not(:disabled) {
+  background: var(--mn-card-hover);
+  border-color: var(--mn-primary);
+}
+
+.mn-btn-ghost {
+  background: transparent;
+  color: var(--mn-text);
+}
+
+.mn-btn-ghost:hover:not(:disabled) {
+  background: var(--mn-card-hover);
+}
+
+.mn-btn-block {
+  display: flex;
+  width: 100%;
+}
+
+.mn-btn-sm {
+  min-height: 34px;
+  padding: 7px 11px;
+  font-size: 13px;
+}
+
+.mn-btn-lg {
+  min-height: 48px;
+  padding: 12px 22px;
+  font-size: 16px;
+}
+
+
+/* =====================================================
+   8. FORMS
+===================================================== */
+
+.mn-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mn-space-4);
+}
+
+.mn-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.mn-label {
+  color: var(--mn-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.mn-help {
+  color: var(--mn-text-secondary);
+  font-size: 12px;
+}
+
+.mn-input,
+.mn-select,
+.mn-textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 12px;
+
+  background: var(--mn-input-bg);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-sm);
+
+  color: var(--mn-text);
+  outline: none;
+
+  transition:
+    border-color var(--mn-transition),
+    background var(--mn-transition);
+}
+
+.mn-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.mn-input::placeholder,
+.mn-textarea::placeholder {
+  color: var(--mn-text-muted);
+  opacity: 1;
+}
+
+.mn-input:focus,
+.mn-select:focus,
+.mn-textarea:focus {
+  border-color: var(--mn-border-focus);
+  outline: 2px solid var(--mn-border-focus);
+  outline-offset: 1px;
+}
+
+.mn-input:disabled,
+.mn-select:disabled,
+.mn-textarea:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.mn-checkbox,
+.mn-radio {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--mn-primary);
+  vertical-align: middle;
+}
+
+.mn-check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+/* =====================================================
+   9. STATUS LABELS
+===================================================== */
+
+.mn-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 26px;
+  padding: 4px 10px;
+
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-pill);
+
+  background: var(--mn-card-hover);
+  color: var(--mn-text);
+
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.mn-badge-primary {
+  background: var(--mn-primary);
+  border-color: var(--mn-primary);
+  color: #FFFFFF;
+}
+
+.mn-status-pending,
+.mn-status-approved,
+.mn-status-rejected,
+.mn-status-active,
+.mn-status-inactive {
+  background: var(--mn-card);
+  border-color: var(--mn-border);
+  color: var(--mn-text);
+}
+
+
+/* =====================================================
+   10. TABLES
+===================================================== */
+
+.mn-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-md);
+}
+
+.mn-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.mn-table th,
+.mn-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--mn-border);
+  vertical-align: top;
+}
+
+.mn-table th {
+  background: var(--mn-card-hover);
+  color: var(--mn-text);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.mn-table td {
+  color: var(--mn-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.mn-table tr:last-child td {
+  border-bottom: 0;
+}
+
+
+/* =====================================================
+   11. PROGRESS BARS
+===================================================== */
+
+.mn-progress {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+
+  background: var(--mn-input-bg);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-pill);
+}
+
+.mn-progress-bar {
+  width: 0;
+  height: 100%;
+
+  background: var(--mn-primary-hover);
+  border-radius: inherit;
+
+  transition: width 250ms ease;
+}
+
+.mn-progress-label {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--mn-space-3);
+  margin-bottom: 7px;
+
+  color: var(--mn-text-secondary);
+  font-size: 13px;
+}
+
+
+/* =====================================================
+   12. MODALS
+===================================================== */
+
+.mn-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+  background: var(--mn-overlay);
+}
+
+.mn-modal {
+  width: min(100%, 560px);
+  max-height: min(90vh, 850px);
+  overflow-y: auto;
+
+  padding: var(--mn-space-6);
+
+  background: var(--mn-card);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-lg);
+
+  box-shadow: var(--mn-shadow);
+}
+
+.mn-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--mn-space-3);
+  margin-bottom: var(--mn-space-5);
+}
+
+.mn-modal-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+
+/* =====================================================
+   13. ALERTS AND MESSAGES
+===================================================== */
+
+.mn-alert {
+  padding: 13px 15px;
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-sm);
+
+  background: var(--mn-card);
+  color: var(--mn-text);
+
+  overflow-wrap: anywhere;
+}
+
+.mn-message {
+  margin: var(--mn-space-3) 0;
+  padding: 12px 14px;
+
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-sm);
+
+  background: var(--mn-card);
+  color: var(--mn-text);
+}
+
+
+/* =====================================================
+   14. LOADING INDICATOR
+===================================================== */
+
+.mn-spinner {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+
+  border: 3px solid var(--mn-border);
+  border-top-color: var(--mn-primary-hover);
+  border-radius: 50%;
+
+  animation: mn-spin 750ms linear infinite;
+}
+
+@keyframes mn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.mn-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  min-height: 100px;
+  color: var(--mn-text-secondary);
+}
+
+
+/* =====================================================
+   15. AVATARS
+===================================================== */
+
+.mn-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  overflow: hidden;
+
+  background: var(--mn-primary);
+  border: 1px solid var(--mn-border);
+  border-radius: 50%;
+
+  color: #FFFFFF;
+  font-weight: 800;
+}
+
+.mn-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* =====================================================
+   16. DIVIDERS AND EMPTY STATES
+===================================================== */
+
+.mn-divider {
+  height: 1px;
+  margin: var(--mn-space-5) 0;
+  border: 0;
+  background: var(--mn-border);
+}
+
+.mn-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mn-space-3);
+
+  min-height: 150px;
+  padding: var(--mn-space-6);
+
+  border: 1px dashed var(--mn-border);
+  border-radius: var(--mn-radius-md);
+
+  color: var(--mn-text-secondary);
+  text-align: center;
+}
+
+.mn-empty-title {
+  margin: 0;
+  color: var(--mn-text);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+
+/* =====================================================
+   17. QUIZ COMPONENTS
+===================================================== */
+
+.mn-question-card {
+  padding: var(--mn-space-5);
+
+  background: var(--mn-card);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-md);
+}
+
+.mn-question-number {
+  color: var(--mn-primary-hover);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.mn-question-text {
+  margin: var(--mn-space-3) 0 var(--mn-space-5);
+  font-size: 18px;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.mn-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 13px;
+
+  background: var(--mn-input-bg);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-sm);
+
+  color: var(--mn-text);
+  text-align: left;
+
+  transition:
+    background var(--mn-transition),
+    border-color var(--mn-transition);
+}
+
+.mn-option:hover {
+  background: var(--mn-card-hover);
+  border-color: var(--mn-primary);
+}
+
+.mn-option.is-selected {
+  border-color: var(--mn-primary-hover);
+  box-shadow: inset 0 0 0 1px var(--mn-primary-hover);
+}
+
+.mn-option.is-correct {
+  background: var(--mn-card-hover);
+  border-color: var(--mn-primary-hover);
+}
+
+.mn-option.is-incorrect {
+  background: var(--mn-card);
+  border-color: var(--mn-border);
+}
+
+.mn-quiz-timer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 80px;
+  padding: 8px 12px;
+
+  background: var(--mn-card);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-sm);
+
+  color: var(--mn-text);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* =====================================================
+   18. PDF VIEWER
+===================================================== */
+
+.mn-pdf-viewer {
+  width: 100%;
+  min-height: 60vh;
+  overflow: hidden;
+
+  background: var(--mn-card);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-md);
+}
+
+.mn-pdf-frame {
+  display: block;
+  width: 100%;
+  min-height: 70vh;
+  border: 0;
+  background: #FFFFFF;
+}
+
+.mn-pdf-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--mn-space-2);
+
+  padding: var(--mn-space-3);
+
+  background: var(--mn-card);
+  border-bottom: 1px solid var(--mn-border);
+}
+
+
+/* =====================================================
+   19. NOTIFICATION COMPONENTS
+===================================================== */
+
+.mn-notification {
+  padding: var(--mn-space-4);
+
+  background: var(--mn-card);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-md);
+}
+
+.mn-notification.is-unread {
+  border-left: 4px solid var(--mn-primary-hover);
+}
+
+.mn-notification-title {
+  margin-bottom: 6px;
+  font-weight: 800;
+}
+
+.mn-notification-text {
+  margin-bottom: 0;
+  color: var(--mn-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+
+/* =====================================================
+   20. UTILITY CLASSES
+===================================================== */
+
+.mn-text {
+  color: var(--mn-text);
+}
+
+.mn-text-secondary {
+  color: var(--mn-text-secondary);
+}
+
+.mn-text-muted {
+  color: var(--mn-text-muted);
+}
+
+.mn-text-center {
+  text-align: center;
+}
+
+.mn-text-left {
+  text-align: left;
+}
+
+.mn-text-right {
+  text-align: right;
+}
+
+.mn-w-full {
+  width: 100%;
+}
+
+.mn-hidden {
+  display: none !important;
+}
+
+.mn-mt-2 {
+  margin-top: var(--mn-space-2);
+}
+
+.mn-mt-4 {
+  margin-top: var(--mn-space-4);
+}
+
+.mn-mb-2 {
+  margin-bottom: var(--mn-space-2);
+}
+
+.mn-mb-4 {
+  margin-bottom: var(--mn-space-4);
+}
+
+.mn-p-4 {
+  padding: var(--mn-space-4);
+}
+
+.mn-rounded {
+  border-radius: var(--mn-radius-md);
+}
+
+
+/* =====================================================
+   21. RESPONSIVE DESIGN
+===================================================== */
+
+@media (min-width: 900px) {
+  .mn-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--mn-space-4);
+  }
+
+  .mn-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--mn-space-4);
+  }
+}
+
+@media (max-width: 899px) {
+  .mn-page {
+    padding: var(--mn-space-4);
+  }
+
+  .mn-grid,
+  .mn-grid-3,
+  .mn-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--mn-space-3);
+  }
+
+  .mn-card {
+    padding: var(--mn-space-4);
+  }
+}
+
+@media (max-width: 560px) {
+  body {
+    font-size: 14px;
+  }
+
+  .mn-container {
+    width: min(100% - 20px, 1200px);
+  }
+
+  .mn-page {
+    padding: 12px;
+  }
+
+  .mn-page-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--mn-space-3);
+  }
+
+  .mn-grid,
+  .mn-grid-3,
+  .mn-grid-4 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mn-btn {
+    max-width: 100%;
+  }
+
+  .mn-table th,
+  .mn-table td {
+    padding: 10px;
+  }
+
+  .mn-modal-overlay {
+    padding: 10px;
+  }
+
+  .mn-modal {
+    padding: var(--mn-space-4);
+    border-radius: var(--mn-radius-md);
+  }
+
+  .mn-question-text {
+    font-size: 16px;
+  }
+
+  .mn-pdf-frame {
+    min-height: 60vh;
+  }
+}
