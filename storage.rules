@@ -1,0 +1,229 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ==========================================
+    // 1. AUTHENTICATION & ADMIN AUTHORIZATION
+    // ==========================================
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && firestore.exists(
+          /databases/(default)/documents/admins/$(request.auth.uid)
+        )
+        && firestore.get(
+          /databases/(default)/documents/admins/$(request.auth.uid)
+        ).data.active == true;
+    }
+
+    function isImage() {
+      return request.resource != null
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    function isPdf() {
+      return request.resource != null
+        && request.resource.contentType == 'application/pdf';
+    }
+
+    function isAllowedImage() {
+      return isImage()
+        && request.resource.size <= 5 * 1024 * 1024;
+    }
+
+    function isAllowedDocument() {
+      return isPdf()
+        && request.resource.size <= 20 * 1024 * 1024;
+    }
+
+
+    // ==========================================
+    // 2. ADMIN COURSE THUMBNAILS
+    // Path: course-thumbnails/{courseId}/{fileName}
+    // ==========================================
+
+    match /course-thumbnails/{courseId}/{fileName} {
+
+      allow read: if signedIn();
+
+      allow create, update: if isAdmin()
+        && isAllowedImage();
+
+      allow delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 3. ADMIN NOTES PDFs
+    // Path: notes/{courseId}/{topicId}/{fileName}
+    // ==========================================
+
+    match /notes/{courseId}/{topicId}/{fileName} {
+
+      allow read: if signedIn();
+
+      allow create, update: if isAdmin()
+        && isAllowedDocument();
+
+      allow delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 4. ADMIN NCERT PDFs
+    // Path: ncert/{courseId}/{chapterId}/{fileName}
+    // ==========================================
+
+    match /ncert/{courseId}/{chapterId}/{fileName} {
+
+      allow read: if signedIn();
+
+      allow create, update: if isAdmin()
+        && isAllowedDocument();
+
+      allow delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 5. ADMIN PYQ PDFs
+    // Path: pyq/{courseId}/{chapterId}/{fileName}
+    // ==========================================
+
+    match /pyq/{courseId}/{chapterId}/{fileName} {
+
+      allow read: if signedIn();
+
+      allow create, update: if isAdmin()
+        && isAllowedDocument();
+
+      allow delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 6. ADMIN QUESTION IMAGES
+    // Path: question-images/{quizId}/{fileName}
+    // ==========================================
+
+    match /question-images/{quizId}/{fileName} {
+
+      // Question images may contain exam material.
+      // Keep them restricted to signed-in users.
+      allow read: if signedIn();
+
+      allow create, update: if isAdmin()
+        && isAllowedImage();
+
+      allow delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 7. ADMIN PAYMENT QR CODE
+    // Path: payment-qr/{fileName}
+    // ==========================================
+
+    match /payment-qr/{fileName} {
+
+      allow read: if signedIn();
+
+      allow create, update: if isAdmin()
+        && isAllowedImage();
+
+      allow delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 8. ADMIN PROFILE PHOTO
+    // Path: admin-profiles/{adminId}/{fileName}
+    // ==========================================
+
+    match /admin-profiles/{adminId}/{fileName} {
+
+      allow read: if signedIn();
+
+      allow create, update: if isOwner(adminId)
+        && isAdmin()
+        && isAllowedImage();
+
+      allow delete: if isOwner(adminId)
+        && isAdmin();
+    }
+
+
+    // ==========================================
+    // 9. STUDENT PROFILE PHOTO
+    // Path: student-profiles/{studentId}/{fileName}
+    // ==========================================
+
+    match /student-profiles/{studentId}/{fileName} {
+
+      allow read: if isAdmin() || isOwner(studentId);
+
+      allow create, update: if isOwner(studentId)
+        && !isAdmin()
+        && isAllowedImage();
+
+      allow delete: if isOwner(studentId)
+        && !isAdmin();
+    }
+
+
+    // ==========================================
+    // 10. STUDENT PAYMENT SCREENSHOTS
+    // Path: payment-screenshots/{studentId}/{fileName}
+    // ==========================================
+
+    match /payment-screenshots/{studentId}/{fileName} {
+
+      // Only the owner and Admin can access screenshots.
+      allow read: if isAdmin() || isOwner(studentId);
+
+      allow create: if isOwner(studentId)
+        && !isAdmin()
+        && isAllowedImage();
+
+      // Students cannot replace or delete an existing payment
+      // screenshot after uploading it.
+      allow update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 11. STUDENT NOTES / PERSONAL ATTACHMENTS
+    // Path: student-attachments/{studentId}/{fileName}
+    // ==========================================
+
+    match /student-attachments/{studentId}/{fileName} {
+
+      allow read: if isAdmin() || isOwner(studentId);
+
+      allow create, update: if isOwner(studentId)
+        && !isAdmin()
+        && isAllowedImage();
+
+      allow delete: if isAdmin()
+        || (isOwner(studentId) && !isAdmin());
+    }
+
+
+    // ==========================================
+    // 12. BLOCK UNLISTED PATHS
+    // ==========================================
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
