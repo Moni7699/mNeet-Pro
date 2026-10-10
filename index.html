@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#0b1220"
+    >
+
+    <title>mNEET | Student Login</title>
+
+    <link rel="stylesheet" href="auth.css">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+    <!-- Application files -->
+    <script src="firebase.js" defer></script>
+    <script src="auth-guard.js" defer></script>
+    <script src="auth.js" defer></script>
+</head>
+
+<body>
+
+    <main class="auth-container">
+
+        <!-- Branding -->
+        <header class="brand">
+            <div class="brand-logo">
+                <span class="logo-m">m</span><span class="logo-neet">NEET</span>
+            </div>
+
+            <p class="brand-tagline">
+                Your Dream. Your Medical Journey.
+            </p>
+        </header>
+
+        <!-- Authentication Card -->
+        <section class="auth-card">
+
+            <div class="welcome-text">
+                <h1 id="formTitle">Welcome Back!</h1>
+
+                <p id="formSubtitle">
+                    Sign in to continue your NEET preparation.
+                </p>
+            </div>
+
+            <!-- Status message -->
+            <div
+                id="messageBox"
+                class="message-box"
+                role="status"
+                aria-live="polite"
+                hidden
+            ></div>
+
+            <!-- LOGIN FORM -->
+            <form id="loginForm" novalidate>
+
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+
+                    <input
+                        type="email"
+                        id="loginEmail"
+                        name="email"
+                        placeholder="Enter your email"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-option">
+                        <input
+                            type="checkbox"
+                            id="rememberMe"
+                        >
+                        <span>Remember me</span>
+                    </label>
+
+                    <button
+                        type="button"
+                        class="text-button"
+                        id="showForgotPassword"
+                    >
+                        Forgot Password?
+                    </button>
+                </div>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                    id="loginButton"
+                >
+                    Sign In
+                </button>
+
+                <p class="switch-text">
+                    Don't have an account?
+
+                    <button
+                        type="button"
+                        class="text-button"
+                        id="showSignup"
+                    >
+                        Create Account
+                    </button>
+                </p>
+
+            </form>
+
+            <!-- SIGN UP FORM -->
+            <form id="signupForm" hidden novalidate>
+
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+
+                    <input
+                        type="text"
+                        id="fullName"
+                        name="fullName"
+                        placeholder="Enter your full name"
+                        autocomplete="name"
+                        maxlength="100"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+
+                    <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        placeholder="Enter your 10-digit mobile number"
+                        inputmode="numeric"
+                        autocomplete="tel-national"
+                        maxlength="10"
+                        pattern="[0-9]{10}"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="signupEmail">Email Address</label>
+
+                    <input
+                        type="email"
+                        id="signupEmail"
+                        name="email"
+                        placeholder="Enter your email"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="city">City</label>
+
+                    <input
+                        type="text"
+                        id="city"
+                        name="city"
+                        placeholder="Enter your city"
+                        autocomplete="address-level2"
+                        maxlength="100"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="signupPassword">Create Password</label>
+
+                    <input
+                        type="password"
+                        id="signupPassword"
+                        name="password"
+                        placeholder="At least 8 characters"
+                        autocomplete="new-password"
+                        minlength="8"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+
+                    <input
+                        type="password"
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        placeholder="Enter password again"
+                        autocomplete="new-password"
+                        minlength="8"
+                        required
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                    id="signupButton"
+                >
+                    Create Account
+                </button>
+
+                <p class="switch-text">
+                    Already have an account?
+
+                    <button
+                        type="button"
+                        class="text-button"
+                        id="showLogin"
+                    >
+                        Sign In
+                    </button>
+                </p>
+
+            </form>
+
+            <!-- FORGOT PASSWORD FORM -->
+            <form id="forgotPasswordForm" hidden novalidate>
+
+                <div class="form-group">
+                    <label for="resetEmail">Registered Email Address</label>
+
+                    <input
+                        type="email"
+                        id="resetEmail"
+                        name="email"
+                        placeholder="Enter your registered email"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                    id="resetButton"
+                >
+                    Send Reset Link
+                </button>
+
+                <p class="switch-text">
+                    Remember your password?
+
+                    <button
+                        type="button"
+                        class="text-button"
+                        id="backToLogin"
+                    >
+                        Back to Login
+                    </button>
+                </p>
+
+            </form>
+
+        </section>
+
+        <footer class="page-footer">
+            <p>© <span id="currentYear"></span> mNEET. All rights reserved.</p>
+            <p>Learn Today. Become a Doctor Tomorrow.</p>
+        </footer>
+
+    </main>
+
+</body>
+</html>
