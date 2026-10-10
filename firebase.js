@@ -1,54 +1,44 @@
 /* =========================================================
-   mNEET FIREBASE CONFIGURATION
+   mNEET FIREBASE INITIALIZATION
    File: firebase.js
 
-   Firebase Services:
-   1. Firebase App
-   2. Firebase Authentication
-   3. Cloud Firestore
-   4. Firebase Storage
+   Services:
+   - Firebase App
+   - Firebase Authentication
+   - Cloud Firestore
+   - Firebase Storage
 
-   Project ID: mneet-spark
-
-   IMPORTANT:
-   - Initialize Firebase only once.
-   - Reuse an existing Firebase app when available.
-   - Never grant Admin privileges in this file.
-   - Protect all sensitive data with Firebase Security Rules.
-   - Load Firebase compat SDK scripts before this file.
+   Project: mneet-spark
 ========================================================= */
 
 (function (window) {
   "use strict";
 
-  /* =======================================================
-     1. PREVENT DUPLICATE INITIALIZATION
-     ======================================================= */
+  /*
+   * Avoid duplicate initialization.
+   */
 
   if (
     window.MNEETFirebase &&
     window.MNEETFirebase.ready === true
   ) {
-    console.info(
-      "mNEET Firebase is already initialized."
-    );
-
+    console.info("mNEET Firebase is already initialized.");
     return;
   }
 
-  /* =======================================================
-     2. CHECK FIREBASE SDK
-     ======================================================= */
+  /*
+   * Firebase SDK must load before this file.
+   */
 
   if (!window.firebase) {
-    const errorMessage =
-      "Firebase SDK not loaded. Check the SDK scripts in your HTML file.";
+    const message =
+      "Firebase SDK load হয়নি। index.html-এর Firebase scripts পরীক্ষা করো।";
 
-    console.error(errorMessage);
+    console.error(message);
 
     window.MNEETFirebase = Object.freeze({
       ready: false,
-      error: errorMessage,
+      error: message,
       app: null,
       auth: null,
       db: null,
@@ -59,9 +49,9 @@
     return;
   }
 
-  /* =======================================================
-     3. FIREBASE PROJECT CONFIGURATION
-     ======================================================= */
+  /*
+   * Firebase project configuration.
+   */
 
   const firebaseConfig = {
     apiKey: "AIzaSyApQOM_mtFZ16RiNJEaIUhb4iYFBIBRK58",
@@ -69,16 +59,10 @@
     databaseURL:
       "https://mneet-spark-default-rtdb.firebaseio.com",
     projectId: "mneet-spark",
-    storageBucket:
-      "mneet-spark.firebasestorage.app",
+    storageBucket: "mneet-spark.firebasestorage.app",
     messagingSenderId: "252201633700",
-    appId:
-      "1:252201633700:web:1a1e7a2cff1f0b168ea331"
+    appId: "1:252201633700:web:1a1e7a2cff1f0b168ea331"
   };
-
-  /* =======================================================
-     4. INITIALIZE FIREBASE SERVICES
-     ======================================================= */
 
   let app = null;
   let auth = null;
@@ -87,7 +71,7 @@
 
   try {
     /*
-     * Reuse the Firebase app if it already exists.
+     * Initialize Firebase only if necessary.
      */
 
     if (
@@ -96,123 +80,72 @@
     ) {
       app = window.firebase.app();
     } else {
-      app = window.firebase.initializeApp(
-        firebaseConfig
-      );
+      app = window.firebase.initializeApp(firebaseConfig);
     }
 
-    /* Authentication */
+    /*
+     * Authentication.
+     */
 
-    auth = window.firebase.auth();
+    auth = app.auth();
 
-    /* Cloud Firestore */
+    /*
+     * Cloud Firestore.
+     */
 
-    db = window.firebase.firestore();
+    db = app.firestore();
 
-    /* Firebase Storage */
+    /*
+     * Firebase Storage is optional until its SDK loads.
+     */
 
-    if (
-      typeof window.firebase.storage === "function"
-    ) {
-      storage = window.firebase.storage();
+    if (typeof app.storage === "function") {
+      storage = app.storage();
     } else {
       console.warn(
-        "Firebase Storage SDK is not loaded. File uploads will not work."
+        "Firebase Storage SDK পাওয়া যায়নি। File upload চালু হবে না।"
       );
     }
 
-    /* =====================================================
-       5. EXPORT FIREBASE SERVICES
-       ===================================================== */
+    /*
+     * Export services for existing mNEET files.
+     */
 
-    const firebaseServices = {
+    window.MNEETFirebase = Object.freeze({
       ready: true,
-
       app: app,
       auth: auth,
       db: db,
       storage: storage,
-
-      projectId: firebaseConfig.projectId,
-
-      /*
-       * Storage availability helper.
-       */
-
       hasStorage: Boolean(storage),
-
-      /*
-       * Firebase initialization status.
-       */
-
-      initializedAt: new Date().toISOString()
-    };
-
-    window.MNEETFirebase = Object.freeze(
-      firebaseServices
-    );
+      projectId: firebaseConfig.projectId
+    });
 
     /*
-     * Compatibility with existing mNEET files.
+     * Compatibility aliases used by existing files.
      */
 
     window.mneetAuth = auth;
     window.mneetDB = db;
     window.mneetStorage = storage;
 
-    /* =====================================================
-       6. INITIALIZATION SUCCESS
-       ===================================================== */
-
     console.info(
       "mNEET Firebase initialized successfully."
     );
 
-    console.info(
-      "Firebase project:",
-      firebaseConfig.projectId
-    );
-
-    console.info(
-      "Authentication:",
-      Boolean(auth)
-    );
-
-    console.info(
-      "Firestore:",
-      Boolean(db)
-    );
-
-    console.info(
-      "Storage:",
-      Boolean(storage)
-    );
-
   } catch (error) {
-    /* =====================================================
-       7. INITIALIZATION ERROR
-       ===================================================== */
-
     console.error(
       "mNEET Firebase initialization failed:",
       error
     );
 
-    const errorMessage =
-      error && error.message
-        ? error.message
-        : "Firebase initialization failed.";
-
     window.MNEETFirebase = Object.freeze({
       ready: false,
-
-      error: errorMessage,
-
+      error: error.message || "Firebase initialization failed.",
       app: app,
       auth: auth,
       db: db,
       storage: storage,
-
       projectId: firebaseConfig.projectId
     });
 
