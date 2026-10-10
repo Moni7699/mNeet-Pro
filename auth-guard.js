@@ -1,296 +1,339 @@
-/* ========================================
-   mNEET AUTH GUARD
-   Authentication and Role Routing
-   ======================================== */
+/* =====================================================
+   mNEET AUTHENTICATION GUARD
+   File: auth-guard.js
+
+   Responsibilities:
+   1. Protect Admin pages from signed-out users.
+   2. Verify Admin access using admins/{uid}.
+   3. Require active === true for Admin access.
+   4. Prevent students from opening Admin pages.
+   5. Protect Student pages from signed-out users.
+   6. Never grant Admin privileges during registration.
+
+   IMPORTANT:
+   Client-side checks improve navigation security.
+   Firestore Security Rules must enforce real authorization.
+===================================================== */
 
 (function () {
-    "use strict";
+  "use strict";
 
-    let checkStarted = false;
+  const LOGIN_PAGE = "index.html";
+  const ADMIN_PAGE = "admin.html";
+  const STUDENT_PAGE = "student.html";
+
+  let auth = null;
+  let db = null;
+
+  let currentUser = null;
+  let currentRole = null;
+
+  let started = false;
+  let handlingAuthState = false;
+
+  /* =====================================================
+     PAGE DETECTION
+  ===================================================== */
+
+  function getCurrentPage() {
+    const path = window.location.pathname || "";
+    const filename = path.split("/").pop().toLowerCase();
+
+    return filename || LOGIN_PAGE;
+  }
+
+  function isAdminPage(page) {
+    return (
+      page === "admin.html" ||
+      page.startsWith("admin-") ||
+      page.startsWith("admin_")
+    );
+  }
+
+  function isStudentPage(page) {
+    return (
+      page === "student.html" ||
+      page === "course.html" ||
+      page === "chapter.html" ||
+      page === "topic.html" ||
+      page === "ncert.html" ||
+      page === "video.html"
+    );
+  }
+
+  /* =====================================================
+     REDIRECTION
+  ===================================================== */
+
+  function redirectTo(page) {
+    if (getCurrentPage() !== page.toLowerCase()) {
+      window.location.replace(page);
+    }
+  }
+
+  /* =====================================================
+     FIREBASE INITIALIZATION CHECK
+  ===================================================== */
+
+  function getFirebaseServices() {
+    if (!window.firebase) {
+      throw new Error("Firebase SDK পাওয়া যায়নি।");
+    }
+
+    if (!window.firebase.apps || window.firebase.apps.length === 0) {
+      throw new Error("Firebase initialize করা হয়নি।");
+    }
+
+    if (!auth) {
+      auth = window.firebase.auth();
+    }
+
+    if (!db) {
+      db = window.firebase.firestore();
+    }
+
+    return { auth, db };
+  }
+
+  /* =====================================================
+     ADMIN AUTHORIZATION
+
+     Admin access requires:
+     admins/{uid} exists
+     AND
+     active === true
+
+     A users/{uid} document or a profile role field
+     does not grant Admin access.
+  ===================================================== */
+
+  async function verifyAdmin(user) {
+    const services = getFirebaseServices();
+
+    const adminDocument = await services.db
+      .collection("admins")
+      .doc(user.uid)
+      .get();
+
+    if (!adminDocument.exists) {
+      return false;
+    }
+
+    const adminData = adminDocument.data();
+
+    return Boolean(
+      adminData &&
+      adminData.active === true
+    );
+  }
+
+  /* =====================================================
+     AUTHENTICATION GUARD
+  ===================================================== */
+
+  async function handleAuthenticatedUser(user) {
+    const page = getCurrentPage();
 
     /*
-     * Detect the current page.
+     * No signed-in user:
+     * Protected pages must not remain accessible.
      */
-    function getCurrentPage() {
-        const path = window.location.pathname
-            .split("/")
-            .pop()
-            .toLowerCase();
 
-        return path || "index.html";
+    if (!user) {
+      currentUser = null;
+      currentRole = null;
+
+      if (isAdminPage(page) || isStudentPage(page)) {
+        redirectTo(LOGIN_PAGE);
+      }
+
+      return;
+    }
+
+    currentUser = user;
+
+    /*
+     * Admin pages require an active Admin document.
+     */
+
+    if (isAdminPage(page)) {
+      let adminAuthorized = false;
+
+      try {
+        adminAuthorized = await verifyAdmin(user);
+      } catch (error) {
+        console.error(
+          "mNEET Admin authorization check failed:",
+          error
+        );
+
+        /*
+         * If authorization cannot be verified, do not
+         * allow access to the Admin page.
+         */
+
+        redirectTo(LOGIN_PAGE);
+        return;
+      }
+
+      if (!adminAuthorized) {
+        currentRole = "student";
+        redirectTo(STUDENT_PAGE);
+        return;
+      }
+
+      currentRole = "admin";
+
+      /*
+       * Authorized Admin may remain on the Admin page.
+       */
+      return;
     }
 
     /*
-     * Wait until Firebase is initialized.
+     * Authenticated users on the login page:
+     * Send them to the appropriate destination.
      */
-    function waitForFirebase(timeoutMs) {
-        return new Promise(function (resolve, reject) {
-            const startedAt = Date.now();
 
-            function check() {
-                if (
-                    window.mneetFirebase &&
-                    window.mneetFirebase.auth &&
-                    window.mneetFirebase.db
-                ) {
-                    resolve(window.mneetFirebase);
+    if (page === LOGIN_PAGE) {
+      try {
+        const adminAuthorized = await verifyAdmin(user);
 
-                    return;
-                }
+        if (adminAuthorized) {
+          currentRole = "admin";
+          redirectTo(ADMIN_PAGE);
+        } else {
+          currentRole = "student";
+          redirectTo(STUDENT_PAGE);
+        }
+      } catch (error) {
+        console.error(
+          "mNEET role verification failed:",
+          error
+        );
 
-                if (Date.now() - startedAt >= timeoutMs) {
-                    reject(
-                        new Error(
-                            "Firebase initialization timed out."
-                        )
-                    );
+        /*
+         * Do not guess the user's role if Firestore
+         * authorization cannot be verified.
+         */
+      }
 
-                    return;
-                }
-
-                setTimeout(check, 100);
-            }
-
-            check();
-        });
+      return;
     }
 
     /*
-     * Check current authentication and role.
+     * Authenticated students may access student pages.
+     * Admin users may also visit student pages.
+     *
+     * Course purchase checks must be performed separately
+     * by the relevant student/course page and Firestore
+     * Security Rules.
      */
-    async function checkCurrentPage() {
-        if (checkStarted) {
-            return;
+
+    if (isStudentPage(page)) {
+      try {
+        const adminAuthorized = await verifyAdmin(user);
+
+        currentRole = adminAuthorized ? "admin" : "student";
+      } catch (error) {
+        console.error(
+          "mNEET account verification warning:",
+          error
+        );
+
+        /*
+         * A Firestore error must never grant Admin access.
+         */
+        currentRole = "student";
+      }
+    }
+  }
+
+  /* =====================================================
+     START AUTH GUARD
+  ===================================================== */
+
+  function start() {
+    if (started) {
+      return;
+    }
+
+    started = true;
+
+    try {
+      const services = getFirebaseServices();
+
+      services.auth.onAuthStateChanged(async user => {
+        if (handlingAuthState) {
+          return;
         }
 
-        checkStarted = true;
-
-        const page = getCurrentPage();
-
-        const isLoginPage = page === "index.html";
-
-        const isAdminPage = page === "admin.html";
-
-        const isStudentPage = page === "student.html";
+        handlingAuthState = true;
 
         try {
-            const services = await waitForFirebase(10000);
-
-            /*
-             * Wait for Firebase to restore its saved session.
-             */
-            const user = await new Promise(function (
-                resolve,
-                reject
-            ) {
-                let unsubscribe = null;
-
-                const timeout = setTimeout(function () {
-                    if (unsubscribe) {
-                        unsubscribe();
-                    }
-
-                    reject(
-                        new Error(
-                            "Authentication check timed out."
-                        )
-                    );
-                }, 10000);
-
-                unsubscribe =
-                    services.auth.onAuthStateChanged(
-                        function (currentUser) {
-                            clearTimeout(timeout);
-
-                            if (unsubscribe) {
-                                unsubscribe();
-                            }
-
-                            resolve(currentUser);
-                        },
-                        function (error) {
-                            clearTimeout(timeout);
-
-                            if (unsubscribe) {
-                                unsubscribe();
-                            }
-
-                            reject(error);
-                        }
-                    );
-            });
-
-            /*
-             * Not signed in:
-             * protect dashboard pages.
-             */
-            if (!user) {
-                if (!isLoginPage) {
-                    window.location.replace("index.html");
-                }
-
-                return;
-            }
-
-            /*
-             * Check admin privileges using Firestore.
-             */
-            const adminDoc = await services.db
-                .collection("admins")
-                .doc(user.uid)
-                .get();
-
-            const isActiveAdmin =
-                adminDoc.exists &&
-                adminDoc.data().active === true;
-
-            /*
-             * On the Login page, send signed-in users
-             * to the correct dashboard.
-             */
-            if (isLoginPage) {
-                if (window.mneetAuth) {
-                    await window.mneetAuth
-                        .routeSignedInUser(user);
-                }
-
-                return;
-            }
-
-            /*
-             * Only active admins may enter admin.html.
-             */
-            if (isAdminPage && !isActiveAdmin) {
-                const userDoc = await services.db
-                    .collection("users")
-                    .doc(user.uid)
-                    .get();
-
-                if (
-                    userDoc.exists &&
-                    userDoc.data().status === "active"
-                ) {
-                    window.location.replace("student.html");
-
-                } else {
-                    await services.auth.signOut();
-
-                    window.location.replace("index.html");
-                }
-
-                return;
-            }
-
-            /*
-             * Active admin opening student.html:
-             * route to the admin dashboard.
-             */
-            if (isStudentPage && isActiveAdmin) {
-                window.location.replace("admin.html");
-
-                return;
-            }
-
-            /*
-             * Verify the student profile.
-             */
-            if (isStudentPage) {
-                const userDoc = await services.db
-                    .collection("users")
-                    .doc(user.uid)
-                    .get();
-
-                if (
-                    !userDoc.exists ||
-                    userDoc.data().status !== "active"
-                ) {
-                    await services.auth.signOut();
-
-                    window.location.replace("index.html");
-                }
-
-                return;
-            }
-
-            /*
-             * Protect other application pages too.
-             * Their individual pages can add more checks later.
-             */
-            if (!isActiveAdmin) {
-                const userDoc = await services.db
-                    .collection("users")
-                    .doc(user.uid)
-                    .get();
-
-                if (
-                    !userDoc.exists ||
-                    userDoc.data().status !== "active"
-                ) {
-                    await services.auth.signOut();
-
-                    window.location.replace("index.html");
-                }
-            }
-
+          await handleAuthenticatedUser(user);
         } catch (error) {
-            console.error(
-                "mNEET authentication guard error:",
-                error
-            );
+          console.error(
+            "mNEET authentication guard error:",
+            error
+          );
 
-            /*
-             * Do not silently grant access if verification fails.
-             */
-            if (!isLoginPage) {
-                document.body.innerHTML = "";
+          const page = getCurrentPage();
 
-                const message = document.createElement("div");
-
-                message.style.cssText = [
-                    "max-width:520px",
-                    "margin:60px auto",
-                    "padding:24px",
-                    "font-family:Arial,sans-serif",
-                    "line-height:1.6",
-                    "color:#ffffff",
-                    "background:#111c2f",
-                    "border:1px solid #26364c",
-                    "border-radius:12px"
-                ].join(";");
-
-                message.textContent =
-                    "Unable to verify your account. Check your internet connection and Firebase permissions, then refresh the page.";
-
-                document.body.style.background = "#0b1220";
-
-                document.body.appendChild(message);
-            } else if (window.mneetAuth) {
-                window.mneetAuth.showMessage(
-                    "Unable to verify your account. Check your internet connection and Firebase configuration.",
-                    "error"
-                );
-            }
-
+          if (isAdminPage(page)) {
+            redirectTo(LOGIN_PAGE);
+          }
         } finally {
-            checkStarted = false;
+          handlingAuthState = false;
         }
+      });
+
+    } catch (error) {
+      console.error(
+        "mNEET authentication guard could not start:",
+        error
+      );
+
+      /*
+       * If Firebase is unavailable, do not pretend that
+       * the user has been authenticated.
+       */
+
+      const page = getCurrentPage();
+
+      if (isAdminPage(page) || isStudentPage(page)) {
+        redirectTo(LOGIN_PAGE);
+      }
     }
+  }
 
-    /*
-     * Export the guard for other pages.
-     */
-    window.mneetAuthGuard = {
-        checkCurrentPage: checkCurrentPage
-    };
+  /* =====================================================
+     PUBLIC GUARD API
+  ===================================================== */
 
-    /*
-     * Automatically check protected pages.
-     */
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
-            checkCurrentPage();
-        }
-    );
+  window.MNEETAuthGuard = Object.freeze({
+    start,
+
+    getCurrentUser: function () {
+      return currentUser;
+    },
+
+    getCurrentRole: function () {
+      return currentRole;
+    },
+
+    isAdmin: function () {
+      return currentRole === "admin";
+    },
+
+    verifyAdmin
+  });
+
+  /*
+   * index.html loads this file with defer.
+   * Start after the HTML has been parsed.
+   */
+
+  start();
 
 })();
