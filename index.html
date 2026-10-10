@@ -5,16 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <meta name="theme-color" content="#071A12">
-  <meta name="description" content="mNEET — NEET preparation and learning platform.">
+  <meta
+    name="description"
+    content="mNEET — NEET preparation and learning platform."
+  >
 
-  <title>mNEET | Sign In or Create Account</title>
+  <title>mNEET | Sign In & Sign Up</title>
 
   <link rel="stylesheet" href="auth.css">
 
   <style>
     :root {
       color-scheme: dark;
-
       --green-dark: #071A12;
       --green-card: #0D2419;
       --green-primary: #16A34A;
@@ -35,8 +37,8 @@
     }
 
     body.auth-page {
-      margin: 0;
       min-height: 100vh;
+      margin: 0;
       padding: 28px 16px;
       display: flex;
       flex-direction: column;
@@ -50,14 +52,14 @@
     .brand-section {
       width: 100%;
       max-width: 480px;
-      margin: 0 auto 28px;
+      margin: 0 auto 26px;
       text-align: center;
     }
 
     .brand-logo {
       margin: 0;
       color: var(--white);
-      font-size: clamp(42px, 10vw, 56px);
+      font-size: clamp(40px, 10vw, 56px);
       font-weight: 800;
       letter-spacing: -2px;
     }
@@ -101,6 +103,7 @@
 
     .auth-tab {
       min-height: 50px;
+      padding: 10px;
       border: 1px solid transparent;
       border-radius: 11px;
       background: transparent;
@@ -116,18 +119,18 @@
     }
 
     .form-heading {
-      margin: 0 0 10px;
+      margin: 0 0 9px;
       color: var(--white);
-      font-size: 28px;
+      font-size: 27px;
       font-weight: 800;
       line-height: 1.3;
     }
 
     .form-description {
-      margin: 0 0 26px;
+      margin: 0 0 25px;
       color: var(--white-soft);
-      font-size: 15px;
-      line-height: 1.7;
+      font-size: 14px;
+      line-height: 1.8;
     }
 
     .form-group {
@@ -138,21 +141,21 @@
       display: block;
       margin-bottom: 9px;
       color: var(--white);
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
     }
 
     .form-group input {
-      display: block;
       width: 100%;
-      min-height: 52px;
-      padding: 14px;
+      min-height: 51px;
+      padding: 13px 14px;
       border: 1px solid var(--green-border);
       border-radius: 12px;
       outline: none;
       background: var(--green-input);
       color: var(--white);
-      font-size: 16px;
+      font-family: inherit;
+      font-size: 15px;
     }
 
     .form-group input::placeholder {
@@ -169,7 +172,7 @@
     .form-options {
       display: flex;
       justify-content: flex-end;
-      margin: 0 0 22px;
+      margin: 0 0 21px;
     }
 
     .text-button {
@@ -177,7 +180,8 @@
       border: 0;
       background: transparent;
       color: var(--green-light);
-      font-size: 15px;
+      font-family: inherit;
+      font-size: 14px;
       font-weight: 700;
       text-align: left;
       cursor: pointer;
@@ -187,15 +191,22 @@
       text-decoration: underline;
     }
 
+    .text-button:focus-visible,
+    .auth-tab:focus-visible,
+    .primary-button:focus-visible {
+      outline: 2px solid var(--green-light);
+      outline-offset: 3px;
+    }
+
     .primary-button {
-      display: block;
       width: 100%;
-      min-height: 52px;
-      padding: 14px 16px;
+      min-height: 51px;
+      padding: 13px 16px;
       border: 1px solid var(--green-primary);
       border-radius: 12px;
       background: var(--green-primary);
       color: var(--white);
+      font-family: inherit;
       font-size: 16px;
       font-weight: 800;
       cursor: pointer;
@@ -206,7 +217,7 @@
     }
 
     .primary-button:disabled {
-      cursor: not-allowed;
+      cursor: wait;
       opacity: 0.7;
     }
 
@@ -219,20 +230,20 @@
     }
 
     .switch-auth-text .text-button {
-      display: inline;
+      display: inline-block;
       margin-left: 4px;
     }
 
     .auth-message {
       display: none;
-      margin: 0 0 24px;
+      margin: 0 0 22px;
       padding: 14px;
       border: 1px solid var(--green-border);
       border-radius: 12px;
       background: var(--green-input);
       color: var(--white);
       font-size: 14px;
-      line-height: 1.7;
+      line-height: 1.8;
       overflow-wrap: anywhere;
     }
 
@@ -243,13 +254,12 @@
     .auth-message.error,
     .auth-message.success,
     .auth-message.warning {
-      background: var(--green-input);
       border-color: var(--green-border);
+      background: var(--green-input);
       color: var(--white);
     }
 
     .auth-footer {
-      width: 100%;
       max-width: 480px;
       margin-top: 22px;
       color: var(--white-soft);
@@ -264,12 +274,12 @@
 
     @media (max-width: 380px) {
       body.auth-page {
-        padding: 18px 12px;
+        padding: 20px 12px;
       }
 
       .auth-card {
         padding: 18px;
-        border-radius: 17px;
+        border-radius: 18px;
       }
 
       .form-heading {
@@ -285,8 +295,6 @@
 
 <body class="auth-page">
 
-  <!-- BRAND -->
-
   <header class="brand-section">
     <h1 class="brand-logo" aria-label="mNEET">
       <span class="brand-m">m</span><span class="brand-neet">NEET</span>
@@ -297,24 +305,21 @@
     </p>
   </header>
 
-  <!-- AUTHENTICATION CARD -->
-
   <main class="auth-card">
-
-    <!-- SIGN IN / SIGN UP TABS -->
 
     <div
       class="auth-tabs"
       role="tablist"
-      aria-label="Authentication options">
-
+      aria-label="Authentication options"
+    >
       <button
         type="button"
         class="auth-tab active"
         id="showSignInButton"
         role="tab"
         aria-selected="true"
-        aria-controls="signInSection">
+        aria-controls="signInSection"
+      >
         Sign In
       </button>
 
@@ -324,35 +329,32 @@
         id="showSignUpButton"
         role="tab"
         aria-selected="false"
-        aria-controls="signUpSection">
+        aria-controls="signUpSection"
+      >
         Sign Up
       </button>
-
     </div>
-
-    <!-- AUTHENTICATION STATUS -->
 
     <div
       id="authMessage"
       class="auth-message"
       role="status"
-      aria-live="polite">
-    </div>
+      aria-live="polite"
+    ></div>
 
-    <!-- ================================================
-         SIGN IN
-    ================================================= -->
+    <!-- SIGN IN -->
 
     <section
       id="signInSection"
-      aria-labelledby="signInHeading">
-
+      role="tabpanel"
+      aria-labelledby="signInHeading"
+    >
       <h2 class="form-heading" id="signInHeading">
         Welcome Back
       </h2>
 
       <p class="form-description">
-        Sign in to continue to your mNEET account.
+        Sign in to continue to your authorized mNEET account.
       </p>
 
       <form id="signInForm" novalidate>
@@ -367,8 +369,8 @@
             placeholder="Enter your email"
             autocomplete="email"
             inputmode="email"
-            autocapitalize="none"
-            required>
+            required
+          >
         </div>
 
         <div class="form-group">
@@ -380,14 +382,16 @@
             name="password"
             placeholder="Enter your password"
             autocomplete="current-password"
-            required>
+            required
+          >
         </div>
 
         <div class="form-options">
           <button
             type="button"
             class="text-button"
-            id="forgotPasswordButton">
+            id="forgotPasswordButton"
+          >
             Forgot Password?
           </button>
         </div>
@@ -395,7 +399,8 @@
         <button
           type="submit"
           class="primary-button"
-          id="signInButton">
+          id="signInButton"
+        >
           Sign In
         </button>
 
@@ -407,22 +412,21 @@
         <button
           type="button"
           class="text-button"
-          id="goToSignUpButton">
+          id="goToSignUpButton"
+        >
           Create Account
         </button>
       </p>
-
     </section>
 
-    <!-- ================================================
-         SIGN UP
-    ================================================= -->
+    <!-- SIGN UP -->
 
     <section
       id="signUpSection"
+      role="tabpanel"
       aria-labelledby="signUpHeading"
-      hidden>
-
+      hidden
+    >
       <h2 class="form-heading" id="signUpHeading">
         Create Account
       </h2>
@@ -442,7 +446,8 @@
             name="fullName"
             placeholder="Enter your full name"
             autocomplete="name"
-            required>
+            required
+          >
         </div>
 
         <div class="form-group">
@@ -455,7 +460,8 @@
             placeholder="Enter your phone number"
             autocomplete="tel"
             inputmode="tel"
-            required>
+            required
+          >
         </div>
 
         <div class="form-group">
@@ -468,8 +474,8 @@
             placeholder="Enter your email"
             autocomplete="email"
             inputmode="email"
-            autocapitalize="none"
-            required>
+            required
+          >
         </div>
 
         <div class="form-group">
@@ -482,7 +488,8 @@
             placeholder="Create a password"
             autocomplete="new-password"
             minlength="6"
-            required>
+            required
+          >
         </div>
 
         <div class="form-group">
@@ -495,13 +502,15 @@
             placeholder="Enter your password again"
             autocomplete="new-password"
             minlength="6"
-            required>
+            required
+          >
         </div>
 
         <button
           type="submit"
           class="primary-button"
-          id="signUpButton">
+          id="signUpButton"
+        >
           Create Account
         </button>
 
@@ -513,36 +522,34 @@
         <button
           type="button"
           class="text-button"
-          id="goToSignInButton">
+          id="goToSignInButton"
+        >
           Sign In
         </button>
       </p>
-
     </section>
 
-    <!-- ================================================
-         FORGOT PASSWORD
-    ================================================= -->
+    <!-- FORGOT PASSWORD -->
 
     <section
       id="forgotPasswordSection"
+      role="tabpanel"
       aria-labelledby="forgotPasswordHeading"
-      hidden>
-
+      hidden
+    >
       <h2 class="form-heading" id="forgotPasswordHeading">
         Reset Password
       </h2>
 
       <p class="form-description">
-        Enter your registered email address to request a password reset.
+        Enter your registered email address to receive a password
+        reset email.
       </p>
 
       <form id="forgotPasswordForm" novalidate>
 
         <div class="form-group">
-          <label for="resetEmail">
-            Registered Email Address
-          </label>
+          <label for="resetEmail">Registered Email Address</label>
 
           <input
             type="email"
@@ -551,14 +558,15 @@
             placeholder="Enter your registered email"
             autocomplete="email"
             inputmode="email"
-            autocapitalize="none"
-            required>
+            required
+          >
         </div>
 
         <button
           type="submit"
           class="primary-button"
-          id="resetPasswordButton">
+          id="resetPasswordButton"
+        >
           Send Reset Email
         </button>
 
@@ -570,47 +578,39 @@
         <button
           type="button"
           class="text-button"
-          id="backToSignInButton">
+          id="backToSignInButton"
+        >
           Back to Sign In
         </button>
       </p>
-
     </section>
 
   </main>
-
-  <!-- FOOTER -->
 
   <footer class="auth-footer">
     &copy; <span id="authCurrentYear"></span> mNEET.
     All rights reserved.
   </footer>
 
-  <!-- ================================================
-       FIREBASE SDK
-       Load SDK before project JavaScript.
-  ================================================= -->
+  <!-- Firebase SDK: load before project JavaScript -->
 
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
 
-  <!-- ================================================
-       MNEET PROJECT FILES
-       defer preserves script execution order.
-  ================================================= -->
+  <!-- Firebase initialization must execute before dependent files -->
 
-  <script src="firebase.js" defer></script>
+  <script src="firebase.js"></script>
+  <script src="firebase-helpers.js" defer></script>
   <script src="auth-guard.js" defer></script>
   <script src="auth.js" defer></script>
 
-  <!-- ================================================
-       AUTHENTICATION PAGE NAVIGATION
-  ================================================= -->
+  <!-- Authentication page navigation -->
 
   <script>
-    (function () {
+    (() => {
       "use strict";
 
       const sections = {
@@ -619,43 +619,28 @@
         forgotPassword: document.getElementById("forgotPasswordSection")
       };
 
-      const signInTab =
-        document.getElementById("showSignInButton");
-
-      const signUpTab =
-        document.getElementById("showSignUpButton");
-
-      const message =
-        document.getElementById("authMessage");
+      const signInTab = document.getElementById("showSignInButton");
+      const signUpTab = document.getElementById("showSignUpButton");
 
       function showSection(sectionName) {
-        Object.keys(sections).forEach(function (key) {
-          sections[key].hidden = true;
+        Object.entries(sections).forEach(([name, section]) => {
+          section.hidden = name !== sectionName;
         });
 
-        signInTab.classList.remove("active");
-        signUpTab.classList.remove("active");
+        signInTab.classList.toggle("active", sectionName === "signIn");
+        signUpTab.classList.toggle("active", sectionName === "signUp");
 
-        signInTab.setAttribute("aria-selected", "false");
-        signUpTab.setAttribute("aria-selected", "false");
+        signInTab.setAttribute(
+          "aria-selected",
+          String(sectionName === "signIn")
+        );
 
-        if (sectionName === "signUp") {
-          sections.signUp.hidden = false;
+        signUpTab.setAttribute(
+          "aria-selected",
+          String(sectionName === "signUp")
+        );
 
-          signUpTab.classList.add("active");
-
-          signUpTab.setAttribute("aria-selected", "true");
-
-        } else if (sectionName === "forgotPassword") {
-          sections.forgotPassword.hidden = false;
-
-        } else {
-          sections.signIn.hidden = false;
-
-          signInTab.classList.add("active");
-
-          signInTab.setAttribute("aria-selected", "true");
-        }
+        const message = document.getElementById("authMessage");
 
         if (message) {
           message.textContent = "";
@@ -663,51 +648,32 @@
         }
       }
 
-      signInTab.addEventListener("click", function () {
-        showSection("signIn");
-      });
+      signInTab.addEventListener("click", () => showSection("signIn"));
+      signUpTab.addEventListener("click", () => showSection("signUp"));
 
-      signUpTab.addEventListener("click", function () {
-        showSection("signUp");
-      });
+      document.getElementById("goToSignUpButton")
+        .addEventListener("click", () => showSection("signUp"));
 
-      document
-        .getElementById("goToSignUpButton")
-        .addEventListener("click", function () {
-          showSection("signUp");
-        });
+      document.getElementById("goToSignInButton")
+        .addEventListener("click", () => showSection("signIn"));
 
-      document
-        .getElementById("goToSignInButton")
-        .addEventListener("click", function () {
-          showSection("signIn");
-        });
-
-      document
-        .getElementById("forgotPasswordButton")
-        .addEventListener("click", function () {
-          const email = document
-            .getElementById("signInEmail")
-            .value.trim();
-
-          document.getElementById("resetEmail").value = email;
+      document.getElementById("forgotPasswordButton")
+        .addEventListener("click", () => {
+          document.getElementById("resetEmail").value =
+            document.getElementById("signInEmail").value.trim();
 
           showSection("forgotPassword");
         });
 
-      document
-        .getElementById("backToSignInButton")
-        .addEventListener("click", function () {
-          showSection("signIn");
-        });
+      document.getElementById("backToSignInButton")
+        .addEventListener("click", () => showSection("signIn"));
 
       document.getElementById("authCurrentYear").textContent =
         new Date().getFullYear();
 
       window.MNEETAuthUI = Object.freeze({
-        showSection: showSection
+        showSection
       });
-
     })();
   </script>
 
