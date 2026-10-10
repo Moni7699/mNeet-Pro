@@ -1,0 +1,628 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==========================================
+    // 1. AUTHENTICATION & ADMIN AUTHORIZATION
+    // ==========================================
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(
+          /databases/$(database)/documents/admins/$(request.auth.uid)
+        )
+        && get(
+          /databases/$(database)/documents/admins/$(request.auth.uid)
+        ).data.active == true;
+    }
+
+    function isValidTimestamp(value) {
+      return value is timestamp;
+    }
+
+    function validUserProfile(uid) {
+      return isOwner(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.email is string
+        && request.resource.data.keys().hasOnly([
+          'uid',
+          'name',
+          'fullName',
+          'phone',
+          'email',
+          'target',
+          'examTarget',
+          'photoURL',
+          'createdAt',
+          'updatedAt',
+          'role',
+          'accountStatus'
+        ])
+        && (
+          !('role' in request.resource.data)
+          || request.resource.data.role == 'student'
+        )
+        && (
+          !('accountStatus' in request.resource.data)
+          || request.resource.data.accountStatus == 'active'
+        );
+    }
+
+
+    // ==========================================
+    // 2. ADMIN RECORDS
+    // ==========================================
+
+    match /admins/{adminId} {
+
+      // An admin can read their own authorization record.
+      allow get: if isOwner(adminId) || isAdmin();
+
+      // Do not allow clients to create, modify, or delete
+      // admin authorization records.
+      allow list, create, update, delete: if false;
+    }
+
+
+    // ==========================================
+    // 3. USER PROFILES
+    // ==========================================
+
+    match /users/{userId} {
+
+      // Students can read only their own profile.
+      // Admins can read student profiles.
+      allow get: if isOwner(userId) || isAdmin();
+
+      // Admins can list student profiles.
+      allow list: if isAdmin();
+
+      // A student can create their own basic profile.
+      allow create: if isOwner(userId)
+        && validUserProfile(userId)
+        && !('createdAt' in request.resource.data
+             && request.resource.data.createdAt != request.time);
+
+      // A student can update permitted profile fields only.
+      // They cannot change their role or grant themselves access.
+      allow update: if isOwner(userId)
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.diff(resource.data)
+          .affectedKeys()
+          .hasOnly([
+            'name',
+            'fullName',
+            'phone',
+            'target',
+            'examTarget',
+            'photoURL',
+            'updatedAt'
+          ]);
+
+      // Admin can update student profile data, but cannot
+      // change the account's UID through this rule.
+      allow update: if isAdmin()
+        && request.resource.data.uid == resource.data.uid;
+
+      // Profiles cannot be deleted by client-side requests.
+      allow delete: if false;
+    }
+
+
+    // ==========================================
+    // 4. COURSES
+    // ==========================================
+
+    match /courses/{courseId} {
+
+      // Published courses may be listed by signed-in users.
+      // Admin can read all courses, including drafts.
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.active == true
+          && resource.data.published != false
+        );
+
+      // Only an authorized admin manages courses.
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 5. SUBJECTS
+    // ==========================================
+
+    match /subjects/{subjectId} {
+
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.active != false
+          && resource.data.published != false
+        );
+
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 6. CHAPTERS
+    // ==========================================
+
+    match /chapters/{chapterId} {
+
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.active != false
+          && resource.data.published != false
+        );
+
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 7. TOPICS
+    // ==========================================
+
+    match /topics/{topicId} {
+
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.active != false
+          && resource.data.published != false
+        );
+
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 8. QUIZZES
+    // ==========================================
+
+    match /quizzes/{quizId} {
+
+      // Students can read published quiz metadata.
+      // Keep correct answers and solutions out of quiz metadata.
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.active != false
+          && resource.data.published != false
+        );
+
+      allow create, update, delete: if isAdmin();
+
+      // Nested quiz questions are protected below.
+      match /questions/{questionId} {
+        allow read, write: if isAdmin();
+      }
+    }
+
+
+    // ==========================================
+    // 9. QUESTION BANK
+    // ==========================================
+
+    match /questions/{questionId} {
+
+      // Question documents may contain answer keys,
+      // solutions and NCERT references.
+      // Client-side students must not read these documents.
+      allow read, create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 10. PROTECTED ANSWER DATA
+    // ==========================================
+
+    match /questionAnswers/{answerId} {
+
+      // Answer keys and solutions are Admin-only.
+      // A trusted backend can validate answers and return
+      // permitted feedback to the student.
+      allow read, write: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 11. NOTES, NCERT AND PYQ METADATA
+    // ==========================================
+
+    match /notes/{noteId} {
+
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.active != false
+          && resource.data.published != false
+        );
+
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /ncert/{materialId} {
+
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.active != false
+          && resource.data.published != false
+        );
+
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /pyq/{materialId} {
+
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.active != false
+          && resource.data.published != false
+        );
+
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 12. PURCHASE REQUESTS
+    // ==========================================
+
+    match /purchases/{purchaseId} {
+
+      // Admin can inspect all purchase requests.
+      // Students can read only their own requests.
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+
+      // Student can submit a pending payment request only.
+      // A student cannot create an already-approved purchase.
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.courseId is string
+        && request.resource.data.status == 'pending'
+        && request.resource.data.paymentStatus == 'pending'
+        && request.resource.data.approvalStatus == 'pending'
+        && request.resource.data.amount is number
+        && request.resource.data.amount >= 0
+        && request.resource.data.keys().hasOnly([
+          'userId',
+          'studentId',
+          'studentName',
+          'studentEmail',
+          'courseId',
+          'courseName',
+          'amount',
+          'currency',
+          'transactionId',
+          'paymentNote',
+          'status',
+          'paymentStatus',
+          'approvalStatus',
+          'paymentMethod',
+          'screenshotUrl',
+          'createdAt',
+          'updatedAt'
+        ]);
+
+      // Only Admin can approve, reject or change payment records.
+      allow update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 13. COURSE ACCESS GRANTS
+    // ==========================================
+
+    match /courseAccess/{accessId} {
+
+      // Students can read their own access grant.
+      allow get: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+
+      allow list: if isAdmin();
+
+      // Access grants can only be created or changed by Admin.
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 14. QUIZ ATTEMPTS
+    // ==========================================
+
+    match /quizAttempts/{attemptId} {
+
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+
+      // Attempts should be created through a trusted backend
+      // once server-side quiz validation is connected.
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 15. QUIZ RESULTS
+    // ==========================================
+
+    match /quizResults/{resultId} {
+
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+
+      // Client must not be able to fabricate or alter scores.
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 16. STUDENT PROGRESS
+    // ==========================================
+
+    match /studentProgress/{progressId} {
+
+      allow get: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+
+      allow list: if isAdmin();
+
+      // Progress updates require a trusted backend.
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 17. NCERT / MATERIAL READING PROGRESS
+    // ==========================================
+
+    match /studentNcertProgress/{progressId} {
+
+      allow get: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+
+      allow list: if isAdmin();
+
+      allow create, update: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && (
+          !exists(
+            /databases/$(database)/documents/studentNcertProgress/$(progressId)
+          )
+          || resource.data.userId == request.auth.uid
+        );
+
+      allow delete: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+    }
+
+    match /studentMaterialProgress/{progressId} {
+
+      allow get: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+
+      allow list: if isAdmin();
+
+      allow create, update: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && (
+          !exists(
+            /databases/$(database)/documents/studentMaterialProgress/$(progressId)
+          )
+          || resource.data.userId == request.auth.uid
+        );
+
+      allow delete: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+    }
+
+
+    // ==========================================
+    // 18. NOTIFICATIONS
+    // ==========================================
+
+    match /notifications/{notificationId} {
+
+      // Students can read only published notices.
+      // Queries must be compatible with this condition.
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.published == true
+          && resource.data.status == 'published'
+        );
+
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 19. STUDENT NOTIFICATION READ STATUS
+    // ==========================================
+
+    match /studentNotificationReads/{readId} {
+
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.notificationId is string
+        && request.resource.data.read == true
+        && request.resource.data.keys().hasOnly([
+          'userId',
+          'notificationId',
+          'read',
+          'readAt'
+        ]);
+
+      allow update: if signedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.notificationId == resource.data.notificationId
+        && request.resource.data.read == true;
+
+      allow delete: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+    }
+
+
+    // ==========================================
+    // 20. GENERAL SETTINGS
+    // ==========================================
+
+    match /settings/{settingId} {
+
+      // Settings can include payment and social information.
+      // Signed-in students may read general settings only.
+      allow get: if isAdmin()
+        || (
+          signedIn()
+          && settingId == 'general'
+        );
+
+      allow list: if isAdmin();
+
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 21. MOCK TESTS
+    // ==========================================
+
+    match /mockTests/{testId} {
+
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.active != false
+          && resource.data.published != false
+        );
+
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 22. STUDENT MOCK TEST ATTEMPTS
+    // ==========================================
+
+    match /mockTestAttempts/{attemptId} {
+
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 23. STUDENT SETTINGS
+    // ==========================================
+
+    match /studentSettings/{settingsId} {
+
+      allow get: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+
+      allow list: if isAdmin();
+
+      allow create, update: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+
+      allow delete: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+    }
+
+
+    // ==========================================
+    // 24. SUPPORT REQUESTS
+    // ==========================================
+
+    match /supportRequests/{requestId} {
+
+      allow get, list: if isAdmin()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
+
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update, delete: if isAdmin();
+    }
+
+
+    // ==========================================
+    // 25. DEFAULT DENY
+    // ==========================================
+
+    // Any collection not explicitly listed above is denied.
+    // This includes all unknown paths and unlisted collections.
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
