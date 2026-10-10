@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta name="theme-color" content="#0b1220">
+
+    <title>mNEET | Admin Panel</title>
+
+    <link rel="stylesheet" href="admin.css">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+    <!-- Firebase connection -->
+    <script src="firebase.js" defer></script>
+
+    <!-- Authentication protection -->
+    <script src="auth-guard.js" defer></script>
+
+    <!-- Admin application modules -->
+    <script src="admin-dashboard-data.js" defer></script>
+    <script src="admin-sidebar.js" defer></script>
+    <script src="admin-profile.js" defer></script>
+    <script src="admin-courses.js" defer></script>
+    <script src="admin-subjects.js" defer></script>
+    <script src="admin-chapters.js" defer></script>
+    <script src="admin-topics.js" defer></script>
+    <script src="admin-quizzes.js" defer></script>
+    <script src="admin-questions.js" defer></script>
+    <script src="admin-materials.js" defer></script>
+    <script src="admin-mock-tests.js" defer></script>
+    <script src="admin-students.js" defer></script>
+    <script src="admin-purchases.js" defer></script>
+    <script src="admin-notifications.js" defer></script>
+    <script src="admin-settings.js" defer></script>
+    <script src="admin.js" defer></script>
+</head>
+
+<body>
+
+    <!-- Mobile sidebar overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <div class="admin-layout">
+
+        <!-- SIDEBAR -->
+        <aside id="adminSidebar" class="admin-sidebar">
+
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <span class="logo-m">m</span><span class="logo-neet">NEET</span>
+                </div>
+
+                <p>ADMIN PANEL</p>
+            </div>
+
+            <div class="admin-mini-profile">
+                <div class="admin-avatar" id="sidebarAvatar">
+                    A
+                </div>
+
+                <div class="admin-mini-info">
+                    <strong id="sidebarAdminName">
+                        Administrator
+                    </strong>
+
+                    <span>Super Admin</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-navigation" id="adminNavigation">
+
+                <button
+                    class="nav-item active"
+                    data-page="dashboard"
+                    type="button"
+                >
+                    <span class="nav-icon">▦</span>
+                    <span>Dashboard</span>
+                </button>
+
+                <div class="nav-section-title">
+                    COURSE MANAGEMENT
+                </div>
+
+                <button
+                    class="nav-item"
+                    data-page="courses"
+                    type="button"
+                >
+                    <span class="nav-icon">▤</span>
+                    <span>Courses</span>
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-page="subjects"
+                    type="button"
+                >
+                    <span class="nav-icon">◈</span>
+                    <span>Subjects</span>
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-page="chapters"
+                    type="button"
+                >
+                    <span class="nav-icon">▥</span>
+                    <span>Chapters</span>
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-page="topics"
+                    type="button"
+                >
+                    <span class="nav-icon">☷</span>
+                    <span>Topics</span>
+                </button>
+
+                <div class="nav-section-title">
+                    EXAM MANAGEMENT
+                </div>
+
+                <button
+                    class="nav-item"
+                    data-page="quizzes"
+                    type="button"
+                >
+                    <span class="nav-icon">✓</span>
+                    <span>Quizzes</span>
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-page="questions"
+                    type="button"
+                >
+                    <span class="nav-icon">?</span>
+                    <span>Questions</span>
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-page="mock-tests"
+                    type="button"
+                >
+                    <span class="nav-icon">◷</span>
+                    <span>Full Mock Tests</span>
+                </button>
+
+                <div class="nav-section-title">
+                    STUDY MATERIALS
+                </div>
+
+                <button
+                    class="nav-item"
+                    data-page="materials"
+                    type="button"
+                >
+                    <span class="nav-icon">▧</span>
+                    <span>Notes / NCERT / PYQ</span>
+                </button>
+
+                <div class="nav-section-title">
+                    STUDENT MANAGEMENT
+                </div>
+
+                <button
+                    class="nav-item"
+                    data-page="students"
+                    type="button"
+                >
+                    <span class="nav-icon">♙</span>
+                    <span>Students</span>
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-page="purchases"
+                    type="button"
+                >
+                    <span class="nav-icon">₹</span>
+                    <span>Payments & Purchases</span>
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-page="notifications"
+                    type="button"
+                >
+                    <span class="nav-icon">♧</span>
+                    <span>Notifications</span>
+                </button>
+
+                <div class="nav-section-title">
+                    SYSTEM
+                </div>
+
+                <button
+                    class="nav-item"
+                    data-page="profile"
+                    type="button"
+                >
+                    <span class="nav-icon">♙</span>
+                    <span>Admin Profile</span>
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-page="settings"
+                    type="button"
+                >
+                    <span class="nav-icon">⚙</span>
+                    <span>Settings</span>
+                </button>
+
+            </nav>
+
+            <div class="sidebar-footer">
+                <button
+                    id="adminLogoutButton"
+                    class="logout-button"
+                    type="button"
+                >
+                    ⇥ Logout
+                </button>
+
+                <p>mNEET Admin v1.0</p>
+            </div>
+
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="admin-main">
+
+            <!-- TOPBAR -->
+            <header class="admin-topbar">
+
+                <div class="topbar-left">
+
+                    <button
+                        id="sidebarToggle"
+                        class="icon-button"
+                        type="button"
+                        aria-label="Toggle navigation"
+                    >
+                        ☰
+                    </button>
+
+                    <div>
+                        <h1 id="pageTitle">
+                            Dashboard
+                        </h1>
+
+                        <p id="pageSubtitle">
+                            Welcome to your mNEET control center.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="topbar-right">
+
+                    <span class="admin-status">
+                        <span class="status-dot"></span>
+                        Admin
+                    </span>
+
+                    <button
+                        id="topbarProfileButton"
+                        class="topbar-avatar"
+                        type="button"
+                        aria-label="Open admin profile"
+                    >
+                        A
+                    </button>
+
+                </div>
+
+            </header>
+
+            <!-- MAIN PAGE AREA -->
+            <section class="admin-content">
+
+                <!-- DASHBOARD -->
+                <section
+                    class="admin-page active"
+                    id="page-dashboard"
+                >
+
+                    <div class="welcome-banner">
+
+                        <div>
+                            <span class="welcome-label">
+                                mNEET CONTROL CENTER
+                            </span>
+
+                            <h2 id="dashboardWelcome">
+                                Welcome, Admin!
+                            </h2>
+
+                            <p>
+                                Manage courses, students, quizzes
+                                and your NEET learning platform.
+                            </p>
+                        </div>
+
+                        <div class="welcome-decoration">
+                            mN
+                        </div>
+
+                    </div>
+
+                    <div class="stats-grid">
+
+                        <article class="stat-card">
+                            <div class="stat-icon green">▤</div>
+
+                            <div>
+                                <p>Total Courses</p>
+
+                                <h3 id="statCourses">0</h3>
+
+                                <span>Courses in database</span>
+                            </div>
+                        </article>
+
+                        <article class="stat-card">
+                            <div class="stat-icon blue">♙</div>
+
+                            <div>
+                                <p>Total Students</p>
+
+                                <h3 id="statStudents">0</h3>
+
+                                <span>Registered students</span>
+                            </div>
+                        </article>
+
+                        <article class="stat-card">
+                            <div class="stat-icon purple">✓</div>
+
+                            <div>
+                                <p>Total Quizzes</p>
+
+                                <h3 id="statQuizzes">0</h3>
+
+                                <span>Created quizzes</span>
+                            </div>
+                        </article>
+
+                        <article class="stat-card">
+                            <div class="stat-icon orange">₹</div>
+
+                            <div>
+                                <p>Pending Payments</p>
+
+                                <h3 id="statPendingPayments">0</h3>
+
+                                <span>Awaiting review</span>
+                            </div>
+                        </article>
+
+                    </div>
+
+                    <div class="content-grid">
+
+                        <article class="panel-card">
+
+                            <div class="panel-heading">
+                                <div>
+                                    <h3>Quick Actions</h3>
+
+                                    <p>
+                                        Frequently used management tools.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="quick-actions">
+
+                                <button
+                                    class="quick-action"
+                                    data-page="courses"
+                                    type="button"
+                                >
+                                    <span>＋</span>
+                                    <strong>Create Course</strong>
+                                </button>
+
+                                <button
+                                    class="quick-action"
+                                    data-page="questions"
+                                    type="button"
+                                >
+                                    <span>✎</span>
+                                    <strong>Manage Questions</strong>
+                                </button>
+
+                                <button
+                                    class="quick-action"
+                                    data-page="materials"
+                                    type="button"
+                                >
+                                    <span>▧</span>
+                                    <strong>Study Materials</strong>
+                                </button>
+
+                                <button
+                                    class="quick-action"
+                                    data-page="purchases"
+                                    type="button"
+                                >
+                                    <span>₹</span>
+                                    <strong>Review Payments</strong>
+                                </button>
+
+                            </div>
+
+                        </article>
+
+                        <article class="panel-card">
+
+                            <div class="panel-heading">
+                                <div>
+                                    <h3>System Status</h3>
+
+                                    <p>
+                                        Connection information.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="system-status-list">
+
+                                <div class="system-status-row">
+                                    <span>Firebase</span>
+
+                                    <strong id="firebaseStatus">
+                                        Checking...
+                                    </strong>
+                                </div>
+
+                                <div class="system-status-row">
+                                    <span>Authentication</span>
+
+                                    <strong id="authStatus">
+                                        Checking...
+                                    </strong>
+                                </div>
+
+                                <div class="system-status-row">
+                                    <span>Admin Access</span>
+
+                                    <strong id="adminAccessStatus">
+                                        Checking...
+                                    </strong>
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                    <article class="panel-card recent-activity">
+
+                        <div class="panel-heading">
+                            <div>
+                                <h3>Recent Payments</h3>
+
+                                <p>
+                                    Latest purchase requests.
+                                </p>
+                            </div>
+
+                            <button
+                                class="secondary-button"
+                                data-page="purchases"
+                                type="button"
+                            >
+                                View All
+                            </button>
+                        </div>
+
+                        <div class="table-wrapper">
+
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Course</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="recentPaymentsBody">
+
+                                    <tr>
+                                        <td colspan="4" class="empty-cell">
+                                            Payment data will appear here.
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </article>
+
+                </section>
+
+                <!-- GENERIC MANAGEMENT PAGES -->
+                <section
+                    class="admin-page"
+                    id="page-courses"
+                    hidden
+                >
+                    <div class="page-intro">
+                        <h2>Course Management</h2>
+
+                        <p>
+                            Create and manage NEET preparation courses.
+                        </p>
+                    </div>
+
+                    <div id="coursesModule"></div>
+                </section>
+
+                <section
+                    class="admin-page"
+                    id="page-subjects"
+                    hidden
+                >
+                    <div class="page-intro">
+                        <h2>Subject Management</h2>
+
+                        <p>
+                            Organize Biology and other course subjects.
+                        </p>
+                    </div>
+
+                    <div id="subjectsModule"></div>
+                </section>
+
+                <section
+                    class="admin-page"
+                    id="page-chapters"
+                    hidden
+                >
+                    <div class="page-intro">
+                        <h2>Chapter Management</h2>
+
+                        <p>
+                            Create and organize course chapters.
+                        </p>
+                    </div>
+
+                    <div id="chaptersModule"></div>
+                </section>
+
+                <section
+                    class="admin-page"
+                    id="page-topics"
+                    hidden
+                >
+                    <div class="page-intro">
+                        <h2>Topic Management</h2>
+
+                        <p>
+                            Manage topics inside each chapter.
+                        </p>
+                    </div>
+
+                    <div id="topicsModule"></div>
+                </section>
+
+                <section
+                    class="admin-page"
+                    id="page-quizzes"
+                    hidden
+                >
+                    <div class="page-intro">
+                        <h2>Quiz Management</h2>
+
+                        <p>
+                            Create and manage topic-wise quizzes.
+                        </p>
+                    </div>
+
+                    <div id="quizzesModule"></div>
+                </section>
+
+                <section
+                    class="admin-page"
+                    id="page-questions"
+                    hidden
+                >
+                    <div class="page-intro">
+                        <h2>Question Management</h2>
+
+                        <p>
+                            Create questions and configure answer options.
+                        </p>
+                    </div>
+
+                    <div id="questionsModule"></div>
+                </section>
+
+                <section
+                    class="admin-page"
+                    id="page-materials"
+                    hidden
+                >
+                    <div class="page-intro">
+                        <h2>Study Materials</h2>
+
+                        <p>
+                            Manage Notes, NCERT books and PYQ resources.
+                        </p>
+                    </div>
+
+                    <div id="materialsModule"></div>
+                </section>
+
+                <section
+                    class="admin-page"
+                    id="page-mock-tests"
+                    hidden
+                >
+                    <div class="page-intro">
+                        <h2>Full Mock Tests</h2>
+
+                        <p>
+                            Configure full-length NEET mock examinations.
+                        </p>
+                    </div>
+
+                    <div id="mockTestsModule"></div>
+                </section>
+
+                <section
+                    class="admin-page"
+                    id="page-students"
+                    hidden
+                >
+                    <div class="page-intro">
+                        <h2>Student Management</h2>
+
+                        <p>
+                            View registered students and their account status.
+                        </p>
+                    </div>
+
+                    <div id="studentsModule"></div>
+                </section>
+
+                <section
+                    class="admin-page"
+                    id="page-purchases"
+                    hidden
+                >
+                    <div class="page-intro">
+                        <h2>Payments & Purchases</h2>
+
+                        <p>
+                            Review payment requests and purchase statuses.
+                        </p>
+                    </div>
+
+                    <div id="purchasesModule"></div>
+                </section>
+
+                <section
+                    class="admin-page"
+                    id="page-notifications"
+                    hidden
+                >
+                    <div class="page-intro">
+                        <h2>Notifications</h2>
+
+                        <p>
+                            Create and manage student announcements.
+                        </p>
+                    </div>
+
+                    <div id="notificationsModule"></div>
+                </section>
+
+                <section
+                    class="admin-page"
+                    id="page-profile"
+                    hidden
+                >
+                    <div class="page-intro">
+                        <h2>Admin Profile</h2>
+
+                        <p>
+                            View your administrator account information.
+                        </p>
+                    </div>
+
+                    <div id="profileModule"></div>
+                </section>
+
+                <section
+                    class="admin-page"
+                    id="page-settings"
+                    hidden
+                >
+                    <div class="page-intro">
+                        <h2>Platform Settings</h2>
+
+                        <p>
+                            Configure timers, marking rules and social links.
+                        </p>
+                    </div>
+
+                    <div id="settingsModule"></div>
+                </section>
+
+                <!-- GLOBAL STATUS MESSAGE -->
+                <div
+                    id="adminMessage"
+                    class="admin-message"
+                    role="status"
+                    aria-live="polite"
+                    hidden
+                ></div>
+
+            </section>
+
+            <footer class="admin-footer">
+                <p>
+                    © <span id="adminCurrentYear"></span>
+                    mNEET Admin Panel
+                </p>
+            </footer>
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>
