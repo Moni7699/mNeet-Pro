@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#176b3a">
+  <meta name="description" content="mNEET-Pro NEET Biology learning platform">
+  <title>mNEET-Pro | Student</title>
+  <link rel="manifest" href="../manifest.json">
+  <link rel="stylesheet" href="./css/student.css">
+</head>
+<body>
+
+  <!-- Authentication -->
+  <section id="authView" class="auth-page">
+    <div class="auth-card">
+      <div class="brand">m<span>NEET</span><small>STUDENT LEARNING</small></div>
+
+      <section id="loginPanel">
+        <h1>Welcome Back</h1>
+        <p>Sign in to continue learning.</p>
+
+        <form id="loginForm">
+          <label>Email</label>
+          <input id="loginEmail" type="email" autocomplete="email" required>
+
+          <label>Password</label>
+          <input id="loginPassword" type="password"
+                 autocomplete="current-password" required>
+
+          <button class="btn primary full" type="submit">Sign In</button>
+        </form>
+
+        <button id="forgotPassword" class="text-btn">Forgot Password?</button>
+        <p>Don't have an account? <button id="showSignup" class="text-btn">Sign Up</button></p>
+      </section>
+
+      <section id="signupPanel" hidden>
+        <h1>Create Account</h1>
+        <p>Join mNEET-Pro.</p>
+
+        <form id="signupForm">
+          <label>Full Name</label>
+          <input name="name" maxlength="100" required>
+
+          <label>Phone Number</label>
+          <input name="phone" type="tel" maxlength="15" required>
+
+          <label>Email</label>
+          <input name="email" type="email" autocomplete="email" required>
+
+          <label>City</label>
+          <input name="city" maxlength="100" required>
+
+          <label>Target / Exam</label>
+          <input name="target" value="NEET 2027" maxlength="100">
+
+          <label>Password</label>
+          <input name="password" type="password"
+                 minlength="8" autocomplete="new-password" required>
+
+          <label>Confirm Password</label>
+          <input name="confirmPassword" type="password"
+                 minlength="8" autocomplete="new-password" required>
+
+          <button class="btn primary full" type="submit">Create Account</button>
+        </form>
+
+        <p>Already have an account? <button id="showLogin" class="text-btn">Sign In</button></p>
+      </section>
+
+      <p id="authMessage" class="message" role="status"></p>
+    </div>
+  </section>
+
+  <!-- Student Application -->
+  <section id="appView" hidden>
+    <div id="scrim" class="scrim"></div>
+
+    <aside id="sidebar" class="sidebar">
+      <div class="side-brand">
+        <div class="brand">m<span>NEET</span></div>
+        <button id="closeSidebar" class="icon-btn mobile-only">✕</button>
+      </div>
+
+      <div class="profile-box">
+        <img id="sidePhoto" src="../assets/avatar.svg" alt="Student profile">
+        <h3 id="sideName">Student</h3>
+        <p id="sideEmail"></p>
+        <button class="text-btn" data-page="profile">Edit Profile</button>
+      </div>
+
+      <nav id="navMenu">
+        <button data-page="dashboard">▦ Dashboard</button>
+        <button data-page="myCourses">▣ My Courses</button>
+        <button data-page="buyCourses">＋ Buy Courses</button>
+        <button data-page="topicPractice">◉ Topic-wise Practice</button>
+        <button data-page="chapterPractice">◉ Chapter-wise Practice</button>
+        <button data-page="ncert">▤ NCERT Books</button>
+        <button data-page="notes">▧ Notes</button>
+        <button data-page="pyq">▧ PYQ</button>
+        <button data-page="results">▥ Results & Progress</button>
+        <button data-page="notifications">♧ Notifications</button>
+        <button data-page="purchaseHistory">₹ Purchase History</button>
+        <button data-page="profile">♙ Profile</button>
+        <button data-page="settings">⚙ Settings</button>
+        <button data-page="support">✉ Help & Support</button>
+      </nav>
+
+      <div id="socialLinks" class="social-links"></div>
+
+      <div class="side-bottom">
+        <button id="themeToggle">◐ Dark / Light Mode</button>
+        <button id="logoutBtn">↪ Logout</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button id="menuToggle" class="icon-btn" aria-label="Open menu">☰</button>
+        <h2 id="topStudentName">Dashboard</h2>
+        <button id="notificationButton" class="icon-btn notification-btn"
+                aria-label="Notifications">
+          ♧ <span id="unreadDot" hidden></span>
+        </button>
+      </header>
+
+      <div class="content-wrap">
+        <div id="pageContent">
+          <div class="card">Loading…</div>
+        </div>
+      </div>
+
+      <nav class="bottom-nav">
+        <button data-page="dashboard"><span>⌂</span>Home</button>
+        <button data-page="study"><span>▤</span>Study</button>
+        <button data-page="ncert"><span>▧</span>NCERT</button>
+        <button data-page="weakPoints"><span>◎</span>Weak Point</button>
+        <button data-page="mockTests"><span>▦</span>Mock Test</button>
+      </nav>
+    </main>
+
+    <div id="toast" class="toast" role="status"></div>
+  </section>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
