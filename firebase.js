@@ -43,7 +43,8 @@
     };
 
     return;
-  }
+     
+  }<script src="firebase-helpers.js" defer></script>
 
   /* =====================================================
      FIREBASE PROJECT CONFIGURATION
