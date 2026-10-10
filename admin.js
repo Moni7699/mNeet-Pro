@@ -5,11 +5,14 @@
    * mNEET Admin Dashboard
    * File: admin.js
    *
-   * Theme: Green and White only
+   * Theme: Green and White
    * Firebase SDK: Compat 10.14.1
    *
-   * Admin authorization must also be enforced
-   * through Firebase Security Rules.
+   * Admin authorization:
+   * admins/{uid}.active === true
+   *
+   * Security Rules must enforce authorization
+   * independently of this client-side code.
    */
 
   if (window.MNEETAdmin) {
@@ -19,12 +22,17 @@
   const MNEETAdmin = {
     currentUser: null,
     adminData: null,
-    db: null,
     auth: null,
+    db: null,
+
     activeCourse: "all",
     isAuthorized: false,
     initialized: false,
-    refreshTimer: null
+    authReady: false,
+    loading: false,
+    refreshTimer: null,
+    dashboardData: null,
+    authObserver: null
   };
 
   window.MNEETAdmin = MNEETAdmin;
@@ -57,9 +65,9 @@
   };
 
 
-  // --------------------------------------------------
-  // MESSAGE
-  // --------------------------------------------------
+  // ==================================================
+  // MESSAGE HELPERS
+  // ==================================================
 
   function showMessage(message, type) {
     const box = elements.adminMessage;
@@ -69,6 +77,7 @@
     }
 
     box.textContent = String(message || "");
+
     box.className = "admin-message show";
 
     if (type === "error") {
@@ -98,9 +107,9 @@
   }
 
 
-  // --------------------------------------------------
-  // SAFE TEXT HELPERS
-  // --------------------------------------------------
+  // ==================================================
+  // SAFE HELPERS
+  // ==================================================
 
   function safeText(value, fallback) {
     if (
@@ -115,17 +124,24 @@
   }
 
 
-  function setText(element, value) {
+  function setText(element, value, fallback) {
     if (element) {
-      element.textContent = safeText(value);
+      element.textContent = safeText(value, fallback);
     }
   }
 
 
   function setStatus(element, value) {
     if (element) {
-      element.textContent = value;
+      element.textContent = String(value || "—");
     }
+  }
+
+
+  function normalize(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase();
   }
 
 
@@ -185,9 +201,40 @@
   }
 
 
-  // --------------------------------------------------
+  function getDocumentId(item) {
+    return String(
+      item && (item.id || item.uid || item.userId) || ""
+    );
+  }
+
+
+  function getCourseId(item) {
+    if (!item) {
+      return "";
+    }
+
+    return String(
+      item.courseId ||
+      item.course ||
+      item.activeCourse ||
+      ""
+    );
+  }
+
+
+  function getStudentId(purchase) {
+    return String(
+      purchase.userId ||
+      purchase.studentId ||
+      purchase.uid ||
+      ""
+    );
+  }
+
+
+  // ==================================================
   // FIREBASE INITIALIZATION
-  // --------------------------------------------------
+  // ==================================================
 
   function initializeFirebase() {
     const firebaseState = window.MNEETFirebase;
@@ -220,7 +267,7 @@
 
         setStatus(
           elements.firebaseStatus,
-          "Initialized"
+          "Connected"
         );
 
         return true;
@@ -239,7 +286,7 @@
     );
 
     showMessage(
-      "Firebase initialize করা যায়নি। firebase.js ও Firebase SDK পরীক্ষা করো।",
+      "Firebase initialize করা যায়নি। Firebase SDK এবং firebase.js পরীক্ষা করো।",
       "error"
     );
 
@@ -247,32 +294,31 @@
   }
 
 
-  // --------------------------------------------------
+  // ==================================================
   // ADMIN AUTHORIZATION
-  // --------------------------------------------------
+  // ==================================================
 
   async function verifyAdmin(user) {
+    MNEETAdmin.isAuthorized = false;
+    MNEETAdmin.adminData = null;
+
     if (!user || !MNEETAdmin.db) {
-      MNEETAdmin.isAuthorized = false;
       return false;
     }
 
     try {
-      const adminRef = MNEETAdmin.db
+      const snapshot = await MNEETAdmin.db
         .collection("admins")
-        .doc(user.uid);
+        .doc(user.uid)
+        .get();
 
-      const adminSnapshot = await adminRef.get();
-
-      if (!adminSnapshot.exists) {
-        MNEETAdmin.isAuthorized = false;
+      if (!snapshot.exists) {
         return false;
       }
 
-      const adminData = adminSnapshot.data() || {};
+      const adminData = snapshot.data() || {};
 
       if (adminData.active !== true) {
-        MNEETAdmin.isAuthorized = false;
         return false;
       }
 
@@ -283,11 +329,9 @@
 
     } catch (error) {
       console.error(
-        "mNEET Admin verification error:",
+        "mNEET Admin authorization error:",
         error
       );
-
-      MNEETAdmin.isAuthorized = false;
 
       if (error.code === "permission-denied") {
         showMessage(
@@ -296,7 +340,7 @@
         );
       } else {
         showMessage(
-          "Admin access যাচাই করা যায়নি। ইন্টারনেট ও Firebase Rules পরীক্ষা করো।",
+          "Admin access যাচাই করা যায়নি। Internet connection ও Firebase পরীক্ষা করো।",
           "error"
         );
       }
@@ -306,9 +350,9 @@
   }
 
 
-  // --------------------------------------------------
-  // ADMIN PROFILE SUMMARY
-  // --------------------------------------------------
+  // ==================================================
+  // ADMIN IDENTITY
+  // ==================================================
 
   function renderAdminIdentity(user, adminData) {
     const name = safeText(
@@ -318,24 +362,35 @@
       "Admin"
     );
 
-    setText(elements.dashboardWelcome, "Welcome, " + name);
-    setText(elements.topbarAdminName, name);
-
-    const sidebarName = $("sidebarAdminName");
-    const sidebarEmail = $("sidebarAdminEmail");
-    const sidebarPhone = $("sidebarAdminPhone");
-    const sidebarInitial = $("sidebarAvatarInitial");
-
-    setText(sidebarName, name);
-    setText(sidebarEmail, user.email || "Email not available");
+    setText(
+      elements.dashboardWelcome,
+      "Welcome, " + name
+    );
 
     setText(
-      sidebarPhone,
+      elements.topbarAdminName,
+      name
+    );
+
+    setText(
+      $("sidebarAdminName"),
+      name
+    );
+
+    setText(
+      $("sidebarAdminEmail"),
+      user.email || "Email not available"
+    );
+
+    setText(
+      $("sidebarAdminPhone"),
       adminData.phone || "Phone not available"
     );
 
-    if (sidebarInitial) {
-      sidebarInitial.textContent =
+    const initial = $("sidebarAvatarInitial");
+
+    if (initial) {
+      initial.textContent =
         name.trim().charAt(0).toUpperCase() || "A";
     }
 
@@ -346,13 +401,15 @@
   }
 
 
-  // --------------------------------------------------
+  // ==================================================
   // FIRESTORE COLLECTION HELPERS
-  // --------------------------------------------------
+  // ==================================================
 
   async function readCollection(collectionName) {
     if (!MNEETAdmin.db) {
-      throw new Error("Firebase database is not initialized.");
+      throw new Error(
+        "Firebase database is not initialized."
+      );
     }
 
     const snapshot = await MNEETAdmin.db
@@ -369,8 +426,10 @@
 
 
   function isActiveCourse(course) {
-    return course.active !== false &&
-      course.published !== false;
+    return (
+      course.active !== false &&
+      course.published !== false
+    );
   }
 
 
@@ -379,11 +438,48 @@
       return true;
     }
 
-    return (
-      item.courseId === courseId ||
-      item.course === courseId ||
-      item.activeCourse === courseId
+    return getCourseId(item) === courseId;
+  }
+
+
+  function isApprovedPurchase(purchase) {
+    const status = normalize(
+      purchase.status || purchase.paymentStatus
     );
+
+    return [
+      "approved",
+      "paid",
+      "success",
+      "completed"
+    ].includes(status);
+  }
+
+
+  function isPendingPurchase(purchase) {
+    const status = normalize(
+      purchase.status || purchase.paymentStatus
+    );
+
+    return [
+      "pending",
+      "submitted",
+      "under_review"
+    ].includes(status);
+  }
+
+
+  function isRejectedPurchase(purchase) {
+    const status = normalize(
+      purchase.status || purchase.paymentStatus
+    );
+
+    return [
+      "rejected",
+      "failed",
+      "cancelled",
+      "canceled"
+    ].includes(status);
   }
 
 
@@ -391,25 +487,14 @@
     const ids = new Set();
 
     purchases.forEach(function (purchase) {
-      const status = String(
-        purchase.status || purchase.paymentStatus || ""
-      ).toLowerCase();
+      if (!isApprovedPurchase(purchase)) {
+        return;
+      }
 
-      const approved =
-        status === "approved" ||
-        status === "paid" ||
-        status === "success" ||
-        status === "completed";
+      const studentId = getStudentId(purchase);
 
-      if (approved) {
-        const studentId =
-          purchase.userId ||
-          purchase.studentId ||
-          purchase.uid;
-
-        if (studentId) {
-          ids.add(studentId);
-        }
+      if (studentId) {
+        ids.add(studentId);
       }
     });
 
@@ -417,36 +502,9 @@
   }
 
 
-  function isPendingPurchase(purchase) {
-    const status = String(
-      purchase.status || purchase.paymentStatus || ""
-    ).toLowerCase();
-
-    return (
-      status === "pending" ||
-      status === "submitted" ||
-      status === "under_review"
-    );
-  }
-
-
-  function isApprovedPurchase(purchase) {
-    const status = String(
-      purchase.status || purchase.paymentStatus || ""
-    ).toLowerCase();
-
-    return (
-      status === "approved" ||
-      status === "paid" ||
-      status === "success" ||
-      status === "completed"
-    );
-  }
-
-
-  // --------------------------------------------------
-  // DASHBOARD COURSE SELECTOR
-  // --------------------------------------------------
+  // ==================================================
+  // COURSE SELECTOR
+  // ==================================================
 
   function populateCourseSelector(courses) {
     const select = elements.dashboardCourseSelect;
@@ -455,11 +513,15 @@
       return;
     }
 
-    const previousValue = select.value || "all";
+    const previousValue =
+      MNEETAdmin.activeCourse ||
+      select.value ||
+      "all";
 
     select.replaceChildren();
 
     const allOption = document.createElement("option");
+
     allOption.value = "all";
     allOption.textContent = "All Courses";
 
@@ -468,13 +530,23 @@
     courses
       .filter(isActiveCourse)
       .sort(function (a, b) {
-        return safeText(a.name, "")
-          .localeCompare(safeText(b.name, ""));
+        const nameA = safeText(
+          a.name || a.title,
+          ""
+        );
+
+        const nameB = safeText(
+          b.name || b.title,
+          ""
+        );
+
+        return nameA.localeCompare(nameB);
       })
       .forEach(function (course) {
         const option = document.createElement("option");
 
         option.value = course.id;
+
         option.textContent = safeText(
           course.name || course.title,
           course.id
@@ -483,29 +555,170 @@
         select.appendChild(option);
       });
 
-    const optionExists = Array.from(select.options).some(
-      function (option) {
-        return option.value === previousValue;
-      }
-    );
+    const optionExists = Array.from(
+      select.options
+    ).some(function (option) {
+      return option.value === previousValue;
+    });
 
-    select.value = optionExists ? previousValue : "all";
+    select.value = optionExists
+      ? previousValue
+      : "all";
 
     MNEETAdmin.activeCourse = select.value;
   }
 
 
-  // --------------------------------------------------
+  // ==================================================
+  // COURSE RELATIONSHIPS
+  // ==================================================
+
+  /*
+   * Resolve courseId for documents that only have
+   * parent references such as subjectId/chapterId.
+   *
+   * This supports top-level collections.
+   * It does not read nested Firestore subcollections.
+   */
+
+  function buildRelationshipMaps(data) {
+    const subjectCourse = new Map();
+    const chapterCourse = new Map();
+    const topicCourse = new Map();
+    const quizCourse = new Map();
+
+    data.subjects.forEach(function (subject) {
+      const courseId = getCourseId(subject);
+
+      if (subject.id && courseId) {
+        subjectCourse.set(subject.id, courseId);
+      }
+    });
+
+    data.chapters.forEach(function (chapter) {
+      let courseId = getCourseId(chapter);
+
+      if (!courseId && chapter.subjectId) {
+        courseId = subjectCourse.get(
+          chapter.subjectId
+        ) || "";
+      }
+
+      if (chapter.id && courseId) {
+        chapterCourse.set(chapter.id, courseId);
+      }
+    });
+
+    data.topics.forEach(function (topic) {
+      let courseId = getCourseId(topic);
+
+      if (!courseId && topic.chapterId) {
+        courseId = chapterCourse.get(
+          topic.chapterId
+        ) || "";
+      }
+
+      if (!courseId && topic.subjectId) {
+        courseId = subjectCourse.get(
+          topic.subjectId
+        ) || "";
+      }
+
+      if (topic.id && courseId) {
+        topicCourse.set(topic.id, courseId);
+      }
+    });
+
+    data.quizzes.forEach(function (quiz) {
+      let courseId = getCourseId(quiz);
+
+      if (!courseId && quiz.topicId) {
+        courseId = topicCourse.get(
+          quiz.topicId
+        ) || "";
+      }
+
+      if (!courseId && quiz.chapterId) {
+        courseId = chapterCourse.get(
+          quiz.chapterId
+        ) || "";
+      }
+
+      if (quiz.id && courseId) {
+        quizCourse.set(quiz.id, courseId);
+      }
+    });
+
+    return {
+      subjectCourse,
+      chapterCourse,
+      topicCourse,
+      quizCourse
+    };
+  }
+
+
+  function belongsUsingRelationships(
+    item,
+    courseId,
+    relationshipMap
+  ) {
+    if (courseId === "all") {
+      return true;
+    }
+
+    const directCourseId = getCourseId(item);
+
+    if (directCourseId) {
+      return directCourseId === courseId;
+    }
+
+    const references = [
+      ["subjectId", relationshipMap.subjectCourse],
+      ["chapterId", relationshipMap.chapterCourse],
+      ["topicId", relationshipMap.topicCourse],
+      ["quizId", relationshipMap.quizCourse]
+    ];
+
+    for (const reference of references) {
+      const fieldName = reference[0];
+      const map = reference[1];
+      const parentId = item[fieldName];
+
+      if (parentId && map.has(parentId)) {
+        return map.get(parentId) === courseId;
+      }
+    }
+
+    return false;
+  }
+
+
+  // ==================================================
   // DASHBOARD STATISTICS
-  // --------------------------------------------------
+  // ==================================================
 
   function renderStatistics(data) {
+    if (!data) {
+      return;
+    }
+
     const courseId = MNEETAdmin.activeCourse;
 
+    const relationships =
+      buildRelationshipMaps(data);
+
     const courses = data.courses.filter(function (course) {
-      return isActiveCourse(course) &&
-        belongsToCourse(course, courseId);
+      return (
+        isActiveCourse(course) &&
+        belongsToCourse(course, courseId)
+      );
     });
+
+    /*
+     * Student count is global because it represents
+     * registered student accounts, not course purchases.
+     */
 
     const students = data.students;
 
@@ -514,19 +727,35 @@
     });
 
     const chapters = data.chapters.filter(function (chapter) {
-      return belongsToCourse(chapter, courseId);
+      return belongsUsingRelationships(
+        chapter,
+        courseId,
+        relationships
+      );
     });
 
     const topics = data.topics.filter(function (topic) {
-      return belongsToCourse(topic, courseId);
+      return belongsUsingRelationships(
+        topic,
+        courseId,
+        relationships
+      );
     });
 
     const quizAttempts = data.quizAttempts.filter(function (attempt) {
-      return belongsToCourse(attempt, courseId);
+      return belongsUsingRelationships(
+        attempt,
+        courseId,
+        relationships
+      );
     });
 
     const quizResults = data.quizResults.filter(function (result) {
-      return belongsToCourse(result, courseId);
+      return belongsUsingRelationships(
+        result,
+        courseId,
+        relationships
+      );
     });
 
     const approvedPurchases = purchases.filter(
@@ -576,14 +805,24 @@
       elements.statQuizResults,
       quizResults.length
     );
+
+    renderRecentPayments(
+      purchases,
+      students,
+      data.courses
+    );
   }
 
 
-  // --------------------------------------------------
+  // ==================================================
   // RECENT PAYMENT REQUESTS
-  // --------------------------------------------------
+  // ==================================================
 
-  function renderRecentPayments(purchases, students, courses) {
+  function renderRecentPayments(
+    purchases,
+    students,
+    courses
+  ) {
     const tbody = elements.recentPaymentsBody;
 
     if (!tbody) {
@@ -596,11 +835,15 @@
       .slice()
       .sort(function (a, b) {
         const dateA = getTimestampValue(
-          a.createdAt || a.submittedAt || a.updatedAt
+          a.createdAt ||
+          a.submittedAt ||
+          a.updatedAt
         );
 
         const dateB = getTimestampValue(
-          b.createdAt || b.submittedAt || b.updatedAt
+          b.createdAt ||
+          b.submittedAt ||
+          b.updatedAt
         );
 
         return dateB - dateA;
@@ -623,7 +866,7 @@
 
     const studentMap = new Map(
       students.map(function (student) {
-        return [student.id, student];
+        return [getDocumentId(student), student];
       })
     );
 
@@ -636,16 +879,8 @@
     recent.forEach(function (purchase) {
       const row = document.createElement("tr");
 
-      const studentId =
-        purchase.userId ||
-        purchase.studentId ||
-        purchase.uid ||
-        "";
-
-      const courseId =
-        purchase.courseId ||
-        purchase.course ||
-        "";
+      const studentId = getStudentId(purchase);
+      const courseId = getCourseId(purchase);
 
       const student = studentMap.get(studentId);
       const course = courseMap.get(courseId);
@@ -653,7 +888,10 @@
       const studentName = safeText(
         purchase.studentName ||
         purchase.name ||
-        (student && (student.name || student.displayName)) ||
+        (student && (
+          student.name ||
+          student.displayName
+        )) ||
         purchase.studentEmail ||
         (student && student.email),
         "Unknown Student"
@@ -661,88 +899,99 @@
 
       const courseName = safeText(
         purchase.courseName ||
-        (course && (course.name || course.title)),
+        (course && (
+          course.name ||
+          course.title
+        )),
         courseId || "Unknown Course"
       );
 
       const status = safeText(
-        purchase.status || purchase.paymentStatus,
+        purchase.status ||
+        purchase.paymentStatus,
         "Pending"
       );
 
-      [studentName, courseName, status].forEach(
-        function (value) {
-          const cell = document.createElement("td");
-          cell.textContent = value;
-          row.appendChild(cell);
-        }
-      );
+      [
+        studentName,
+        courseName,
+        status
+      ].forEach(function (value) {
+        const cell = document.createElement("td");
+
+        cell.textContent = value;
+
+        row.appendChild(cell);
+      });
 
       tbody.appendChild(row);
     });
   }
 
 
-  // --------------------------------------------------
+  // ==================================================
   // DASHBOARD DATA LOADING
-  // --------------------------------------------------
+  // ==================================================
 
   async function loadDashboardData() {
-    if (!MNEETAdmin.isAuthorized || !MNEETAdmin.db) {
+    if (
+      !MNEETAdmin.isAuthorized ||
+      !MNEETAdmin.db ||
+      MNEETAdmin.loading
+    ) {
       return;
     }
 
-    hideMessage();
-
-    const metricIds = [
-      "statCourses",
-      "statStudents",
-      "statPaidStudents",
-      "statPendingPayments",
-      "statChapters",
-      "statTopics",
-      "statQuizAttempts",
-      "statQuizResults"
-    ];
-
-    metricIds.forEach(function (id) {
-      const element = $(id);
-
-      if (element) {
-        element.textContent = "…";
-      }
-    });
+    MNEETAdmin.loading = true;
 
     try {
-      /*
-       * These are top-level collection names.
-       *
-       * Course, subject, chapter, topic, quiz and question
-       * data may be nested under other documents in some
-       * Firebase structures. If your actual structure is
-       * nested, those metrics must be loaded using the
-       * appropriate nested collection paths.
-       */
+      hideMessage();
 
-      const results = await Promise.allSettled([
-        readCollection("courses"),
-        readCollection("users"),
-        readCollection("purchases"),
-        readCollection("chapters"),
-        readCollection("topics"),
-        readCollection("quizAttempts"),
-        readCollection("quizResults")
-      ]);
+      const metricIds = [
+        "statCourses",
+        "statStudents",
+        "statPaidStudents",
+        "statPendingPayments",
+        "statChapters",
+        "statTopics",
+        "statQuizAttempts",
+        "statQuizResults"
+      ];
+
+      metricIds.forEach(function (id) {
+        const element = $(id);
+
+        if (element) {
+          element.textContent = "…";
+        }
+      });
+
+      /*
+       * Collections expected by the current Admin
+       * modules and dashboard.
+       *
+       * Failed reads are reported rather than silently
+       * treated as reliable zero counts.
+       */
 
       const collectionNames = [
         "courses",
         "users",
         "purchases",
+        "subjects",
         "chapters",
         "topics",
+        "quizzes",
+        "questions",
         "quizAttempts",
         "quizResults"
       ];
+
+      const results = await Promise.allSettled(
+        collectionNames.map(function (name) {
+          return readCollection(name);
+        })
+      );
 
       const data = {};
       const failedCollections = [];
@@ -765,8 +1014,6 @@
       });
 
       data.students = data.users;
-      data.quizAttempts = data.quizAttempts || [];
-      data.quizResults = data.quizResults || [];
 
       MNEETAdmin.dashboardData = data;
 
@@ -774,17 +1021,11 @@
 
       renderStatistics(data);
 
-      renderRecentPayments(
-        data.purchases,
-        data.students,
-        data.courses
-      );
-
       if (failedCollections.length > 0) {
         showMessage(
-          "Dashboard-এর কিছু তথ্য পড়া যায়নি: " +
+          "Dashboard-এর কিছু collection পড়া যায়নি: " +
           failedCollections.join(", ") +
-          "। Firestore collection structure ও Security Rules পরীক্ষা করো।",
+          "। Firestore Security Rules এবং collection structure পরীক্ষা করো।",
           "warning"
         );
       }
@@ -799,13 +1040,16 @@
         "Dashboard data লোড করা যায়নি। Firebase connection ও Firestore Rules পরীক্ষা করো।",
         "error"
       );
+
+    } finally {
+      MNEETAdmin.loading = false;
     }
   }
 
 
-  // --------------------------------------------------
+  // ==================================================
   // COURSE FILTER EVENT
-  // --------------------------------------------------
+  // ==================================================
 
   function setupCourseSelector() {
     const select = elements.dashboardCourseSelect;
@@ -815,18 +1059,34 @@
     }
 
     select.addEventListener("change", function () {
-      MNEETAdmin.activeCourse = select.value || "all";
+      MNEETAdmin.activeCourse =
+        select.value || "all";
 
       if (MNEETAdmin.dashboardData) {
-        renderStatistics(MNEETAdmin.dashboardData);
+        renderStatistics(
+          MNEETAdmin.dashboardData
+        );
       }
+
+      /*
+       * Notify other modules that the Dashboard course
+       * selection has changed.
+       */
+
+      document.dispatchEvent(
+        new CustomEvent("mneet:admin-course-change", {
+          detail: {
+            courseId: MNEETAdmin.activeCourse
+          }
+        })
+      );
     });
   }
 
 
-  // --------------------------------------------------
-  // YEAR
-  // --------------------------------------------------
+  // ==================================================
+  // FOOTER YEAR
+  // ==================================================
 
   function setupFooterYear() {
     setText(
@@ -836,69 +1096,79 @@
   }
 
 
-  // --------------------------------------------------
+  // ==================================================
   // AUTHENTICATION STATE
-  // --------------------------------------------------
+  // ==================================================
 
   function setupAuthentication() {
     if (!MNEETAdmin.auth) {
       return;
     }
 
-    MNEETAdmin.auth.onAuthStateChanged(async function (user) {
-      if (!user) {
-        MNEETAdmin.currentUser = null;
-        MNEETAdmin.isAuthorized = false;
+    MNEETAdmin.authObserver =
+      MNEETAdmin.auth.onAuthStateChanged(
+        async function (user) {
+          MNEETAdmin.authReady = true;
+          MNEETAdmin.currentUser = user || null;
 
-        setStatus(
-          elements.authStatus,
-          "Not signed in"
-        );
+          if (!user) {
+            MNEETAdmin.isAuthorized = false;
+            MNEETAdmin.adminData = null;
+            MNEETAdmin.dashboardData = null;
 
-        setStatus(
-          elements.adminAccessStatus,
-          "Not authorized"
-        );
+            setStatus(
+              elements.authStatus,
+              "Not signed in"
+            );
 
-        return;
-      }
+            setStatus(
+              elements.adminAccessStatus,
+              "Not authorized"
+            );
 
-      MNEETAdmin.currentUser = user;
+            return;
+          }
 
-      setStatus(
-        elements.authStatus,
-        "Signed in"
+          setStatus(
+            elements.authStatus,
+            "Signed in"
+          );
+
+          const authorized = await verifyAdmin(user);
+
+          if (!authorized) {
+            MNEETAdmin.isAuthorized = false;
+
+            setStatus(
+              elements.adminAccessStatus,
+              "Not authorized"
+            );
+
+            /*
+             * auth-guard.js is responsible for routing
+             * unauthorized users away from admin.html.
+             *
+             * This code does not grant access to anyone
+             * based on client-side state alone.
+             */
+
+            return;
+          }
+
+          renderAdminIdentity(
+            user,
+            MNEETAdmin.adminData || {}
+          );
+
+          await loadDashboardData();
+        }
       );
-
-      const authorized = await verifyAdmin(user);
-
-      if (!authorized) {
-        setStatus(
-          elements.adminAccessStatus,
-          "Not authorized"
-        );
-
-        /*
-         * auth-guard.js also verifies Admin access.
-         * This file never grants access based only on
-         * client-side UI state.
-         */
-        return;
-      }
-
-      renderAdminIdentity(
-        user,
-        MNEETAdmin.adminData || {}
-      );
-
-      await loadDashboardData();
-    });
   }
 
 
-  // --------------------------------------------------
-  // PAGE VISIBILITY
-  // --------------------------------------------------
+  // ==================================================
+  // DASHBOARD VISIBILITY
+  // ==================================================
 
   function isDashboardVisible() {
     const dashboard = $("dashboardModule");
@@ -910,9 +1180,9 @@
   }
 
 
-  // --------------------------------------------------
+  // ==================================================
   // INITIALIZATION
-  // --------------------------------------------------
+  // ==================================================
 
   function init() {
     if (MNEETAdmin.initialized) {
@@ -925,15 +1195,17 @@
     setupCourseSelector();
 
     if (!initializeFirebase()) {
+      MNEETAdmin.initialized = false;
       return;
     }
 
     setupAuthentication();
 
     /*
-     * Refresh dashboard data only while Dashboard
-     * is visible. This avoids unnecessary reads.
+     * Refresh dashboard only while Dashboard is visible.
+     * This avoids unnecessary Firestore reads.
      */
+
     MNEETAdmin.refreshTimer = window.setInterval(
       function () {
         if (
@@ -948,9 +1220,9 @@
   }
 
 
-  // --------------------------------------------------
-  // PUBLIC FUNCTIONS
-  // --------------------------------------------------
+  // ==================================================
+  // PUBLIC FUNCTIONS FOR OTHER ADMIN MODULES
+  // ==================================================
 
   MNEETAdmin.refreshDashboard = loadDashboardData;
 
@@ -967,13 +1239,25 @@
   };
 
   MNEETAdmin.isAdminAuthorized = function () {
-    return MNEETAdmin.isAuthorized;
+    return MNEETAdmin.isAuthorized === true;
+  };
+
+  MNEETAdmin.getDashboardData = function () {
+    return MNEETAdmin.dashboardData;
+  };
+
+  MNEETAdmin.getDatabase = function () {
+    return MNEETAdmin.db;
+  };
+
+  MNEETAdmin.getAuth = function () {
+    return MNEETAdmin.auth;
   };
 
 
-  // --------------------------------------------------
+  // ==================================================
   // START
-  // --------------------------------------------------
+  // ==================================================
 
   if (document.readyState === "loading") {
     document.addEventListener(
