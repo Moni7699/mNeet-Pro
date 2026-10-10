@@ -1,174 +1,275 @@
-/* ==========================================
-   mNEET ADMIN PANEL
-   File: admin-sidebar.js
-   Sidebar Navigation Module
-========================================== */
-
 (function () {
   "use strict";
 
-  window.MNEETAdmin = window.MNEETAdmin || {};
+  if (window.MNEETAdminSidebar) return;
 
-  const Admin = window.MNEETAdmin;
+  const Sidebar = {
+    initialized: false,
+    isOpen: false
+  };
 
-  /* Prevent duplicate initialization */
-  if (Admin.sidebarModuleLoaded) return;
-  Admin.sidebarModuleLoaded = true;
+  window.MNEETAdminSidebar = Sidebar;
 
-  /* ==========================================
-     SIDEBAR ELEMENTS
-  ========================================== */
+  const $ = (id) => document.getElementById(id);
 
-  function getElements() {
-    return {
-      sidebar: document.getElementById("adminSidebar"),
-      overlay: document.getElementById("sidebarOverlay"),
-      toggle: document.getElementById("sidebarToggle"),
-      navigation: document.getElementById("adminNavigation")
-    };
+  const elements = {
+    sidebar: $("adminSidebar"),
+    overlay: $("sidebarOverlay"),
+    toggleButton: $("sidebarToggle"),
+    closeButton: $("sidebarCloseButton"),
+    navigation: $("adminNavigation"),
+    sidebarLogoutButton: $("sidebarLogoutButton"),
+    topbarLogoutButton: $("adminLogoutButton"),
+    notificationButton: $("topbarNotificationButton")
+  };
+
+  const PAGE_NAMES = {
+    dashboard: "Dashboard",
+    courses: "Courses",
+    subjects: "Subjects",
+    chapters: "Chapters",
+    topics: "Topics",
+    quizzes: "Quizzes",
+    questions: "Questions",
+    notes: "Notes",
+    ncert: "NCERT",
+    pyq: "PYQ",
+    students: "Students",
+    purchases: "Purchases",
+    notifications: "Notifications",
+    profile: "Profile",
+    settings: "Settings"
+  };
+
+  function showMessage(message, type) {
+    if (
+      window.MNEETAdmin &&
+      typeof window.MNEETAdmin.showMessage === "function"
+    ) {
+      window.MNEETAdmin.showMessage(message, type || "warning");
+      return;
+    }
+
+    const messageElement = $("adminMessage");
+
+    if (messageElement) {
+      messageElement.textContent = message;
+      messageElement.className =
+        "admin-message show " + (type || "warning");
+      messageElement.setAttribute("role", "status");
+    }
   }
-
-  /* ==========================================
-     OPEN SIDEBAR
-  ========================================== */
-
-  function openSidebar() {
-    const elements = getElements();
-
-    if (elements.sidebar) {
-      elements.sidebar.classList.add("open");
-    }
-
-    if (elements.overlay) {
-      elements.overlay.classList.add("show");
-    }
-
-    document.body.classList.add("sidebar-open");
-
-    if (elements.toggle) {
-      elements.toggle.setAttribute("aria-expanded", "true");
-    }
-  }
-
-  /* ==========================================
-     CLOSE SIDEBAR
-  ========================================== */
 
   function closeSidebar() {
-    const elements = getElements();
+    Sidebar.isOpen = false;
 
     if (elements.sidebar) {
       elements.sidebar.classList.remove("open");
+      elements.sidebar.setAttribute("aria-hidden", "true");
     }
 
     if (elements.overlay) {
       elements.overlay.classList.remove("show");
+      elements.overlay.setAttribute("aria-hidden", "true");
+    }
+
+    if (elements.toggleButton) {
+      elements.toggleButton.setAttribute("aria-expanded", "false");
     }
 
     document.body.classList.remove("sidebar-open");
-
-    if (elements.toggle) {
-      elements.toggle.setAttribute("aria-expanded", "false");
-    }
   }
 
-  /* ==========================================
-     TOGGLE SIDEBAR
-  ========================================== */
-
-  function toggleSidebar() {
-    const elements = getElements();
-
+  function openSidebar() {
     if (!elements.sidebar) return;
 
-    if (elements.sidebar.classList.contains("open")) {
+    Sidebar.isOpen = true;
+
+    elements.sidebar.classList.add("open");
+    elements.sidebar.setAttribute("aria-hidden", "false");
+
+    if (elements.overlay) {
+      elements.overlay.classList.add("show");
+      elements.overlay.setAttribute("aria-hidden", "false");
+    }
+
+    if (elements.toggleButton) {
+      elements.toggleButton.setAttribute("aria-expanded", "true");
+    }
+
+    document.body.classList.add("sidebar-open");
+  }
+
+  function toggleSidebar() {
+    if (Sidebar.isOpen) {
       closeSidebar();
     } else {
       openSidebar();
     }
   }
 
-  /* ==========================================
-     NAVIGATION ACTIVE STATE
-  ========================================== */
+  function showPage(pageName) {
+    if (!PAGE_NAMES[pageName]) {
+      showMessage("এই Admin page পাওয়া যায়নি।", "warning");
+      return;
+    }
 
-  function setActiveNavigation(page) {
-    const elements = getElements();
-
-    if (!elements.navigation) return;
-
-    const buttons = elements.navigation.querySelectorAll(
-      "[data-page]"
+    const targetModule = document.querySelector(
+      '[data-module="' + pageName + '"]'
     );
 
-    buttons.forEach(function (button) {
-      const isActive = button.dataset.page === page;
+    if (!targetModule) {
+      showMessage(
+        PAGE_NAMES[pageName] +
+          " section admin.html-এ পাওয়া যায়নি। HTML-এর module ID পরীক্ষা করো।",
+        "warning"
+      );
+      return;
+    }
 
-      button.classList.toggle("active", isActive);
+    document.querySelectorAll("[data-module]").forEach(function (module) {
+      module.hidden = true;
+      module.classList.remove("active");
+    });
 
-      if (isActive) {
+    targetModule.hidden = false;
+    targetModule.classList.add("active");
+
+    document.querySelectorAll("[data-page]").forEach(function (button) {
+      const isCurrentPage =
+        button.getAttribute("data-page") === pageName;
+
+      button.classList.toggle("active", isCurrentPage);
+
+      if (isCurrentPage) {
         button.setAttribute("aria-current", "page");
       } else {
         button.removeAttribute("aria-current");
       }
     });
+
+    const titleElement = $("adminPageTitle");
+
+    if (titleElement) {
+      titleElement.textContent = PAGE_NAMES[pageName];
+    }
+
+    closeSidebar();
+
+    try {
+      window.dispatchEvent(
+        new CustomEvent("mneet:admin-page-change", {
+          detail: { page: pageName }
+        })
+      );
+    } catch (error) {
+      // Page navigation should continue if a custom event is unavailable.
+    }
   }
 
-  /* ==========================================
-     MOBILE MENU EVENTS
-  ========================================== */
+  function handleNavigationClick(event) {
+    const button = event.target.closest("[data-page]");
 
-  function setupSidebarEvents() {
-    const elements = getElements();
+    if (!button || !elements.navigation.contains(button)) return;
 
-    if (elements.toggle) {
-      elements.toggle.addEventListener(
-        "click",
-        toggleSidebar
-      );
+    event.preventDefault();
+
+    const pageName = button.getAttribute("data-page");
+    showPage(pageName);
+  }
+
+  function handleLogout() {
+    const auth =
+      (window.MNEETFirebase && window.MNEETFirebase.auth) ||
+      window.mneetAuth ||
+      (window.firebase && window.firebase.auth
+        ? window.firebase.auth()
+        : null);
+
+    if (!auth || !auth.currentUser) {
+      window.location.replace("index.html");
+      return;
+    }
+
+    const logoutButtons = [
+      elements.sidebarLogoutButton,
+      elements.topbarLogoutButton
+    ].filter(Boolean);
+
+    logoutButtons.forEach(function (button) {
+      button.disabled = true;
+      button.setAttribute("aria-busy", "true");
+    });
+
+    auth
+      .signOut()
+      .then(function () {
+        window.location.replace("index.html");
+      })
+      .catch(function (error) {
+        logoutButtons.forEach(function (button) {
+          button.disabled = false;
+          button.removeAttribute("aria-busy");
+        });
+
+        console.error("mNEET logout error:", error);
+
+        showMessage(
+          "Logout করা যায়নি। Internet connection পরীক্ষা করে আবার চেষ্টা করো।",
+          "error"
+        );
+      });
+  }
+
+  function setupSidebarButtons() {
+    if (elements.toggleButton) {
+      elements.toggleButton.addEventListener("click", toggleSidebar);
+      elements.toggleButton.setAttribute("aria-controls", "adminSidebar");
+      elements.toggleButton.setAttribute("aria-expanded", "false");
+    }
+
+    if (elements.closeButton) {
+      elements.closeButton.addEventListener("click", closeSidebar);
     }
 
     if (elements.overlay) {
-      elements.overlay.addEventListener(
-        "click",
-        closeSidebar
-      );
+      elements.overlay.addEventListener("click", closeSidebar);
     }
 
     if (elements.navigation) {
       elements.navigation.addEventListener(
         "click",
-        function (event) {
-          const button = event.target.closest("[data-page]");
-
-          if (!button) return;
-
-          setActiveNavigation(button.dataset.page);
-
-          /*
-           * Close the mobile sidebar after selecting
-           * a navigation item.
-           */
-          if (window.innerWidth <= 900) {
-            closeSidebar();
-          }
-        }
+        handleNavigationClick
       );
     }
 
-    /*
-     * Escape key closes the sidebar.
-     */
+    if (elements.sidebarLogoutButton) {
+      elements.sidebarLogoutButton.addEventListener(
+        "click",
+        handleLogout
+      );
+    }
+
+    if (elements.topbarLogoutButton) {
+      elements.topbarLogoutButton.addEventListener(
+        "click",
+        handleLogout
+      );
+    }
+
+    if (elements.notificationButton) {
+      elements.notificationButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        showPage("notifications");
+      });
+    }
+
     document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && Sidebar.isOpen) {
         closeSidebar();
       }
     });
 
-    /*
-     * Remove the mobile overlay when returning
-     * to desktop width.
-     */
     window.addEventListener("resize", function () {
       if (window.innerWidth > 900) {
         closeSidebar();
@@ -176,41 +277,57 @@
     });
   }
 
-  /* ==========================================
-     PUBLIC MODULE API
-  ========================================== */
+  function setupInitialPage() {
+    const activeButton = document.querySelector(
+      '#adminNavigation [data-page].active'
+    );
 
-  Admin.sidebar = {
-    open: openSidebar,
-    close: closeSidebar,
-    toggle: toggleSidebar,
-    setActive: setActiveNavigation,
-    init: setupSidebarEvents
-  };
+    const initialPage = activeButton
+      ? activeButton.getAttribute("data-page")
+      : "dashboard";
 
-  /*
-   * Allow the main admin controller to close
-   * the sidebar without depending on this file's
-   * internal functions.
-   */
-  Admin.closeSidebar = closeSidebar;
-
-  /* ==========================================
-     INITIALIZE
-  ========================================== */
-
-  function initialize() {
-    setupSidebarEvents();
+    showPage(PAGE_NAMES[initialPage] ? initialPage : "dashboard");
   }
+
+  function init() {
+    if (Sidebar.initialized) return;
+
+    if (!elements.sidebar || !elements.navigation) {
+      console.warn(
+        "mNEET Sidebar: adminSidebar অথবা adminNavigation পাওয়া যায়নি।"
+      );
+      return;
+    }
+
+    Sidebar.initialized = true;
+
+    setupSidebarButtons();
+    setupInitialPage();
+    closeSidebar();
+
+    window.addEventListener("mneet:admin-page-change", function (event) {
+      if (!event.detail || !event.detail.page) return;
+
+      const pageName = event.detail.page;
+
+      document.querySelectorAll("[data-page]").forEach(function (button) {
+        const isCurrentPage =
+          button.getAttribute("data-page") === pageName;
+
+        button.classList.toggle("active", isCurrentPage);
+      });
+    });
+  }
+
+  Sidebar.open = openSidebar;
+  Sidebar.close = closeSidebar;
+  Sidebar.toggle = toggleSidebar;
+  Sidebar.showPage = showPage;
+  Sidebar.logout = handleLogout;
 
   if (document.readyState === "loading") {
-    document.addEventListener(
-      "DOMContentLoaded",
-      initialize,
-      { once: true }
-    );
+    document.addEventListener("DOMContentLoaded", init);
   } else {
-    initialize();
+    init();
   }
-
 })();
