@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#071A12"
+    >
+
+    <meta
+        name="description"
+        content="mNEET Student Panel - NEET preparation, practice, NCERT and progress tracking."
+    >
+
+    <title>Student Dashboard | mNEET</title>
+
+    <!-- Shared and Student Styles -->
+    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="student.css">
+</head>
+
+<body>
+
+    <!-- Authentication / Loading Screen -->
+    <div
+        id="studentLoading"
+        class="student-loading"
+        role="status"
+        aria-live="polite"
+    >
+        <div class="loading-logo">m<span>NEET</span></div>
+
+        <div class="loading-spinner"></div>
+
+        <p>Loading your dashboard...</p>
+    </div>
+
+
+    <!-- Main Student Application -->
+    <div id="studentApp" class="student-app" hidden>
+
+        <!-- Sidebar Overlay -->
+        <div
+            id="studentSidebarOverlay"
+            class="student-sidebar-overlay"
+            aria-hidden="true"
+        ></div>
+
+
+        <!-- Student Sidebar -->
+        <aside
+            id="studentSidebar"
+            class="student-sidebar"
+            aria-label="Student navigation"
+        >
+
+            <!-- Brand -->
+            <div class="student-brand">
+
+                <a
+                    href="student.html"
+                    class="student-brand-logo"
+                    aria-label="mNEET Student Dashboard"
+                >
+                    m<span>NEET</span>
+                </a>
+
+                <button
+                    type="button"
+                    id="studentSidebarClose"
+                    class="sidebar-close-button"
+                    aria-label="Close navigation"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <!-- Student Identity -->
+            <section class="student-sidebar-profile">
+
+                <div class="student-avatar-wrapper">
+
+                    <img
+                        id="studentSidebarPhoto"
+                        class="student-avatar"
+                        src=""
+                        alt="Student profile photo"
+                        hidden
+                    >
+
+                    <div
+                        id="studentSidebarInitial"
+                        class="student-avatar-initial"
+                        aria-hidden="true"
+                    >
+                        S
+                    </div>
+
+                </div>
+
+                <div class="student-sidebar-identity">
+
+                    <h2 id="studentSidebarName">
+                        Student
+                    </h2>
+
+                    <p id="studentSidebarEmail">
+                        Loading account...
+                    </p>
+
+                    <p id="studentSidebarPhone"></p>
+
+                </div>
+
+            </section>
+
+
+            <!-- Navigation -->
+            <nav class="student-navigation">
+
+                <p class="sidebar-section-title">
+                    LEARNING
+                </p>
+
+                <button
+                    type="button"
+                    class="student-nav-link active"
+                    data-student-page="dashboard"
+                    aria-current="page"
+                >
+                    <span class="nav-icon" aria-hidden="true">⌂</span>
+                    <span>Dashboard</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="courses"
+                >
+                    <span class="nav-icon" aria-hidden="true">▤</span>
+                    <span>My Courses</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="available-courses"
+                >
+                    <span class="nav-icon" aria-hidden="true">＋</span>
+                    <span>Available Courses</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="study"
+                >
+                    <span class="nav-icon" aria-hidden="true">▣</span>
+                    <span>Study</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="topic-practice"
+                >
+                    <span class="nav-icon" aria-hidden="true">✓</span>
+                    <span>Topic Wise Practice</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="chapter-practice"
+                >
+                    <span class="nav-icon" aria-hidden="true">≡</span>
+                    <span>Chapter Wise Practice</span>
+                </button>
+
+
+                <p class="sidebar-section-title">
+                    STUDY MATERIAL
+                </p>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="ncert"
+                >
+                    <span class="nav-icon" aria-hidden="true">▧</span>
+                    <span>NCERT Books</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="notes"
+                >
+                    <span class="nav-icon" aria-hidden="true">▤</span>
+                    <span>Notes</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="pyq"
+                >
+                    <span class="nav-icon" aria-hidden="true">▥</span>
+                    <span>Previous Year Questions</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="mock-tests"
+                >
+                    <span class="nav-icon" aria-hidden="true">◷</span>
+                    <span>Mock Tests</span>
+                </button>
+
+
+                <p class="sidebar-section-title">
+                    PERFORMANCE
+                </p>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="results"
+                >
+                    <span class="nav-icon" aria-hidden="true">▥</span>
+                    <span>Quiz Results</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="progress"
+                >
+                    <span class="nav-icon" aria-hidden="true">↗</span>
+                    <span>My Progress</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="weak-points"
+                >
+                    <span class="nav-icon" aria-hidden="true">!</span>
+                    <span>Weak Points</span>
+                </button>
+
+
+                <p class="sidebar-section-title">
+                    ACCOUNT
+                </p>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="purchase-history"
+                >
+                    <span class="nav-icon" aria-hidden="true">▣</span>
+                    <span>Purchase History</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="notifications"
+                >
+                    <span class="nav-icon" aria-hidden="true">♧</span>
+                    <span>Notifications</span>
+
+                    <span
+                        id="studentUnreadCount"
+                        class="notification-count"
+                        hidden
+                    >
+                        0
+                    </span>
+                </button>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="profile"
+                >
+                    <span class="nav-icon" aria-hidden="true">◉</span>
+                    <span>My Profile</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="student-nav-link"
+                    data-student-page="settings"
+                >
+                    <span class="nav-icon" aria-hidden="true">⚙</span>
+                    <span>Settings</span>
+                </button>
+
+            </nav>
+
+
+            <!-- Social Links -->
+            <section class="student-sidebar-social">
+
+                <p class="sidebar-section-title">
+                    CONNECT WITH US
+                </p>
+
+                <div class="student-social-links">
+
+                    <a
+                        id="studentFacebookLink"
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        hidden
+                    >
+                        Facebook
+                    </a>
+
+                    <a
+                        id="studentInstagramLink"
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        hidden
+                    >
+                        Instagram
+                    </a>
+
+                    <a
+                        id="studentYouTubeLink"
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        hidden
+                    >
+                        YouTube
+                    </a>
+
+                    <a
+                        id="studentWhatsAppLink"
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        hidden
+                    >
+                        WhatsApp
+                    </a>
+
+                </div>
+
+            </section>
+
+
+            <!-- Logout -->
+            <div class="student-sidebar-footer">
+
+                <button
+                    type="button"
+                    id="studentSidebarLogout"
+                    class="student-logout-button"
+                >
+                    <span aria-hidden="true">↪</span>
+                    <span>Logout</span>
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- Main Content Area -->
+        <main class="student-main">
+
+            <!-- Top Bar -->
+            <header class="student-topbar">
+
+                <div class="student-topbar-left">
+
+                    <button
+                        type="button"
+                        id="studentSidebarToggle"
+                        class="sidebar-toggle-button"
+                        aria-label="Open navigation"
+                        aria-controls="studentSidebar"
+                        aria-expanded="false"
+                    >
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+
+                    <div class="student-topbar-title">
+
+                        <p class="student-topbar-brand">
+                            m<span>NEET</span>
+                        </p>
+
+                        <h1 id="studentPageTitle">
+                            Dashboard
+                        </h1>
+
+                    </div>
+
+                </div>
+
+
+                <div class="student-topbar-actions">
+
+                    <button
+                        type="button"
+                        id="studentThemeToggle"
+                        class="student-icon-button"
+                        aria-label="Toggle theme"
+                        title="Toggle theme"
+                    >
+                        ◐
+                    </button>
+
+                    <button
+                        type="button"
+                        id="studentNotificationButton"
+                        class="student-icon-button"
+                        aria-label="Open notifications"
+                        title="Notifications"
+                    >
+                        ♧
+
+                        <span
+                            id="studentTopbarUnreadCount"
+                            class="notification-dot"
+                            hidden
+                        ></span>
+
+                    </button>
+
+                    <button
+                        type="button"
+                        id="studentTopbarProfile"
+                        class="student-topbar-profile"
+                        aria-label="Open profile"
+                    >
+
+                        <span
+                            id="studentTopbarInitial"
+                            class="student-topbar-initial"
+                        >
+                            S
+                        </span>
+
+                        <span
+                            id="studentTopbarName"
+                            class="student-topbar-name"
+                        >
+                            Student
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <!-- General Message Area -->
+            <div
+                id="studentMessage"
+                class="student-message"
+                role="status"
+                aria-live="polite"
+                hidden
+            ></div>
+
+
+            <!-- Dashboard Page -->
+            <section
+                id="studentPageDashboard"
+                class="student-page active"
+                data-student-section="dashboard"
+            >
+
+                <div class="student-welcome-section">
+
+                    <div>
+
+                        <p class="student-eyebrow">
+                            YOUR NEET PREPARATION
+                        </p>
+
+                        <h2>
+                            Welcome back,
+                            <span id="studentWelcomeName">
+                                Student
+                            </span>
+                        </h2>
+
+                        <p>
+                            Continue your preparation and track your progress.
+                        </p>
+
+                    </div>
+
+                    <div class="student-target-badge">
+                        NEET Preparation
+                    </div>
+
+                </div>
+
+
+                <!-- Dashboard Statistics -->
+                <div class="student-statistics-grid">
+
+                    <article class="student-stat-card">
+
+                        <p>My Courses</p>
+
+                        <strong id="studentStatCourses">
+                            —
+                        </strong>
+
+                        <span>Purchased courses</span>
+
+                    </article>
+
+
+                    <article class="student-stat-card">
+
+                        <p>Course Progress</p>
+
+                        <strong id="studentStatProgress">
+                            0%
+                        </strong>
+
+                        <div class="student-progress-track">
+
+                            <div
+                                id="studentStatProgressBar"
+                                class="student-progress-fill"
+                                style="width: 0%"
+                            ></div>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="student-stat-card">
+
+                        <p>Quiz Attempts</p>
+
+                        <strong id="studentStatAttempts">
+                            0
+                        </strong>
+
+                        <span>Total attempts</span>
+
+                    </article>
+
+
+                    <article class="student-stat-card">
+
+                        <p>Average Accuracy</p>
+
+                        <strong id="studentStatAccuracy">
+                            0%
+                        </strong>
+
+                        <span>Based on available results</span>
+
+                    </article>
+
+                </div>
+
+
+                <!-- Continue Learning -->
+                <section class="student-content-card">
+
+                    <div class="student-section-heading">
+
+                        <div>
+
+                            <p class="student-eyebrow">
+                                PICK UP WHERE YOU LEFT OFF
+                            </p>
+
+                            <h2>Continue Learning</h2>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="student-text-button"
+                            data-student-page="courses"
+                        >
+                            My Courses →
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        id="studentContinueLearning"
+                        class="student-course-grid"
+                    >
+
+                        <div class="student-empty-state">
+
+                            <div class="student-empty-icon">
+                                ▤
+                            </div>
+
+                            <h3>Your learning journey starts here</h3>
+
+                            <p>
+                                Your purchased courses will appear here.
+                            </p>
+
+                            <button
+                                type="button"
+                                class="student-primary-button"
+                                data-student-page="available-courses"
+                            >
+                                Explore Courses
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- Quick Access -->
+                <section class="student-content-card">
+
+                    <div class="student-section-heading">
+
+                        <div>
+
+                            <p class="student-eyebrow">
+                                QUICK ACCESS
+                            </p>
+
+                            <h2>Practice & Study</h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="student-quick-access-grid">
+
+                        <button
+                            type="button"
+                            class="student-quick-card"
+                            data-student-page="topic-practice"
+                        >
+
+                            <span class="quick-card-icon">✓</span>
+
+                            <span class="quick-card-title">
+                                Topic Wise Practice
+                            </span>
+
+                            <span class="quick-card-description">
+                                Practice questions topic by topic.
+                            </span>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="student-quick-card"
+                            data-student-page="chapter-practice"
+                        >
+
+                            <span class="quick-card-icon">≡</span>
+
+                            <span class="quick-card-title">
+                                Chapter Wise Practice
+                            </span>
+
+                            <span class="quick-card-description">
+                                Practice different question types.
+                            </span>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="student-quick-card"
+                            data-student-page="ncert"
+                        >
+
+                            <span class="quick-card-icon">▧</span>
+
+                            <span class="quick-card-title">
+                                NCERT Books
+                            </span>
+
+                            <span class="quick-card-description">
+                                Read available chapter-wise PDFs.
+                            </span>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="student-quick-card"
+                            data-student-page="results"
+                        >
+
+                            <span class="quick-card-icon">↗</span>
+
+                            <span class="quick-card-title">
+                                Quiz Results
+                            </span>
+
+                            <span class="quick-card-description">
+                                Review your quiz performance.
+                            </span>
+
+                        </button>
+
+                    </div>
+
+                </section>
+
+
+                <!-- Recent Results -->
+                <section class="student-content-card">
+
+                    <div class="student-section-heading">
+
+                        <div>
+
+                            <p class="student-eyebrow">
+                                YOUR PERFORMANCE
+                            </p>
+
+                            <h2>Recent Quiz Results</h2>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="student-text-button"
+                            data-student-page="results"
+                        >
+                            View All →
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        id="studentRecentResults"
+                        class="student-recent-results"
+                    >
+
+                        <div class="student-empty-state">
+
+                            <h3>No quiz results yet</h3>
+
+                            <p>
+                                Complete a quiz to see your results here.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- Recent Notifications -->
+                <section class="student-content-card">
+
+                    <div class="student-section-heading">
+
+                        <div>
+
+                            <p class="student-eyebrow">
+                                LATEST UPDATES
+                            </p>
+
+                            <h2>Notifications</h2>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="student-text-button"
+                            data-student-page="notifications"
+                        >
+                            View All →
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        id="studentRecentNotifications"
+                        class="student-recent-notifications"
+                    >
+
+                        <div class="student-empty-state">
+
+                            <h3>No new notifications</h3>
+
+                            <p>
+                                Important course updates will appear here.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </section>
+
+
+            <!-- Available Courses -->
+            <section
+                id="studentPageAvailableCourses"
+                class="student-page"
+                data-student-section="available-courses"
+                hidden
+            >
+
+                <div class="student-page-heading">
+
+                    <div>
+                        <p class="student-eyebrow">EXPLORE</p>
+                        <h2>Available Courses</h2>
+
+                        <p>
+                            View course details and submit a purchase request.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div
+                    id="studentAvailableCourses"
+                    class="student-course-grid"
+                ></div>
+
+            </section>
+
+
+            <!-- Purchased Courses -->
+            <section
+                id="studentPageCourses"
+                class="student-page"
+                data-student-section="courses"
+                hidden
+            >
+
+                <div class="student-page-heading">
+
+                    <div>
+                        <p class="student-eyebrow">YOUR LEARNING</p>
+                        <h2>My Courses</h2>
+
+                        <p>
+                            Open a course after your purchase is approved.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div
+                    id="studentPurchasedCourses"
+                    class="student-course-grid"
+                ></div>
+
+            </section>
+
+
+            <!-- Study -->
+            <section
+                id="studentPageStudy"
+                class="student-page"
+                data-student-section="study"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">COURSE CONTENT</p>
+                    <h2>Study</h2>
+                    <p>Select an approved course to continue studying.</p>
+                </div>
+
+                <div
+                    id="studentStudyContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- Topic Practice -->
+            <section
+                id="studentPageTopicPractice"
+                class="student-page"
+                data-student-section="topic-practice"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">PRACTICE</p>
+                    <h2>Topic Wise Practice</h2>
+                    <p>Select a purchased course, chapter and topic.</p>
+                </div>
+
+                <div
+                    id="studentTopicPracticeContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- Chapter Practice -->
+            <section
+                id="studentPageChapterPractice"
+                class="student-page"
+                data-student-section="chapter-practice"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">QUESTION PRACTICE</p>
+                    <h2>Chapter Wise Practice</h2>
+                    <p>
+                        Choose a chapter and an available question type.
+                    </p>
+                </div>
+
+                <div
+                    id="studentChapterPracticeContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- NCERT -->
+            <section
+                id="studentPageNcert"
+                class="student-page"
+                data-student-section="ncert"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">STUDY MATERIAL</p>
+                    <h2>NCERT Books</h2>
+                    <p>Find available NCERT PDFs by chapter.</p>
+                </div>
+
+                <div
+                    id="studentNcertContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- Notes -->
+            <section
+                id="studentPageNotes"
+                class="student-page"
+                data-student-section="notes"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">STUDY MATERIAL</p>
+                    <h2>Topic Notes</h2>
+                    <p>Open notes available for your purchased course.</p>
+                </div>
+
+                <div
+                    id="studentNotesContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- PYQ -->
+            <section
+                id="studentPagePyq"
+                class="student-page"
+                data-student-section="pyq"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">PREVIOUS YEAR QUESTIONS</p>
+                    <h2>PYQ</h2>
+                    <p>Access available chapter-wise PYQ material.</p>
+                </div>
+
+                <div
+                    id="studentPyqContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- Mock Tests -->
+            <section
+                id="studentPageMockTests"
+                class="student-page"
+                data-student-section="mock-tests"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">EXAM PRACTICE</p>
+                    <h2>Mock Tests</h2>
+                    <p>View mock tests available to your account.</p>
+                </div>
+
+                <div
+                    id="studentMockTestsContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- Results -->
+            <section
+                id="studentPageResults"
+                class="student-page"
+                data-student-section="results"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">PERFORMANCE</p>
+                    <h2>Quiz Results</h2>
+                    <p>Review scores and submitted answers.</p>
+                </div>
+
+                <div
+                    id="studentResultsContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- Progress -->
+            <section
+                id="studentPageProgress"
+                class="student-page"
+                data-student-section="progress"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">YOUR PREPARATION</p>
+                    <h2>My Progress</h2>
+                    <p>Track course, chapter and topic completion.</p>
+                </div>
+
+                <div
+                    id="studentProgressContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- Weak Points -->
+            <section
+                id="studentPageWeakPoints"
+                class="student-page"
+                data-student-section="weak-points"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">IMPROVE YOUR ACCURACY</p>
+                    <h2>Weak Points</h2>
+                    <p>Review questions you have answered incorrectly.</p>
+                </div>
+
+                <div
+                    id="studentWeakPointsContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- Purchase History -->
+            <section
+                id="studentPagePurchaseHistory"
+                class="student-page"
+                data-student-section="purchase-history"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">ACCOUNT</p>
+                    <h2>Purchase History</h2>
+                    <p>Review payment requests and their approval status.</p>
+                </div>
+
+                <div
+                    id="studentPurchaseHistoryContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- Notifications -->
+            <section
+                id="studentPageNotifications"
+                class="student-page"
+                data-student-section="notifications"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">UPDATES</p>
+                    <h2>Notifications</h2>
+                    <p>View announcements and course updates.</p>
+                </div>
+
+                <div
+                    id="studentNotificationsContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- Profile -->
+            <section
+                id="studentPageProfile"
+                class="student-page"
+                data-student-section="profile"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">YOUR ACCOUNT</p>
+                    <h2>My Profile</h2>
+                    <p>View and manage your student profile.</p>
+                </div>
+
+                <div
+                    id="studentProfileContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- Settings -->
+            <section
+                id="studentPageSettings"
+                class="student-page"
+                data-student-section="settings"
+                hidden
+            >
+
+                <div class="student-page-heading">
+                    <p class="student-eyebrow">PREFERENCES</p>
+                    <h2>Settings</h2>
+                    <p>Manage your student preferences.</p>
+                </div>
+
+                <div
+                    id="studentSettingsContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- Global Quiz Mount Point -->
+            <section
+                id="studentQuizPage"
+                class="student-page student-quiz-page"
+                data-student-section="quiz"
+                hidden
+            >
+
+                <div
+                    id="studentQuizContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- PDF Reader Mount Point -->
+            <section
+                id="studentPdfReaderPage"
+                class="student-page student-pdf-reader-page"
+                data-student-section="pdf-reader"
+                hidden
+            >
+
+                <div
+                    id="studentPdfReaderContent"
+                    class="student-dynamic-content"
+                ></div>
+
+            </section>
+
+
+            <!-- Footer -->
+            <footer class="student-footer">
+
+                <p>
+                    © <span id="studentCurrentYear"></span>
+                    mNEET. All rights reserved.
+                </p>
+
+                <p>
+                    Your NEET preparation, organised.
+                </p>
+
+            </footer>
+
+        </main>
+
+    </div>
+
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+    <!-- Firebase Configuration and Authentication -->
+    <script src="firebase.js"></script>
+    <script src="auth-guard.js"></script>
+
+    <!-- Shared Utilities -->
+    <script src="constants.js"></script>
+    <script src="validators.js"></script>
+    <script src="date-utils.js"></script>
+    <script src="firebase-helpers.js"></script>
+    <script src="common.js"></script>
+    <script src="theme.js"></script>
+    <script src="notifications.js"></script>
+
+    <!-- Student Panel Core -->
+    <script src="student-sidebar.js"></script>
+    <script src="student-profile.js"></script>
+    <script src="student.js"></script>
+
+    <!-- Courses and Learning -->
+    <script src="student-courses.js"></script>
+    <script src="student-purchase.js"></script>
+    <script src="student-study.js"></script>
+    <script src="student-chapters.js"></script>
+    <script src="student-topics.js"></script>
+
+    <!-- Quiz and Results -->
+    <script src="student-quiz-timer.js"></script>
+    <script src="student-quiz.js"></script>
+    <script src="student-results.js"></script>
+    <script src="student-progress.js"></script>
+    <script src="student-weak-points.js"></script>
+    <script src="student-mock-tests.js"></script>
+
+    <!-- Study Materials -->
+    <script src="student-ncert.js"></script>
+    <script src="student-ncert-reader.js"></script>
+    <script src="student-materials.js"></script>
+
+    <!-- Account and Notifications -->
+    <script src="student-notifications.js"></script>
+    <script src="student-purchase-history.js"></script>
+    <script src="student-settings.js"></script>
+
+</body>
+</html>
