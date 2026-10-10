@@ -1,0 +1,326 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownDocument(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function admin() {
+      return signedIn()
+        && exists(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        )
+        && get(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        ).data.role == "admin"
+        && get(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        ).data.status == "active";
+    }
+
+    function activeStudent() {
+      return signedIn()
+        && exists(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        )
+        && get(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        ).data.role == "student"
+        && get(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        ).data.status == "active";
+    }
+
+    function approvedPurchase(courseId) {
+      return signedIn()
+        && exists(
+          /databases/$(database)/documents/purchases/$(request.auth.uid + "_" + courseId)
+        )
+        && get(
+          /databases/$(database)/documents/purchases/$(request.auth.uid + "_" + courseId)
+        ).data.studentId == request.auth.uid
+        && get(
+          /databases/$(database)/documents/purchases/$(request.auth.uid + "_" + courseId)
+        ).data.courseId == courseId
+        && get(
+          /databases/$(database)/documents/purchases/$(request.auth.uid + "_" + courseId)
+        ).data.status == "approved";
+    }
+
+    // USER PROFILE
+    match /users/{uid} {
+      allow read: if ownDocument(uid) || admin();
+
+      allow create: if ownDocument(uid)
+        && request.resource.data.role == "student"
+        && request.resource.data.status == "active"
+        && request.resource.data.keys().hasOnly([
+          "uid",
+          "name",
+          "phone",
+          "email",
+          "city",
+          "target",
+          "photoURL",
+          "role",
+          "status",
+          "createdAt"
+        ]);
+
+      // Student cannot change role or account status.
+      allow update: if admin()
+        || (
+          ownDocument(uid)
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.status == resource.data.status
+          && request.resource.data.uid == resource.data.uid
+        );
+
+      allow delete: if admin();
+    }
+
+    // COURSES
+    match /courses/{courseId} {
+      allow read: if admin()
+        || (
+          signedIn()
+          && resource.data.status == "active"
+        );
+
+      allow create, update, delete: if admin();
+
+      // SUBJ​ECTS
+      match /subjects/{subjectId} {
+        allow read: if admin()
+          || (
+            signedIn()
+            && get(
+              /databases/$(database)/documents/courses/$(courseId)
+            ).data.status == "active"
+          );
+
+        allow create, update, delete: if admin();
+
+        // CHAPTERS
+        match /chapters/{chapterId} {
+          allow read: if admin()
+            || (
+              signedIn()
+              && get(
+                /databases/$(database)/documents/courses/$(courseId)
+              ).data.status == "active"
+            );
+
+          allow create, update, delete: if admin();
+
+          // TOPICS
+          match /topics/{topicId} {
+            allow read: if admin()
+              || (
+                activeStudent()
+                && approvedPurchase(courseId)
+              );
+
+            allow create, update, delete: if admin();
+
+            // QUIZZES
+            match /quizzes/{quizId} {
+              allow read: if admin()
+                || (
+                  activeStudent()
+                  && approvedPurchase(courseId)
+                );
+
+              allow create, update, delete: if admin();
+
+              // QUESTIONS
+              match /questions/{questionId} {
+                allow read: if admin()
+                  || (
+                    activeStudent()
+                    && approvedPurchase(courseId)
+                    && resource.data.studentVisible == true
+                  );
+
+                allow create, update, delete: if admin();
+              }
+            }
+          }
+        }
+      }
+
+      // CHAPTER-WISE QUIZZES
+      match /chapterQuizzes/{quizId} {
+        allow read: if admin()
+          || (
+            activeStudent()
+            && approvedPurchase(courseId)
+          );
+
+        allow create, update, delete: if admin();
+
+        match /questions/{questionId} {
+          allow read: if admin()
+            || (
+              activeStudent()
+              && approvedPurchase(courseId)
+              && resource.data.studentVisible == true
+            );
+
+          allow create, update, delete: if admin();
+        }
+      }
+
+      // FULL MOCK TESTS
+      match /mockTests/{testId} {
+        allow read: if admin()
+          || (
+            activeStudent()
+            && approvedPurchase(courseId)
+          );
+
+        allow create, update, delete: if admin();
+
+        match /questions/{questionId} {
+          allow read: if admin()
+            || (
+              activeStudent()
+              && approvedPurchase(courseId)
+              && resource.data.studentVisible == true
+            );
+
+          allow create, update, delete: if admin();
+        }
+      }
+
+      // RESOURCES: NCERT, NOTES, PYQ
+      match /resources/{resourceId} {
+        allow read: if admin()
+          || (
+            activeStudent()
+            && approvedPurchase(courseId)
+          );
+
+        allow create, update, delete: if admin();
+      }
+    }
+
+    // PURCHASE REQUESTS
+    match /purchases/{purchaseId} {
+      allow read: if admin()
+        || (
+          signedIn()
+          && resource.data.studentId == request.auth.uid
+        );
+
+      // Student may create a pending request only.
+      allow create: if activeStudent()
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.status == "pending"
+        && request.resource.data.keys().hasOnly([
+          "studentId",
+          "courseId",
+          "courseName",
+          "amount",
+          "transactionId",
+          "receiptURL",
+          "status",
+          "refundStatus",
+          "createdAt"
+        ]);
+
+      // Only Admin can approve/reject or change refund status.
+      allow update, delete: if admin();
+    }
+
+    // QUIZ ATTEMPTS / RESULTS
+    match /attempts/{attemptId} {
+      allow read: if admin()
+        || (
+          signedIn()
+          && resource.data.studentId == request.auth.uid
+        );
+
+      // Secure grading should be performed by trusted server code.
+      allow create, update, delete: if admin();
+    }
+
+    // STUDENT PROGRESS
+    match /progress/{progressId} {
+      allow read: if admin()
+        || (
+          signedIn()
+          && resource.data.studentId == request.auth.uid
+        );
+
+      // Server/Admin owns calculated progress.
+      allow create, update, delete: if admin();
+    }
+
+    // NOTIFICATIONS
+    match /notifications/{notificationId} {
+      allow read: if admin()
+        || (
+          signedIn()
+          && resource.data.audience == "students"
+        );
+
+      allow create, delete: if admin();
+
+      // Students may update their own read receipt only
+      // when a separate per-user receipt is used.
+      allow update: if admin();
+    }
+
+    // PER-STUDENT NOTIFICATION READ RECEIPTS
+    match /notificationReads/{receiptId} {
+      allow read: if admin()
+        || (
+          signedIn()
+          && resource.data.studentId == request.auth.uid
+        );
+
+      allow create, update: if signedIn()
+        && request.resource.data.studentId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          "studentId",
+          "notificationId",
+          "read",
+          "readAt"
+        ]);
+
+      allow delete: if admin();
+    }
+
+    // APP SETTINGS
+    match /settings/{settingId} {
+      allow read: if signedIn();
+      allow create, update, delete: if admin();
+    }
+
+    // SUPPORT REQUESTS
+    match /supportTickets/{ticketId} {
+      allow create: if activeStudent()
+        && request.resource.data.studentId == request.auth.uid;
+
+      allow read: if admin()
+        || (
+          signedIn()
+          && resource.data.studentId == request.auth.uid
+        );
+
+      allow update, delete: if admin();
+    }
+
+    // Default deny for all other collections.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
