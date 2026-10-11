@@ -1,20 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#071A12">
+
   <title>Admin Login | mNEET</title>
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
       min-height: 100vh;
       padding: 20px;
-      display: grid;
-      place-items: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background: #071A12;
       color: #fff;
       font-family: Arial, sans-serif;
@@ -37,7 +41,9 @@
       font-weight: 800;
     }
 
-    .logo span { color: #FFC107; }
+    .logo span {
+      color: #FFC107;
+    }
 
     h2 {
       text-align: center;
@@ -69,10 +75,6 @@
       font-size: 16px;
     }
 
-    input:focus {
-      outline: 2px solid #FFC107;
-    }
-
     button {
       width: 100%;
       min-height: 48px;
@@ -88,7 +90,6 @@
 
     button:disabled {
       opacity: .6;
-      cursor: wait;
     }
 
     a {
@@ -111,9 +112,17 @@
       font-size: 14px;
     }
 
-    #message.show { display: block; }
-    #message.error { color: #FCA5A5; }
-    #message.success { color: #86EFAC; }
+    #message.show {
+      display: block;
+    }
+
+    #message.error {
+      color: #FCA5A5;
+    }
+
+    #message.success {
+      color: #86EFAC;
+    }
 
     .footer {
       margin-top: 24px;
@@ -125,8 +134,11 @@
 </head>
 
 <body>
+
   <main class="card">
+
     <h1 class="logo">m<span>NEET</span></h1>
+
     <h2>Admin Login</h2>
 
     <p class="subtitle">
@@ -134,7 +146,9 @@
     </p>
 
     <form id="adminLoginForm">
+
       <label for="adminEmail">Admin Email</label>
+
       <input
         id="adminEmail"
         type="email"
@@ -144,6 +158,7 @@
       >
 
       <label for="adminPassword">Password</label>
+
       <input
         id="adminPassword"
         type="password"
@@ -155,15 +170,21 @@
       <button id="loginButton" type="submit">
         Sign In to Admin
       </button>
+
     </form>
 
-    <a href="#" id="forgotPassword">Forgot Password?</a>
+    <a href="#" id="forgotPassword">
+      Forgot Password?
+    </a>
 
     <div id="message" role="status" aria-live="polite"></div>
 
     <a href="index.html">Back to Student Login</a>
 
-    <div class="footer">mNEET Admin Portal</div>
+    <div class="footer">
+      mNEET Admin Portal
+    </div>
+
   </main>
 
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -187,8 +208,6 @@
     const message = document.getElementById("message");
     const forgot = document.getElementById("forgotPassword");
 
-    let busy = false;
-
     function showMessage(text, type) {
       message.textContent = text;
       message.className = "show " + (type || "error");
@@ -201,11 +220,10 @@
         !f ||
         f.ready !== true ||
         !f.auth ||
-        !f.db ||
         f.projectId !== PROJECT_ID
       ) {
         throw new Error(
-          "Firebase চালু হয়নি। firebase.js ও Firebase project পরীক্ষা করো।"
+          "Firebase চালু হয়নি। firebase.js পরীক্ষা করো।"
         );
       }
 
@@ -213,102 +231,73 @@
     }
 
     function readableError(error) {
-      const messages = {
+      const errors = {
         "auth/invalid-credential":
           "Email অথবা Password ভুল।",
+
         "auth/wrong-password":
           "Password ভুল।",
+
         "auth/user-not-found":
-          "Firebase Authentication-এ এই Email-এর account নেই।",
+          "এই Email-এর Firebase account পাওয়া যায়নি।",
+
         "auth/invalid-email":
-          "Email address সঠিক নয়।",
+          "Email সঠিক নয়।",
+
         "auth/too-many-requests":
           "অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পরে চেষ্টা করো।",
+
         "auth/network-request-failed":
           "Internet connection পরীক্ষা করো।",
+
         "auth/user-disabled":
-          "এই Firebase account বন্ধ করা হয়েছে।",
-        "permission-denied":
-          "Firestore Security Rules Admin document পড়তে দিচ্ছে না।",
-        "unavailable":
-          "Firebase সাময়িকভাবে পাওয়া যাচ্ছে না।"
+          "এই account বন্ধ করা হয়েছে।"
       };
 
-      return messages[error.code] ||
+      return errors[error.code] ||
         error.message ||
-        "অজানা সমস্যা হয়েছে।";
-    }
-
-    async function verifyAdmin(user, db) {
-      if (user.email !== ADMIN_EMAIL) {
-        throw new Error("Admin Email মেলেনি।");
-      }
-
-      if (user.uid !== ADMIN_UID) {
-        throw new Error("Admin UID মেলেনি।");
-      }
-console.log("Firebase project:", db.app.options.projectId);
-console.log("Admin UID:", ADMIN_UID);
-      const snapshot = await db
-        .collection("admins")
-        .doc(ADMIN_UID)
-        .get();
-
-      if (!snapshot.exists) {
-        throw new Error(
-          "Admin verification document পাওয়া যায়নি।"
-        );
-      }
-
-      const data = snapshot.data() || {};
-
-      if (data.active !== true) {
-        throw new Error(
-          "Admin account সক্রিয় নয়।"
-        );
-      }
-
-      if (
-        data.email &&
-        data.email.toLowerCase() !== ADMIN_EMAIL
-      ) {
-        throw new Error("Admin document-এর Email মেলেনি।");
-      }
+        "Login ব্যর্থ হয়েছে।";
     }
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
 
-      if (busy) return;
-
-      busy = true;
       button.disabled = true;
       button.textContent = "Verifying...";
       message.className = "";
-
-      const enteredEmail =
-        emailInput.value.trim().toLowerCase();
 
       let signedIn = false;
 
       try {
         const f = getFirebase();
 
-        if (enteredEmail !== ADMIN_EMAIL) {
+        const email = emailInput.value.trim().toLowerCase();
+
+        if (email !== ADMIN_EMAIL) {
           throw new Error("সঠিক Admin Email ব্যবহার করো।");
         }
 
         const result = await f.auth.signInWithEmailAndPassword(
-          enteredEmail,
+          email,
           passwordInput.value
         );
 
         signedIn = true;
 
-        await verifyAdmin(result.user, f.db);
+        if (
+          result.user.uid !== ADMIN_UID ||
+          result.user.email.toLowerCase() !== ADMIN_EMAIL
+        ) {
+          await f.auth.signOut();
+          signedIn = false;
+
+          throw new Error(
+            "এই account অনুমোদিত Admin account নয়।"
+          );
+        }
 
         showMessage(
-          "Admin verification সফল। Dashboard খুলছে...",
+          "Login সফল। Dashboard খুলছে...",
           "success"
         );
 
@@ -327,7 +316,6 @@ console.log("Admin UID:", ADMIN_UID);
 
         showMessage(readableError(error), "error");
 
-        busy = false;
         button.disabled = false;
         button.textContent = "Sign In to Admin";
       }
@@ -342,14 +330,17 @@ console.log("Admin UID:", ADMIN_UID);
         await f.auth.sendPasswordResetEmail(ADMIN_EMAIL);
 
         showMessage(
-          "Password reset email পাঠানোর অনুরোধ করা হয়েছে। Inbox ও Spam পরীক্ষা করো।",
+          "Password reset email পাঠানো হয়েছে। Inbox ও Spam পরীক্ষা করো।",
           "success"
         );
+
       } catch (error) {
         showMessage(readableError(error), "error");
       }
     });
+
   })();
   </script>
+
 </body>
 </html>
