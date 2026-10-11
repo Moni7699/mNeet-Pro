@@ -1,21 +1,23 @@
-/* =========================================================
-   mNEET FIREBASE INITIALIZATION
+/* =====================================================
+   mNEET FIREBASE CONFIGURATION
    File: firebase.js
 
-   Services:
-   - Firebase App
-   - Firebase Authentication
-   - Cloud Firestore
-   - Firebase Storage
+   Responsibilities:
+   1. Initialize Firebase only once.
+   2. Provide Authentication and Firestore.
+   3. Expose a shared Firebase service object.
+   4. Prevent duplicate initialization.
 
    Project: mneet-spark
-========================================================= */
+===================================================== */
 
 (function (window) {
   "use strict";
 
+  const PROJECT_ID = "mneet-spark";
+
   /*
-   * Avoid duplicate initialization.
+   * Do not initialize Firebase twice.
    */
 
   if (
@@ -32,7 +34,7 @@
 
   if (!window.firebase) {
     const message =
-      "Firebase SDK load হয়নি। index.html-এর Firebase scripts পরীক্ষা করো।";
+      "Firebase SDK load হয়নি। Firebase SDK scripts পরীক্ষা করো।";
 
     console.error(message);
 
@@ -42,22 +44,20 @@
       app: null,
       auth: null,
       db: null,
-      storage: null,
-      projectId: "mneet-spark"
+      projectId: PROJECT_ID
     });
 
     return;
   }
 
   /*
-   * Firebase project configuration.
+   * Your Firebase project configuration.
    */
 
   const firebaseConfig = {
     apiKey: "AIzaSyApQOM_mtFZ16RiNJEaIUhb4iYFBIBRK58",
     authDomain: "mneet-spark.firebaseapp.com",
-    databaseURL:
-      "https://mneet-spark-default-rtdb.firebaseio.com",
+    databaseURL: "https://mneet-spark-default-rtdb.firebaseio.com",
     projectId: "mneet-spark",
     storageBucket: "mneet-spark.firebasestorage.app",
     messagingSenderId: "252201633700",
@@ -67,11 +67,10 @@
   let app = null;
   let auth = null;
   let db = null;
-  let storage = null;
 
   try {
     /*
-     * Initialize Firebase only if necessary.
+     * Reuse the existing default app when available.
      */
 
     if (
@@ -84,53 +83,51 @@
     }
 
     /*
-     * Authentication.
+     * Verify that the initialized app belongs to
+     * the expected Firebase project.
      */
 
-    auth = app.auth();
+    const actualProjectId = app.options.projectId;
 
-    /*
-     * Cloud Firestore.
-     */
-
-    db = app.firestore();
-
-    /*
-     * Firebase Storage is optional until its SDK loads.
-     */
-
-    if (typeof app.storage === "function") {
-      storage = app.storage();
-    } else {
-      console.warn(
-        "Firebase Storage SDK পাওয়া যায়নি। File upload চালু হবে না।"
+    if (actualProjectId !== PROJECT_ID) {
+      throw new Error(
+        "Firebase project mismatch. Expected: " +
+        PROJECT_ID +
+        ", received: " +
+        actualProjectId
       );
     }
 
     /*
-     * Export services for existing mNEET files.
+     * Initialize Firebase services.
+     */
+
+    auth = app.auth();
+    db = app.firestore();
+
+    /*
+     * Publish shared services for other files.
      */
 
     window.MNEETFirebase = Object.freeze({
       ready: true,
+      error: null,
       app: app,
       auth: auth,
       db: db,
-      storage: storage,
-      hasStorage: Boolean(storage),
-      projectId: firebaseConfig.projectId
+      projectId: PROJECT_ID
     });
 
     /*
-     * Compatibility aliases used by existing files.
+     * Compatibility aliases for existing app files.
      */
 
     window.mneetAuth = auth;
     window.mneetDB = db;
-    window.mneetStorage = storage;
 
     console.info(
-      "mNEET Firebase initialized successfully."
+      "mNEET Firebase initialized successfully.",
+      PROJECT_ID
     );
 
   } catch (error) {
@@ -145,13 +142,11 @@
       app: app,
       auth: auth,
       db: db,
-      storage: storage,
-      projectId: firebaseConfig.projectId
+      projectId: PROJECT_ID
     });
 
     window.mneetAuth = auth;
     window.mneetDB = db;
-    window.mneetStorage = storage;
   }
 
 })(window);
