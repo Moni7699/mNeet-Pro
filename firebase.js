@@ -1,46 +1,35 @@
-/* =====================================================
+/* ============================================
    mNEET FIREBASE CONFIGURATION
    File: firebase.js
-
-   Responsibilities:
-   1. Initialize Firebase only once.
-   2. Provide Authentication and Firestore.
-   3. Expose a shared Firebase service object.
-   4. Prevent duplicate initialization.
-
    Project: mneet-spark
-===================================================== */
+============================================ */
 
 (function (window) {
   "use strict";
 
   const PROJECT_ID = "mneet-spark";
 
-  /*
-   * Do not initialize Firebase twice.
-   */
+  /* Prevent duplicate initialization */
 
   if (
     window.MNEETFirebase &&
     window.MNEETFirebase.ready === true
   ) {
-    console.info("mNEET Firebase is already initialized.");
+    console.info("mNEET Firebase already initialized.");
     return;
   }
 
-  /*
-   * Firebase SDK must load before this file.
-   */
+  /* Check Firebase SDK */
 
   if (!window.firebase) {
-    const message =
-      "Firebase SDK load হয়নি। Firebase SDK scripts পরীক্ষা করো।";
+    const errorMessage =
+      "Firebase SDK not loaded. Check the Firebase scripts in index.html.";
 
-    console.error(message);
+    console.error(errorMessage);
 
     window.MNEETFirebase = Object.freeze({
       ready: false,
-      error: message,
+      error: errorMessage,
       app: null,
       auth: null,
       db: null,
@@ -50,9 +39,7 @@
     return;
   }
 
-  /*
-   * Your Firebase project configuration.
-   */
+  /* Firebase project configuration */
 
   const firebaseConfig = {
     apiKey: "AIzaSyApQOM_mtFZ16RiNJEaIUhb4iYFBIBRK58",
@@ -69,45 +56,31 @@
   let db = null;
 
   try {
-    /*
-     * Reuse the existing default app when available.
-     */
+    /* Reuse an existing Firebase app if available */
 
-    if (
-      window.firebase.apps &&
-      window.firebase.apps.length > 0
-    ) {
+    if (window.firebase.apps.length > 0) {
       app = window.firebase.app();
     } else {
       app = window.firebase.initializeApp(firebaseConfig);
     }
 
-    /*
-     * Verify that the initialized app belongs to
-     * the expected Firebase project.
-     */
+    /* Verify project ID */
 
-    const actualProjectId = app.options.projectId;
-
-    if (actualProjectId !== PROJECT_ID) {
+    if (app.options.projectId !== PROJECT_ID) {
       throw new Error(
-        "Firebase project mismatch. Expected: " +
+        "Firebase project ID mismatch. Expected " +
         PROJECT_ID +
-        ", received: " +
-        actualProjectId
+        ", received " +
+        app.options.projectId
       );
     }
 
-    /*
-     * Initialize Firebase services.
-     */
+    /* Initialize Firebase services */
 
     auth = app.auth();
     db = app.firestore();
 
-    /*
-     * Publish shared services for other files.
-     */
+    /* Shared Firebase service object */
 
     window.MNEETFirebase = Object.freeze({
       ready: true,
@@ -118,16 +91,13 @@
       projectId: PROJECT_ID
     });
 
-    /*
-     * Compatibility aliases for existing app files.
-     */
+    /* Compatibility aliases */
 
     window.mneetAuth = auth;
     window.mneetDB = db;
 
     console.info(
-      "mNEET Firebase initialized successfully.",
-      PROJECT_ID
+      "mNEET Firebase initialized successfully."
     );
 
   } catch (error) {
