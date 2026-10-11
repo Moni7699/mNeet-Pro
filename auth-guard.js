@@ -1,19 +1,25 @@
-(function () {
+/* =========================================================
+   mNEET — Authentication Guard
+   File: auth-guard.js
+
+   Features:
+   - Student page protection
+   - Admin page protection
+   - Firebase project verification
+   - Active account verification
+   - Role-based redirection
+   - Fail-closed authorization
+   ========================================================= */
+
+(function (window, document) {
   "use strict";
 
   const ADMIN_LOGIN_PAGE = "admin-login.html";
-  const STUDENT_LOGIN_PAGE = "index.html";
   const ADMIN_DASHBOARD_PAGE = "admin.html";
+  const STUDENT_LOGIN_PAGE = "index.html";
   const STUDENT_DASHBOARD_PAGE = "student.html";
 
-  const currentPage = (
-    window.location.pathname.split("/").pop() || "index.html"
-  ).toLowerCase();
-
-  const isAdminLoginPage = currentPage === ADMIN_LOGIN_PAGE;
-  const isAdminDashboardPage = currentPage === ADMIN_DASHBOARD_PAGE;
-
-  const studentPages = [
+  const STUDENT_PAGES = [
     "student.html",
     "course.html",
     "chapter.html",
@@ -22,12 +28,18 @@
     "video.html"
   ];
 
-  const isStudentPage = studentPages.includes(currentPage);
+  const currentPage = (
+    window.location.pathname.split("/").pop() || "index.html"
+  ).toLowerCase();
+
+  const isAdminLoginPage = currentPage === ADMIN_LOGIN_PAGE;
+  const isAdminDashboardPage = currentPage === ADMIN_DASHBOARD_PAGE;
+  const isStudentPage = STUDENT_PAGES.includes(currentPage);
 
   if (
     !isAdminLoginPage &&
     !isAdminDashboardPage &&
-    !studentPages.includes(currentPage)
+    !isStudentPage
   ) {
     return;
   }
@@ -39,13 +51,13 @@
 
     if (
       !services ||
-      !services.ready ||
+      services.ready !== true ||
       !services.auth ||
       !services.db ||
       services.projectId !== "mneet-spark"
     ) {
       throw new Error(
-        "Firebase is not ready or the project ID is incorrect."
+        "Firebase initialization failed. Check firebase.js."
       );
     }
 
@@ -58,22 +70,18 @@
     }
   }
 
-  function showAdminLoginError(message) {
-    const possibleElements = [
-      document.getElementById("adminLoginMessage"),
-      document.getElementById("loginMessage"),
-      document.getElementById("authMessage"),
-      document.getElementById("errorMessage")
-    ];
+  function showMessage(elementIds, message) {
+    for (const id of elementIds) {
+      const element = document.getElementById(id);
 
-    const target = possibleElements.find(Boolean);
-
-    if (target) {
-      target.textContent = message;
-      target.hidden = false;
-    } else {
-      console.error("Admin login verification:", message);
+      if (element) {
+        element.textContent = message;
+        element.hidden = false;
+        return;
+      }
     }
+
+    console.error("[mNEET Auth Guard]", message);
   }
 
   async function isAuthorizedAdmin(user) {
@@ -83,31 +91,23 @@
 
     const services = getFirebase();
 
-    console.log("[mNEET Admin] Project:", services.projectId);
-    console.log("[mNEET Admin] Signed-in UID:", user.uid);
-
     const snapshot = await services.db
       .collection("admins")
       .doc(user.uid)
       .get();
 
-    console.log("[mNEET Admin] Document exists:", snapshot.exists);
-
     if (!snapshot.exists) {
       return false;
     }
 
-    const data = snapshot.data();
+    const adminData = snapshot.data() || {};
 
-    console.log("[mNEET Admin] active value:", data.active);
-    console.log("[mNEET Admin] active type:", typeof data.active);
-
-    return data.active === true;
+    return adminData.active === true;
   }
 
-  async function hasActiveStudentProfile(user) {
+  async function getStudentProfile(user) {
     if (!user || !user.uid) {
-      return false;
+      return null;
     }
 
     const services = getFirebase();
@@ -118,10 +118,24 @@
       .get();
 
     if (!snapshot.exists) {
-      return false;
+      return null;
     }
 
-    return snapshot.data().accountStatus !== "disabled";
+    const profile = snapshot.data() || {};
+
+    if (profile.accountStatus === "disabled") {
+      return null;
+    }
+
+    /*
+     * An Admin account must not be treated as a Student
+     * merely because a users/{uid} document exists.
+     */
+    if (await isAuthorizedAdmin(user)) {
+      return null;
+    }
+
+    return profile;
   }
 
   async function handleAuthState(user) {
@@ -134,6 +148,7 @@
     try {
       const services = getFirebase();
 
+      // Not signed in.
       if (!user) {
         if (isAdminDashboardPage) {
           redirect(ADMIN_LOGIN_PAGE);
@@ -144,72 +159,71 @@
         return;
       }
 
-      // ADMIN LOGIN
+      // Admin login page.
       if (isAdminLoginPage) {
-        let admin = false;
+        let authorized = false;
 
         try {
-          admin = await isAuthorizedAdmin(user);
+          authorized = await isAuthorizedAdmin(user);
         } catch (error) {
-          console.error("[mNEET Admin] Firestore verification error:", error);
+          console.error(
+            "[mNEET] Admin verification failed:",
+            error
+          );
 
-          showAdminLoginError(
-            "Admin verification failed: " +
-            (error.code || error.message || "Unknown Firebase error")
+          showMessage(
+            [
+              "adminLoginMessage",
+              "loginMessage",
+              "authMessage",
+              "errorMessage"
+            ],
+            "Admin যাচাই করা যায়নি। Firebase Rules পরীক্ষা করো।"
           );
 
           return;
         }
 
-        if (admin) {
+        if (authorized) {
           redirect(ADMIN_DASHBOARD_PAGE);
           return;
         }
 
-        showAdminLoginError(
-          "Login succeeded, but this account is not an active administrator. " +
-          "Check the admins document and its active field."
+        showMessage(
+          [
+            "adminLoginMessage",
+            "loginMessage",
+            "authMessage",
+            "errorMessage"
+          ],
+          "এই অ্যাকাউন্টে সক্রিয় Admin অনুমতি নেই।"
         );
 
         return;
       }
 
-      // ADMIN DASHBOARD
+      // Admin dashboard.
       if (isAdminDashboardPage) {
-        let admin = false;
+        let authorized = false;
 
         try {
-          admin = await isAuthorizedAdmin(user);
+          authorized = await isAuthorizedAdmin(user);
         } catch (error) {
-          console.error("[mNEET Admin] Dashboard verification error:", error);
+          console.error(
+            "[mNEET] Admin dashboard verification failed:",
+            error
+          );
 
-          const message = document.getElementById("verificationMessage");
-
-          if (message) {
-            message.textContent =
-              "Admin verification failed: " +
-              (error.code || error.message || "Unknown Firebase error");
-          }
+          showMessage(
+            ["verificationMessage"],
+            "Admin যাচাই ব্যর্থ হয়েছে। পরে আবার চেষ্টা করো।"
+          );
 
           return;
         }
 
-        if (!admin) {
-          let student = false;
-
-          try {
-            student = await hasActiveStudentProfile(user);
-          } catch (error) {
-            console.error("[mNEET Student] Profile check failed:", error);
-          }
-
-          if (student) {
-            redirect(STUDENT_DASHBOARD_PAGE);
-          } else {
-            await services.auth.signOut();
-            redirect(ADMIN_LOGIN_PAGE);
-          }
-
+        if (!authorized) {
+          redirect(STUDENT_LOGIN_PAGE);
           return;
         }
 
@@ -220,49 +234,68 @@
 
         window.dispatchEvent(
           new CustomEvent("mneet:admin-authorized", {
-            detail: { uid: user.uid }
+            detail: {
+              uid: user.uid
+            }
           })
         );
 
         return;
       }
 
-      // STUDENT DASHBOARD AND PAGES
+      // Student pages.
       if (isStudentPage) {
-        let admin = false;
+        let profile = null;
 
         try {
-          admin = await isAuthorizedAdmin(user);
+          profile = await getStudentProfile(user);
         } catch (error) {
-          console.error("[mNEET] Admin role check failed:", error);
-        }
+          console.error(
+            "[mNEET] Student verification failed:",
+            error
+          );
 
-        if (admin) {
-          redirect(ADMIN_DASHBOARD_PAGE);
+          showMessage(
+            ["authMessage", "verificationMessage"],
+            "Student account যাচাই করা যায়নি। পেজ Refresh করো।"
+          );
+
           return;
         }
 
-        let student = false;
-
-        try {
-          student = await hasActiveStudentProfile(user);
-        } catch (error) {
-          console.error("[mNEET] Student profile verification failed:", error);
-          return;
-        }
-
-        if (!student) {
+        if (!profile) {
           await services.auth.signOut();
           redirect(STUDENT_LOGIN_PAGE);
+          return;
         }
+
+        document.documentElement.setAttribute(
+          "data-student-authorized",
+          "true"
+        );
+
+        window.dispatchEvent(
+          new CustomEvent("mneet:student-authorized", {
+            detail: {
+              uid: user.uid
+            }
+          })
+        );
       }
     } catch (error) {
-      console.error("[mNEET] Authentication guard error:", error);
+      console.error(
+        "[mNEET] Authentication guard error:",
+        error
+      );
 
       if (isAdminLoginPage) {
-        showAdminLoginError(
-          "Firebase error: " +
-          (error.code || error.message || "Unknown error")
+        showMessage(
+          [
+            "adminLoginMessage",
+            "loginMessage",
+            "authMessage"
+          ],
+          "Firebase চালু হয়নি। পেজ Refresh করো।"
         );
       }
     } finally {
@@ -271,17 +304,26 @@
   }
 
   try {
-    getFirebase().auth.onAuthStateChanged(function (user) {
+    const services = getFirebase();
+
+    services.auth.onAuthStateChanged(function (user) {
       handleAuthState(user);
     });
   } catch (error) {
-    console.error("[mNEET] Unable to initialize auth guard:", error);
+    console.error(
+      "[mNEET] Auth Guard initialization error:",
+      error
+    );
 
     if (isAdminLoginPage) {
-      showAdminLoginError(
-        "Firebase initialization failed: " +
-        (error.message || "Unknown error")
+      showMessage(
+        [
+          "adminLoginMessage",
+          "loginMessage",
+          "authMessage"
+        ],
+        "Firebase initialization failed. পেজ Refresh করো।"
       );
     }
   }
-})();
+})(window, document);
