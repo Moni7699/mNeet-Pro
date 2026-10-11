@@ -29,24 +29,28 @@
       background: #0D2419;
       border: 1px solid #28513A;
       border-radius: 18px;
+      box-shadow: 0 15px 45px #0005;
     }
 
-    h1 {
+    .logo {
       margin: 0;
       text-align: center;
-      font-size: 36px;
+      font-size: 38px;
+      font-weight: 800;
+      color: #fff;
     }
 
-    h1 span {
-      color: #22C55E;
+    .logo span {
+      color: #FFC107;
     }
 
     h2 {
+      margin: 12px 0 8px;
       text-align: center;
-      margin-bottom: 8px;
     }
 
     .subtitle {
+      margin-bottom: 24px;
       text-align: center;
       color: #D1D5DB;
       font-size: 14px;
@@ -63,11 +67,16 @@
       width: 100%;
       min-height: 48px;
       padding: 12px;
-      border-radius: 9px;
       border: 1px solid #28513A;
+      border-radius: 9px;
       background: #10291D;
       color: white;
       font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #FFC107;
     }
 
     button {
@@ -76,21 +85,23 @@
       margin-top: 22px;
       border: 0;
       border-radius: 9px;
-      background: #16A34A;
-      color: white;
+      background: #FFC107;
+      color: #071A12;
       font-weight: bold;
       font-size: 16px;
+      cursor: pointer;
     }
 
     button:disabled {
       opacity: .6;
+      cursor: wait;
     }
 
     a {
       display: block;
       margin-top: 18px;
       text-align: center;
-      color: #22C55E;
+      color: #FFC107;
       text-decoration: none;
       font-size: 14px;
     }
@@ -117,75 +128,121 @@
     #message.success {
       color: #86EFAC;
     }
+
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      color: #9CA3AF;
+      font-size: 12px;
+    }
   </style>
 </head>
 
 <body>
+
   <main class="card">
-    <h1>m<span>NEET</span></h1>
+
+    <h1 class="logo">m<span>NEET</span></h1>
+
     <h2>Admin Login</h2>
 
     <p class="subtitle">
-      Sign in to the mNEET administration panel.
+      Secure access to the mNEET Administration Panel
     </p>
 
     <form id="adminLoginForm">
+
       <label for="adminEmail">Admin Email</label>
+
       <input
         id="adminEmail"
         type="email"
-        value="moni7640t@gmail.com"
+        value="mi4286803@gmail.com"
         autocomplete="username"
         required
       >
 
       <label for="adminPassword">Password</label>
+
       <input
         id="adminPassword"
         type="password"
         autocomplete="current-password"
-        placeholder="Enter your Firebase password"
+        placeholder="Enter your password"
         required
       >
 
       <button id="loginButton" type="submit">
         Sign In to Admin
       </button>
+
     </form>
 
-    <a href="#" id="forgotPassword">Forgot Password?</a>
+    <a href="#" id="forgotPassword">
+      Forgot Password?
+    </a>
 
-    <div id="message" role="status" aria-live="polite"></div>
+    <div
+      id="message"
+      role="status"
+      aria-live="polite"
+    ></div>
 
-    <a href="index.html">Back to Student Login</a>
+    <a href="index.html">
+      Back to Student Login
+    </a>
+
+    <div class="footer">
+      mNEET Admin Portal
+    </div>
+
   </main>
 
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
+  <!-- Existing Firebase configuration -->
   <script src="firebase.js"></script>
 
   <script>
     (function () {
       "use strict";
 
-      const ADMIN_UID = "4Erqg1MOhnf6XznVTIdGX4vL23C2";
+      const ADMIN_EMAIL = "mi4286803@gmail.com";
 
-      const form = document.getElementById("adminLoginForm");
-      const emailInput = document.getElementById("adminEmail");
-      const passwordInput = document.getElementById("adminPassword");
-      const button = document.getElementById("loginButton");
-      const message = document.getElementById("message");
+      const ADMIN_UID =
+        "vMMaKyl7NoRv2BcthmDobbBXfZE3";
+
+      const PROJECT_ID = "mneet-spark";
+
+      const form =
+        document.getElementById("adminLoginForm");
+
+      const emailInput =
+        document.getElementById("adminEmail");
+
+      const passwordInput =
+        document.getElementById("adminPassword");
+
+      const button =
+        document.getElementById("loginButton");
+
+      const message =
+        document.getElementById("message");
+
+      const forgotPassword =
+        document.getElementById("forgotPassword");
 
       let busy = false;
 
-      function showMessage(text, type) {
+      function showMessage(text, type = "error") {
         message.textContent = text;
-        message.className = "show " + (type || "error");
+        message.className = "show " + type;
       }
 
-      function getServices() {
+      function getFirebase() {
         const services = window.MNEETFirebase;
 
         if (
@@ -193,7 +250,7 @@
           services.ready !== true ||
           !services.auth ||
           !services.db ||
-          services.projectId !== "mneet-spark"
+          services.projectId !== PROJECT_ID
         ) {
           throw new Error(
             "Firebase চালু হয়নি। firebase.js এবং Firebase SDK পরীক্ষা করো।"
@@ -203,84 +260,91 @@
         return services;
       }
 
-      function describeError(error) {
+      function readableError(error) {
         const code = error && error.code;
 
-        const known = {
+        const errors = {
           "auth/invalid-credential":
-            "Email অথবা Password ভুল। Firebase Authentication পরীক্ষা করো.",
+            "Email অথবা Password ভুল।",
 
           "auth/wrong-password":
-            "Password ভুল। Firebase-এ সঠিক Password ব্যবহার করো.",
+            "Password ভুল।",
 
           "auth/user-not-found":
-            "এই Email-এর Firebase Authentication account পাওয়া যায়নি.",
+            "এই Email দিয়ে Firebase Authentication account পাওয়া যায়নি।",
 
           "auth/invalid-email":
-            "Email address সঠিক নয়.",
+            "Email address সঠিক নয়।",
 
           "auth/too-many-requests":
-            "অনেকবার চেষ্টা করা হয়েছে। পরে আবার চেষ্টা করো.",
+            "অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পরে চেষ্টা করো।",
 
           "auth/network-request-failed":
-            "Internet connection পরীক্ষা করো.",
+            "Internet connection পরীক্ষা করো।",
+
+          "auth/user-disabled":
+            "এই Firebase account বন্ধ করা আছে।",
 
           "permission-denied":
-            "Firestore Security Rules Admin document পড়তে দিচ্ছে না.",
+            "Firestore Security Rules Admin document পড়তে দিচ্ছে না।",
 
           "unavailable":
-            "Firebase সাময়িকভাবে পাওয়া যাচ্ছে না। Internet পরীক্ষা করো.",
-
-          "failed-precondition":
-            "Firestore configuration বা database setup পরীক্ষা করতে হবে."
+            "Firebase সাময়িকভাবে পাওয়া যাচ্ছে না।"
         };
 
-        if (code && known[code]) {
-          return known[code] + " ( " + code + " )";
+        if (code && errors[code]) {
+          return errors[code] + " (" + code + ")";
         }
 
-        if (error && error.message) {
-          return error.message;
-        }
-
-        return "অজানা Error হয়েছে। আবার চেষ্টা করো.";
+        return error && error.message
+          ? error.message
+          : "অজানা সমস্যা হয়েছে।";
       }
 
-      async function checkAdmin(user, db) {
+      async function verifyAdmin(user, db) {
+        if (user.email !== ADMIN_EMAIL) {
+          throw new Error(
+            "এই Email Admin Email-এর সঙ্গে মিলছে না।"
+          );
+        }
+
         if (user.uid !== ADMIN_UID) {
           throw new Error(
-            "Login সফল, কিন্তু এই Email-এর UID নির্ধারিত Admin UID-এর সঙ্গে মিলছে না."
+            "Firebase Authentication UID নির্ধারিত Admin UID-এর সঙ্গে মিলছে না।"
           );
         }
 
-        let snapshot;
+        const doc = await db
+          .collection("admins")
+          .doc(ADMIN_UID)
+          .get();
 
-        try {
-          snapshot = await db
-            .collection("admins")
-            .doc(ADMIN_UID)
-            .get();
-        } catch (error) {
-          console.error("Firestore admin check failed:", error);
+        if (!doc.exists) {
           throw new Error(
-            "Admin document পড়া যাচ্ছে না: " + describeError(error)
+            "Firestore-এ admins/" +
+            ADMIN_UID +
+            " document পাওয়া যায়নি।"
           );
         }
 
-        if (!snapshot.exists) {
-          throw new Error(
-            "Firestore-এ admins/" + ADMIN_UID +
-            " document পাওয়া যায়নি। Firebase Console-এ সঠিক document তৈরি করো."
-          );
-        }
-
-        const data = snapshot.data() || {};
+        const data = doc.data() || {};
 
         if (data.active !== true) {
           throw new Error(
-            "Admin document পাওয়া গেছে, কিন্তু active field Boolean true নয়."
+            "Admin document-এর active field Boolean true হতে হবে।"
           );
         }
+
+        if (
+          data.email &&
+          data.email.toLowerCase() !== ADMIN_EMAIL
+        ) {
+          throw new Error(
+            "Firestore Admin Email মিলছে না।"
+          );
+        }
+
+        return true;
       }
 
       form.addEventListener("submit", async function (event) {
@@ -292,16 +356,24 @@
         button.disabled = true;
         button.textContent = "Checking...";
         message.className = "";
-        message.textContent = "";
 
         let user = null;
 
         try {
-          const services = getServices();
+          const services = getFirebase();
+
+          const enteredEmail =
+            emailInput.value.trim().toLowerCase();
+
+          if (enteredEmail !== ADMIN_EMAIL) {
+            throw new Error(
+              "সঠিক Admin Email ব্যবহার করো।"
+            );
+          }
 
           const result = await services.auth
             .signInWithEmailAndPassword(
-              emailInput.value.trim().toLowerCase(),
+              enteredEmail,
               passwordInput.value
             );
 
@@ -312,27 +384,33 @@
             "success"
           );
 
-          await checkAdmin(user, services.db);
+          await verifyAdmin(user, services.db);
 
           showMessage(
-            "Admin যাচাই সফল। Dashboard খোলা হচ্ছে...",
+            "Admin verification সফল! Dashboard খুলছে...",
             "success"
           );
 
           window.location.replace("admin.html");
 
         } catch (error) {
-          console.error("[mNEET Admin Login]", error);
+          console.error(
+            "mNEET Admin Login Error:",
+            error
+          );
 
           if (user) {
             try {
-              await getServices().auth.signOut();
+              await getFirebase().auth.signOut();
             } catch (signOutError) {
-              console.error("Sign-out error:", signOutError);
+              console.error(signOutError);
             }
           }
 
-          showMessage(describeError(error), "error");
+          showMessage(
+            readableError(error),
+            "error"
+          );
 
           busy = false;
           button.disabled = false;
@@ -340,26 +418,34 @@
         }
       });
 
-      document.getElementById("forgotPassword")
-        .addEventListener("click", async function (event) {
+      forgotPassword.addEventListener(
+        "click",
+        async function (event) {
           event.preventDefault();
 
           try {
-            const services = getServices();
+            const services = getFirebase();
 
             await services.auth.sendPasswordResetEmail(
-              emailInput.value.trim().toLowerCase()
+              ADMIN_EMAIL
             );
 
             showMessage(
-              "Password reset নির্দেশনা পাঠানো হলে Email inbox পরীক্ষা করো.",
+              "Password reset email পাঠানোর অনুরোধ করা হয়েছে। Inbox ও Spam folder পরীক্ষা করো।",
               "success"
             );
+
           } catch (error) {
-            showMessage(describeError(error), "error");
+            showMessage(
+              readableError(error),
+              "error"
+            );
           }
-        });
+        }
+      );
+
     })();
   </script>
+
 </body>
 </html>
