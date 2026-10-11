@@ -4,13 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#F5FAF6">
-
   <title>mNEET | Learning Platform</title>
 
   <style>
     :root {
       color-scheme: light;
-
       --bg: #F5FAF6;
       --card: #FFFFFF;
       --green: #1B5E20;
@@ -20,12 +18,11 @@
       --input: #F4FBF6;
       --border: #D5E7D9;
       --soft: #E8F5EB;
-      --shadow: 0 12px 36px rgba(16, 41, 29, 0.08);
+      --shadow: 0 12px 36px rgba(16, 41, 29, .08);
     }
 
     html[data-theme="dark"] {
       color-scheme: dark;
-
       --bg: #071A12;
       --card: #0D2419;
       --green: #22C55E;
@@ -35,7 +32,7 @@
       --input: #10291D;
       --border: #28513A;
       --soft: #10291D;
-      --shadow: 0 12px 36px rgba(0, 0, 0, 0.20);
+      --shadow: 0 12px 36px rgba(0, 0, 0, .2);
     }
 
     * {
@@ -52,11 +49,10 @@
       background: var(--bg);
       color: var(--text);
       font-family: Arial, Helvetica, sans-serif;
-      transition: background 0.2s, color 0.2s;
+      transition: background .2s, color .2s;
     }
 
-    button,
-    input {
+    button, input {
       font: inherit;
     }
 
@@ -204,7 +200,7 @@
 
     .field input::placeholder {
       color: var(--muted);
-      opacity: 0.8;
+      opacity: .8;
     }
 
     .forgot-row {
@@ -237,21 +233,12 @@
       font-weight: 800;
     }
 
-    html[data-theme="dark"] .submit-button {
-      color: #071A12;
-    }
-
     .submit-button:hover {
       background: var(--green-hover);
-      color: #FFFFFF;
-    }
-
-    html[data-theme="dark"] .submit-button:hover {
-      color: #FFFFFF;
     }
 
     .submit-button:disabled {
-      opacity: 0.65;
+      opacity: .65;
       cursor: wait;
     }
 
@@ -308,12 +295,7 @@
   <main class="page">
 
     <div class="top-actions">
-      <button
-        type="button"
-        class="theme-toggle"
-        id="themeToggle"
-        aria-label="Change colour theme"
-      >
+      <button type="button" class="theme-toggle" id="themeToggle">
         ☀️ Light Mode
       </button>
     </div>
@@ -324,46 +306,31 @@
       </div>
 
       <h1>Welcome to mNEET</h1>
-
-      <p>
-        Your Biology learning journey starts here.
-      </p>
+      <p>Your Biology learning journey starts here.</p>
     </header>
 
     <section class="card">
 
       <div class="tabs" id="authTabs">
-        <button
-          type="button"
-          class="tab active"
-          id="loginTab"
-        >
+        <button type="button" class="tab active" id="loginTab">
           Sign In
         </button>
 
-        <button
-          type="button"
-          class="tab"
-          id="signupTab"
-        >
+        <button type="button" class="tab" id="signupTab">
           Sign Up
         </button>
       </div>
 
-      <!-- SIGN IN -->
-
+      <!-- LOGIN -->
       <section id="loginSection">
         <h2 class="section-title">Welcome Back</h2>
-
         <p class="section-subtitle">
           Sign in to continue to your dashboard.
         </p>
 
         <form id="loginForm">
-
           <div class="field">
             <label for="loginEmail">Email Address</label>
-
             <input
               id="loginEmail"
               name="email"
@@ -376,7 +343,6 @@
 
           <div class="field">
             <label for="loginPassword">Password</label>
-
             <input
               id="loginPassword"
               name="password"
@@ -388,50 +354,34 @@
           </div>
 
           <div class="forgot-row">
-            <button
-              type="button"
-              class="link-button"
-              id="forgotButton"
-            >
+            <button type="button" class="link-button" id="forgotButton">
               Forgot Password?
             </button>
           </div>
 
-          <button
-            type="submit"
-            class="submit-button"
-            id="loginButton"
-          >
+          <button type="submit" class="submit-button" id="loginButton">
             Sign In
           </button>
         </form>
 
         <div class="form-footer">
           Don't have an account?
-          <button
-            type="button"
-            class="link-button"
-            id="createAccountButton"
-          >
+          <button type="button" class="link-button" id="createAccountButton">
             Create Account
           </button>
         </div>
       </section>
 
-      <!-- SIGN UP -->
-
+      <!-- REGISTRATION -->
       <section id="signupSection" class="hidden">
         <h2 class="section-title">Create Account</h2>
-
         <p class="section-subtitle">
           Create your mNEET student account.
         </p>
 
         <form id="signupForm">
-
           <div class="field">
             <label for="signupName">Full Name</label>
-
             <input
               id="signupName"
               name="fullName"
@@ -445,7 +395,6 @@
 
           <div class="field">
             <label for="signupPhone">Phone Number</label>
-
             <input
               id="signupPhone"
               name="phone"
@@ -457,8 +406,19 @@
           </div>
 
           <div class="field">
-            <label for="signupEmail">Email Address</label>
+            <label for="signupCity">City</label>
+            <input
+              id="signupCity"
+              name="city"
+              type="text"
+              autocomplete="address-level2"
+              placeholder="Enter your city"
+              required
+            >
+          </div>
 
+          <div class="field">
+            <label for="signupEmail">Email Address</label>
             <input
               id="signupEmail"
               name="email"
@@ -471,7 +431,6 @@
 
           <div class="field">
             <label for="signupPassword">Password</label>
-
             <input
               id="signupPassword"
               name="password"
@@ -485,7 +444,6 @@
 
           <div class="field">
             <label for="confirmPassword">Confirm Password</label>
-
             <input
               id="confirmPassword"
               name="confirmPassword"
@@ -497,32 +455,22 @@
             >
           </div>
 
-          <button
-            type="submit"
-            class="submit-button"
-            id="signupButton"
-          >
+          <button type="submit" class="submit-button" id="signupButton">
             Create Account
           </button>
         </form>
 
         <div class="form-footer">
           Already have an account?
-          <button
-            type="button"
-            class="link-button"
-            id="existingAccountButton"
-          >
+          <button type="button" class="link-button" id="existingAccountButton">
             Sign In
           </button>
         </div>
       </section>
 
       <!-- FORGOT PASSWORD -->
-
       <section id="forgotSection" class="hidden">
         <h2 class="section-title">Reset Password</h2>
-
         <p class="section-subtitle">
           Enter your registered email to receive a password reset link.
         </p>
@@ -530,7 +478,6 @@
         <form id="forgotForm">
           <div class="field">
             <label for="forgotEmail">Email Address</label>
-
             <input
               id="forgotEmail"
               name="email"
@@ -541,21 +488,13 @@
             >
           </div>
 
-          <button
-            type="submit"
-            class="submit-button"
-            id="resetButton"
-          >
+          <button type="submit" class="submit-button" id="resetButton">
             Send Reset Link
           </button>
         </form>
 
         <div class="form-footer">
-          <button
-            type="button"
-            class="link-button"
-            id="backToLoginButton"
-          >
+          <button type="button" class="link-button" id="backToLoginButton">
             Back to Sign In
           </button>
         </div>
@@ -574,17 +513,14 @@
       mNEET Learning Platform<br>
       Learn. Practice. Improve.
     </footer>
-
   </main>
 
-  <!-- Firebase SDKs -->
-
+  <!-- FIREBASE SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
-  <!-- App scripts -->
-
+  <!-- APP FILES -->
   <script src="firebase.js"></script>
   <script src="firebase-helpers.js"></script>
   <script src="auth-guard.js"></script>
@@ -602,14 +538,11 @@
 
         root.setAttribute("data-theme", selected);
 
-        const metaTheme = document.querySelector(
-          'meta[name="theme-color"]'
-        );
-
-        metaTheme.setAttribute(
-          "content",
-          selected === "dark" ? "#071A12" : "#F5FAF6"
-        );
+        document.querySelector('meta[name="theme-color"]')
+          .setAttribute(
+            "content",
+            selected === "dark" ? "#071A12" : "#F5FAF6"
+          );
 
         themeButton.textContent =
           selected === "dark" ? "🌙 Dark Mode" : "☀️ Light Mode";
@@ -644,32 +577,26 @@
       const loginTab = document.getElementById("loginTab");
       const signupTab = document.getElementById("signupTab");
       const authTabs = document.getElementById("authTabs");
-
       const message = document.getElementById("authMessage");
 
       function clearMessage() {
         message.textContent = "";
         message.className = "message";
+        message.style.borderColor = "";
       }
 
       function showSection(section) {
-        loginSection.classList.add("hidden");
-        signupSection.classList.add("hidden");
-        forgotSection.classList.add("hidden");
+        [loginSection, signupSection, forgotSection].forEach(function (item) {
+          item.classList.add("hidden");
+        });
 
         section.classList.remove("hidden");
         clearMessage();
 
-        const signupVisible = section === signupSection;
-        const loginVisible = section === loginSection;
+        authTabs.classList.toggle("hidden", section === forgotSection);
 
-        authTabs.classList.toggle(
-          "hidden",
-          section === forgotSection
-        );
-
-        loginTab.classList.toggle("active", loginVisible);
-        signupTab.classList.toggle("active", signupVisible);
+        loginTab.classList.toggle("active", section === loginSection);
+        signupTab.classList.toggle("active", section === signupSection);
       }
 
       loginTab.addEventListener("click", function () {
@@ -692,10 +619,8 @@
 
       document.getElementById("forgotButton")
         .addEventListener("click", function () {
-          const loginEmail =
+          document.getElementById("forgotEmail").value =
             document.getElementById("loginEmail").value.trim();
-
-          document.getElementById("forgotEmail").value = loginEmail;
 
           showSection(forgotSection);
         });
@@ -710,11 +635,8 @@
           message.textContent = text;
           message.className = "message show";
 
-          if (type === "success") {
-            message.style.borderColor = "var(--green)";
-          } else {
-            message.style.borderColor = "var(--border)";
-          }
+          message.style.borderColor =
+            type === "success" ? "var(--green)" : "var(--border)";
         },
 
         clearMessage: clearMessage,
