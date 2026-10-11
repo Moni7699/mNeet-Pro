@@ -2,46 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#071A12">
-  <meta
-    name="description"
-    content="mNEET Admin Panel — Manage courses, subjects, chapters, topics, quizzes, questions, learning materials, students and payments."
-  >
 
-  <title>mNEET | Admin Panel</title>
-
-  <link rel="stylesheet" href="admin.css">
+  <title>Admin Dashboard | mNEET</title>
 
   <style>
     :root {
       color-scheme: dark;
-
       --bg: #071A12;
       --card: #0D2419;
-      --primary: #16A34A;
-      --green: #22C55E;
+      --input: #10291D;
+      --green: #16A34A;
+      --light-green: #22C55E;
       --white: #FFFFFF;
       --muted: #D1D5DB;
-      --input: #10291D;
       --border: #28513A;
+      --soft: #153A26;
+      --sidebar-width: 260px;
     }
 
     * {
       box-sizing: border-box;
     }
 
-    html {
-      scroll-behavior: smooth;
+    [hidden] {
+      display: none !important;
     }
 
     body {
       margin: 0;
-      min-height: 100vh;
       background: var(--bg);
       color: var(--white);
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: Arial, sans-serif;
     }
 
     button,
@@ -55,418 +48,244 @@
       cursor: pointer;
     }
 
-    button:focus-visible,
-    a:focus-visible,
-    input:focus-visible,
-    select:focus-visible,
-    textarea:focus-visible {
-      outline: 2px solid var(--green);
-      outline-offset: 3px;
-    }
-
-    button:disabled {
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-
     a {
-      color: var(--green);
+      color: var(--light-green);
+      text-decoration: none;
     }
 
-    [hidden] {
-      display: none !important;
-    }
-
-    /* AUTHORIZATION STATUS */
-
-    .admin-verification {
-      position: fixed;
-      inset: 0;
-      z-index: 5000;
+    .verification-screen {
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 24px;
-      background: var(--bg);
+      text-align: center;
     }
 
     .verification-card {
       width: 100%;
-      max-width: 420px;
-      padding: 28px;
-      text-align: center;
-      background: var(--card);
+      max-width: 400px;
+      padding: 30px 24px;
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 18px;
+      background: var(--card);
     }
 
-    .verification-logo {
-      margin: 0 0 20px;
-      font-size: 36px;
-      font-weight: 800;
+    .verification-card h1 {
+      color: var(--light-green);
+      margin-top: 0;
     }
 
-    .verification-logo span:first-child {
-      color: var(--white);
-    }
-
-    .verification-logo span:last-child {
-      color: var(--green);
-    }
-
-    .verification-title {
-      margin: 0 0 10px;
-      font-size: 20px;
-    }
-
-    .verification-text {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.7;
-      overflow-wrap: anywhere;
-    }
-
-    .verification-spinner {
-      width: 34px;
-      height: 34px;
-      margin: 22px auto 0;
-      border: 3px solid var(--border);
-      border-top-color: var(--green);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    /* ADMIN APPLICATION */
-
-    .admin-layout {
+    .app {
       min-height: 100vh;
     }
 
-    .admin-sidebar {
-      position: fixed;
-      inset: 0 auto 0 0;
-      z-index: 1200;
-      display: flex;
-      flex-direction: column;
-      width: 270px;
-      overflow-y: auto;
-      background: var(--card);
-      border-right: 1px solid var(--border);
-      transform: translateX(-100%);
-      transition: transform 0.25s ease;
-    }
-
-    .admin-sidebar.open {
-      transform: translateX(0);
-    }
-
-    .sidebar-brand {
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      height: 64px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 20px;
+      padding: 0 18px;
+      background: var(--card);
       border-bottom: 1px solid var(--border);
     }
 
-    .brand-name {
-      margin: 0;
-      font-size: 27px;
-      font-weight: 800;
-      letter-spacing: -1px;
-    }
-
-    .brand-m {
-      color: var(--white);
-    }
-
-    .brand-neet {
-      color: var(--green);
-    }
-
-    .icon-button,
-    .sidebar-close {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 42px;
-      min-height: 42px;
-      padding: 8px;
-      color: var(--white);
-      background: var(--input);
+    .icon-button {
+      width: 42px;
+      height: 42px;
       border: 1px solid var(--border);
       border-radius: 10px;
+      background: var(--input);
+      color: var(--white);
+      font-size: 20px;
     }
 
-    .sidebar-admin-profile {
-      padding: 22px 16px;
+    .brand {
+      font-size: 23px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .brand span {
+      color: var(--light-green);
+    }
+
+    .topbar-title {
+      flex: 1;
       text-align: center;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .sidebar-avatar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 70px;
-      height: 70px;
-      margin: 0 auto 12px;
-      overflow: hidden;
-      background: var(--primary);
-      border: 2px solid var(--green);
-      border-radius: 50%;
-      font-size: 27px;
       font-weight: 700;
     }
 
-    .sidebar-avatar img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .sidebar-admin-name {
-      margin: 0 0 8px;
+    .logout-button {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--green);
+      color: var(--white);
+      font-weight: 700;
+    }
+
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 64px);
+    }
+
+    .sidebar {
+      flex: 0 0 var(--sidebar-width);
+      width: var(--sidebar-width);
+      padding: 18px 12px;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+    }
+
+    .admin-profile {
+      margin-bottom: 18px;
+      padding: 18px 12px;
+      text-align: center;
+      background: var(--input);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .admin-avatar {
+      width: 68px;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      background: var(--green);
+      color: var(--white);
+      font-size: 26px;
+      font-weight: 800;
+    }
+
+    .admin-profile h3 {
+      margin: 0 0 7px;
       overflow-wrap: anywhere;
-      font-size: 17px;
     }
 
-    .sidebar-admin-email,
-    .sidebar-admin-phone {
+    .admin-profile p {
       margin: 5px 0;
       color: var(--muted);
       font-size: 12px;
       overflow-wrap: anywhere;
     }
 
-    .sidebar-navigation {
-      padding: 12px;
-    }
-
-    .nav-section-title {
-      margin: 18px 10px 8px;
-      color: var(--green);
+    .menu-label {
+      padding: 12px 10px 8px;
+      color: var(--muted);
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 1px;
-      text-transform: uppercase;
+    }
+
+    .nav-menu {
+      display: grid;
+      gap: 5px;
     }
 
     .nav-item {
+      width: 100%;
+      padding: 12px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      width: 100%;
-      min-height: 44px;
-      margin: 4px 0;
-      padding: 11px 12px;
-      color: var(--muted);
-      text-align: left;
-      background: transparent;
+      gap: 10px;
       border: 1px solid transparent;
       border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
     }
 
     .nav-item:hover,
     .nav-item.active {
+      border-color: var(--border);
+      background: var(--soft);
       color: var(--white);
-      background: var(--primary);
-      border-color: var(--green);
     }
 
-    .nav-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 22px;
-      flex-shrink: 0;
-      font-weight: 700;
+    .nav-item.active {
+      border-left: 3px solid var(--light-green);
     }
 
-    .sidebar-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 1100;
-      background: var(--bg);
-      opacity: 0.85;
-    }
-
-    /* TOP BAR */
-
-    .admin-main {
+    .main-content {
       min-width: 0;
-      min-height: 100vh;
-      margin-left: 0;
-    }
-
-    .admin-topbar {
-      position: sticky;
-      top: 0;
-      z-index: 800;
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 10px;
-      min-height: 72px;
-      padding: 12px 16px;
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .topbar-left,
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .topbar-center {
-      min-width: 0;
-      text-align: center;
-    }
-
-    .topbar-admin-name {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 700;
-      overflow-wrap: anywhere;
-    }
-
-    .topbar-subtitle {
-      margin: 5px 0 0;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .logout-button {
-      min-height: 40px;
-      padding: 8px 12px;
-      color: var(--white);
-      background: var(--primary);
-      border: 1px solid var(--green);
-      border-radius: 9px;
-    }
-
-    /* CONTENT */
-
-    .admin-content {
-      width: 100%;
-      max-width: 1600px;
-      min-width: 0;
-      margin: 0 auto;
-      padding: 24px 18px;
-    }
-
-    .admin-message {
-      margin-bottom: 18px;
-      padding: 13px 15px;
-      color: var(--white);
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow-wrap: anywhere;
+      flex: 1;
+      padding: 24px;
     }
 
     .page-heading {
-      margin-bottom: 22px;
-    }
-
-    .page-heading h1 {
       margin: 0 0 8px;
-      font-size: clamp(24px, 4vw, 31px);
+      font-size: 27px;
     }
 
-    .page-heading p {
-      margin: 0;
+    .page-description {
+      margin: 0 0 24px;
       color: var(--muted);
-      line-height: 1.7;
+      line-height: 1.6;
     }
 
-    .dashboard-intro,
-    .dashboard-filters,
-    .stat-card,
-    .module-card {
-      min-width: 0;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 13px;
-    }
-
-    .dashboard-intro {
-      margin-bottom: 20px;
-      padding: 22px;
-    }
-
-    .dashboard-intro h2 {
-      margin: 0 0 10px;
-      font-size: 21px;
-    }
-
-    .dashboard-intro p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .dashboard-filters {
-      margin-bottom: 20px;
-      padding: 16px;
-    }
-
-    .dashboard-filter-group {
-      display: grid;
-      gap: 9px;
-      max-width: 420px;
-    }
-
-    label {
-      color: var(--white);
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-      min-height: 44px;
-      padding: 11px 12px;
-      color: var(--white);
-      background: var(--input);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-    }
-
-    textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
-
-    select option {
-      color: var(--white);
-      background: var(--card);
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .toolbar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
       gap: 12px;
       margin-bottom: 22px;
     }
 
-    .stat-card {
-      padding: 16px;
+    .field,
+    .select-field,
+    .text-field {
+      width: 100%;
+      min-height: 44px;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      outline: none;
+      background: var(--input);
+      color: var(--white);
     }
 
-    .stat-card h3 {
-      margin: 0 0 14px;
+    .toolbar .select-field {
+      width: auto;
+      min-width: 190px;
+    }
+
+    .field:focus,
+    .select-field:focus,
+    .text-field:focus {
+      border-color: var(--light-green);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      padding: 19px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .stat-label {
+      margin: 0 0 12px;
       color: var(--muted);
       font-size: 13px;
       line-height: 1.5;
@@ -474,65 +293,56 @@
 
     .stat-value {
       margin: 0;
-      color: var(--green);
-      font-size: clamp(25px, 4vw, 32px);
+      color: var(--light-green);
+      font-size: 29px;
       font-weight: 800;
       overflow-wrap: anywhere;
     }
 
-    .stat-description {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.5;
+    .panel {
+      margin-bottom: 20px;
+      padding: 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
     }
 
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 18px;
-    }
-
-    .module-card {
-      padding: 18px;
-    }
-
-    .module-card h2 {
-      margin: 0 0 18px;
+    .panel h2 {
+      margin: 0 0 14px;
       font-size: 18px;
-      line-height: 1.5;
     }
 
-    .status-list {
-      display: grid;
-      gap: 0;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .status-item {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 13px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .status-item:last-child {
-      border-bottom: 0;
-    }
-
-    .status-label {
+    .panel p {
       color: var(--muted);
-      line-height: 1.5;
+      line-height: 1.7;
     }
 
-    .status-value {
-      color: var(--green);
-      text-align: right;
-      overflow-wrap: anywhere;
+    .empty-state {
+      padding: 25px 12px;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .primary-button {
+      min-height: 42px;
+      padding: 10px 15px;
+      border: 1px solid var(--green);
+      border-radius: 9px;
+      background: var(--green);
+      color: var(--white);
+      font-weight: 700;
+    }
+
+    .secondary-button {
+      min-height: 42px;
+      padding: 10px 15px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--input);
+      color: var(--white);
     }
 
     .table-wrapper {
@@ -540,144 +350,113 @@
       overflow-x: auto;
     }
 
-    .admin-table {
+    table {
       width: 100%;
       border-collapse: collapse;
-      text-align: left;
     }
 
-    .admin-table th,
-    .admin-table td {
-      padding: 12px 10px;
+    th,
+    td {
+      padding: 12px;
       border-bottom: 1px solid var(--border);
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      color: var(--light-green);
       font-size: 13px;
-      line-height: 1.5;
-      overflow-wrap: anywhere;
     }
 
-    .admin-table th {
-      color: var(--green);
-    }
-
-    .admin-table td {
-      color: var(--white);
-    }
-
-    .empty-table-message {
-      color: var(--muted) !important;
-      text-align: center;
-    }
-
-    /* CONTENT MODULES */
-
-    .admin-page {
-      min-width: 0;
-    }
-
-    .admin-page.active {
-      display: block;
-    }
-
-    .admin-page[hidden] {
-      display: none !important;
-    }
-
-    .module-content {
-      min-width: 0;
-    }
-
-    .admin-footer {
-      margin-top: 32px;
-      padding: 20px 0;
+    td {
       color: var(--muted);
-      border-top: 1px solid var(--border);
-      font-size: 12px;
-      line-height: 1.6;
-      text-align: center;
+      font-size: 14px;
     }
 
-    /* RESPONSIVE */
+    .mobile-overlay {
+      display: none;
+    }
 
-    @media (min-width: 1000px) {
-      .admin-sidebar {
-        transform: translateX(0);
-      }
-
-      .sidebar-close {
-        display: none;
-      }
-
-      .sidebar-overlay {
-        display: none !important;
-      }
-
-      .admin-main {
-        margin-left: 270px;
-      }
-
-      .admin-content {
-        padding: 28px 24px;
-      }
-
+    @media (max-width: 1100px) {
       .stats-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 16px;
-      }
-
-      .dashboard-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
-    @media (max-width: 420px) {
-      .admin-topbar {
-        gap: 6px;
-        padding: 10px 8px;
+    @media (max-width: 760px) {
+      .topbar {
+        padding: 0 10px;
       }
 
-      .topbar-subtitle {
-        display: none;
+      .topbar-title {
+        font-size: 13px;
       }
 
-      .topbar-admin-name {
-        font-size: 12px;
+      .brand {
+        font-size: 20px;
       }
 
       .logout-button {
-        min-height: 38px;
-        padding: 7px 8px;
+        padding: 9px;
         font-size: 12px;
       }
 
-      .icon-button {
-        min-width: 38px;
-        min-height: 38px;
+      .sidebar {
+        position: fixed;
+        z-index: 30;
+        top: 64px;
+        bottom: 0;
+        left: 0;
+        transform: translateX(-105%);
+        transition: transform 0.2s ease;
+        box-shadow: none;
       }
 
-      .admin-content {
-        padding: 18px 10px;
+      body.sidebar-open .sidebar {
+        transform: translateX(0);
+        box-shadow: 10px 0 35px rgba(0, 0, 0, 0.25);
+      }
+
+      body.sidebar-open .mobile-overlay {
+        position: fixed;
+        z-index: 25;
+        inset: 64px 0 0;
+        display: block;
+        background: rgba(0, 0, 0, 0.55);
+      }
+
+      .main-content {
+        padding: 18px 12px;
+      }
+
+      .page-heading {
+        font-size: 23px;
       }
 
       .stats-grid {
-        gap: 9px;
+        gap: 10px;
       }
 
       .stat-card {
-        padding: 12px;
+        padding: 14px;
       }
 
-      .dashboard-intro,
-      .module-card {
+      .stat-value {
+        font-size: 24px;
+      }
+
+      .panel {
         padding: 15px;
       }
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        scroll-behavior: auto !important;
-        transition-duration: 0.01ms !important;
+    @media (max-width: 380px) {
+      .topbar-title {
+        display: none;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -685,503 +464,475 @@
 
 <body>
 
-  <!-- Shown until the existing auth guard completes its check. -->
-
-  <div
-    class="admin-verification"
-    id="adminVerification"
-    role="status"
-    aria-live="polite"
-  >
+  <!-- Dashboard stays hidden until auth-guard.js authorizes the admin. -->
+  <section id="adminVerification" class="verification-screen">
     <div class="verification-card">
-      <p class="verification-logo">
-        <span>m</span><span>NEET</span>
+      <h1>mNEET Admin</h1>
+      <p id="verificationMessage">
+        Verifying administrator access...
       </p>
-
-      <h1 class="verification-title" id="verificationTitle">
-        Verifying Admin Access
-      </h1>
-
-      <p class="verification-text" id="verificationMessage">
-        Please wait while your account is checked.
+      <p>
+        Please wait while your account is verified.
       </p>
-
-      <div class="verification-spinner" aria-hidden="true"></div>
     </div>
-  </div>
+  </section>
 
-  <!-- The application remains hidden until authorized. -->
+  <div id="adminApplication" class="app" hidden>
 
-  <div class="admin-layout" id="adminApplication" hidden>
+    <header class="topbar">
+      <button
+        id="sidebarToggle"
+        class="icon-button"
+        type="button"
+        aria-label="Toggle sidebar"
+        aria-expanded="false"
+      >☰</button>
 
-    <aside
-      class="admin-sidebar"
-      id="adminSidebar"
-      aria-label="Admin navigation"
-    >
-      <div class="sidebar-brand">
-        <h1 class="brand-name">
-          <span class="brand-m">m</span><span class="brand-neet">NEET</span>
-        </h1>
+      <div class="brand">m<span>NEET</span></div>
 
-        <button
-          type="button"
-          class="sidebar-close"
-          id="sidebarCloseButton"
-          aria-label="Close navigation"
-        >✕</button>
+      <div id="topbarAdminName" class="topbar-title">
+        Admin Dashboard
       </div>
 
-      <div class="sidebar-admin-profile">
-        <div class="sidebar-avatar" id="sidebarAvatar">
-          <span id="sidebarAvatarInitial">A</span>
-        </div>
-
-        <h2 class="sidebar-admin-name" id="sidebarAdminName">Admin</h2>
-
-        <p class="sidebar-admin-email" id="sidebarAdminEmail">
-          Loading email...
-        </p>
-
-        <p class="sidebar-admin-phone" id="sidebarAdminPhone">
-          Phone not available
-        </p>
-      </div>
-
-      <nav class="sidebar-navigation" id="adminNavigation">
-
-        <p class="nav-section-title">Overview</p>
-
-        <button type="button" class="nav-item active" data-page="dashboard">
-          <span class="nav-icon" aria-hidden="true">⌂</span>
-          <span>Dashboard</span>
-        </button>
-
-        <p class="nav-section-title">Course Content</p>
-
-        <button type="button" class="nav-item" data-page="courses">
-          <span class="nav-icon" aria-hidden="true">▤</span>
-          <span>Courses</span>
-        </button>
-
-        <button type="button" class="nav-item" data-page="subjects">
-          <span class="nav-icon" aria-hidden="true">▦</span>
-          <span>Subjects</span>
-        </button>
-
-        <button type="button" class="nav-item" data-page="chapters">
-          <span class="nav-icon" aria-hidden="true">☷</span>
-          <span>Chapters</span>
-        </button>
-
-        <button type="button" class="nav-item" data-page="topics">
-          <span class="nav-icon" aria-hidden="true">≡</span>
-          <span>Topics</span>
-        </button>
-
-        <button type="button" class="nav-item" data-page="quizzes">
-          <span class="nav-icon" aria-hidden="true">▣</span>
-          <span>Quizzes</span>
-        </button>
-
-        <button type="button" class="nav-item" data-page="questions">
-          <span class="nav-icon" aria-hidden="true">?</span>
-          <span>Questions</span>
-        </button>
-
-        <button type="button" class="nav-item" data-page="notes">
-          <span class="nav-icon" aria-hidden="true">▧</span>
-          <span>Notes</span>
-        </button>
-
-        <button type="button" class="nav-item" data-page="ncert">
-          <span class="nav-icon" aria-hidden="true">▤</span>
-          <span>NCERT</span>
-        </button>
-
-        <button type="button" class="nav-item" data-page="pyq">
-          <span class="nav-icon" aria-hidden="true">▥</span>
-          <span>PYQ</span>
-        </button>
-
-        <p class="nav-section-title">Students & Payments</p>
-
-        <button type="button" class="nav-item" data-page="students">
-          <span class="nav-icon" aria-hidden="true">♙</span>
-          <span>Students</span>
-        </button>
-
-        <button type="button" class="nav-item" data-page="purchases">
-          <span class="nav-icon" aria-hidden="true">₹</span>
-          <span>Purchases</span>
-        </button>
-
-        <p class="nav-section-title">Communication</p>
-
-        <button type="button" class="nav-item" data-page="notifications">
-          <span class="nav-icon" aria-hidden="true">♧</span>
-          <span>Notifications</span>
-        </button>
-
-        <p class="nav-section-title">Account</p>
-
-        <button type="button" class="nav-item" data-page="profile">
-          <span class="nav-icon" aria-hidden="true">♙</span>
-          <span>Profile</span>
-        </button>
-
-        <button type="button" class="nav-item" data-page="settings">
-          <span class="nav-icon" aria-hidden="true">⚙</span>
-          <span>Settings</span>
-        </button>
-
+      <div class="topbar-actions">
         <button
+          id="notificationButton"
+          class="icon-button"
           type="button"
-          class="nav-item"
-          id="sidebarLogoutButton"
-        >
-          <span class="nav-icon" aria-hidden="true">↪</span>
-          <span>Logout</span>
+          aria-label="Notifications"
+          title="Notifications"
+        >♧</button>
+
+        <button id="adminLogout" class="logout-button" type="button">
+          Logout
         </button>
+      </div>
+    </header>
 
-      </nav>
-    </aside>
+    <div class="layout">
 
-    <div
-      class="sidebar-overlay"
-      id="sidebarOverlay"
-      hidden
-      aria-hidden="true"
-    ></div>
-
-    <main class="admin-main">
-
-      <header class="admin-topbar">
-
-        <div class="topbar-left">
-          <button
-            type="button"
-            class="icon-button"
-            id="sidebarToggle"
-            aria-label="Open navigation"
-            aria-controls="adminSidebar"
-            aria-expanded="false"
-          >☰</button>
+      <aside id="adminSidebar" class="sidebar">
+        <div class="admin-profile">
+          <div id="adminAvatar" class="admin-avatar">A</div>
+          <h3 id="sidebarAdminName">Admin</h3>
+          <p id="sidebarAdminEmail">Loading email...</p>
+          <p id="sidebarAdminPhone">Phone not set</p>
         </div>
 
-        <div class="topbar-center">
-          <p class="topbar-admin-name" id="topbarAdminName">
-            Admin Dashboard
+        <div class="menu-label">ADMIN MENU</div>
+
+        <nav id="adminNavigation" class="nav-menu">
+          <button class="nav-item active" data-section="dashboard" type="button">▦ Dashboard</button>
+          <button class="nav-item" data-section="courses" type="button">▤ Courses</button>
+          <button class="nav-item" data-section="subjects" type="button">▤ Subjects</button>
+          <button class="nav-item" data-section="chapters" type="button">▤ Chapters</button>
+          <button class="nav-item" data-section="topics" type="button">▤ Topics</button>
+          <button class="nav-item" data-section="quizzes" type="button">▤ Quizzes</button>
+          <button class="nav-item" data-section="questions" type="button">▤ Questions</button>
+          <button class="nav-item" data-section="notes" type="button">▤ Notes</button>
+          <button class="nav-item" data-section="ncert" type="button">▤ NCERT</button>
+          <button class="nav-item" data-section="pyq" type="button">▤ PYQ</button>
+          <button class="nav-item" data-section="students" type="button">♙ Students</button>
+          <button class="nav-item" data-section="purchases" type="button">▤ Purchases</button>
+          <button class="nav-item" data-section="notifications" type="button">♧ Notifications</button>
+          <button class="nav-item" data-section="profile" type="button">♙ Profile</button>
+          <button class="nav-item" data-section="settings" type="button">⚙ Settings</button>
+        </nav>
+      </aside>
+
+      <div id="mobileOverlay" class="mobile-overlay"></div>
+
+      <main id="adminMainContent" class="main-content">
+
+        <section id="section-dashboard" class="admin-section">
+          <h1 class="page-heading">Dashboard</h1>
+          <p class="page-description">
+            Overview of students, courses, content and quiz activity.
           </p>
 
-          <p class="topbar-subtitle">mNEET Administration</p>
-        </div>
-
-        <div class="topbar-right">
-          <button
-            type="button"
-            class="icon-button"
-            id="topbarNotificationButton"
-            aria-label="Open notifications"
-            title="Notifications"
-            data-page="notifications"
-          >♧</button>
-
-          <button
-            type="button"
-            class="logout-button"
-            id="adminLogoutButton"
-          >Logout</button>
-        </div>
-
-      </header>
-
-      <div class="admin-content">
-
-        <div
-          class="admin-message"
-          id="adminMessage"
-          role="status"
-          aria-live="polite"
-          hidden
-        ></div>
-
-        <!-- DASHBOARD -->
-
-        <section
-          class="admin-page active"
-          id="dashboardModule"
-          data-module="dashboard"
-        >
-          <div class="page-heading">
-            <h1>Dashboard</h1>
-            <p>Manage your mNEET platform from one place.</p>
-          </div>
-
-          <div class="dashboard-intro">
-            <h2 id="dashboardWelcome">Welcome to mNEET Admin</h2>
-
-            <p>
-              Review course activity, student information,
-              payment approvals and learning progress.
-            </p>
-          </div>
-
-          <div class="dashboard-filters">
-            <div class="dashboard-filter-group">
-              <label for="dashboardCourseSelect">Select Course</label>
-
-              <select id="dashboardCourseSelect">
-                <option value="all">All Courses</option>
-              </select>
-            </div>
+          <div class="toolbar">
+            <label for="dashboardCourseSelect">Select course:</label>
+            <select id="dashboardCourseSelect" class="select-field">
+              <option value="">All Courses</option>
+            </select>
           </div>
 
           <div class="stats-grid">
-
             <article class="stat-card">
-              <h3>Total Courses</h3>
-              <p class="stat-value" id="statCourses">—</p>
-              <p class="stat-description">Available courses</p>
+              <p class="stat-label">Total Students</p>
+              <p id="totalStudents" class="stat-value">—</p>
             </article>
 
             <article class="stat-card">
-              <h3>Total Students</h3>
-              <p class="stat-value" id="statStudents">—</p>
-              <p class="stat-description">Registered accounts</p>
+              <p class="stat-label">Total Courses</p>
+              <p id="totalCourses" class="stat-value">—</p>
             </article>
 
             <article class="stat-card">
-              <h3>Paid Students</h3>
-              <p class="stat-value" id="statPaidStudents">—</p>
-              <p class="stat-description">Approved purchases</p>
+              <p class="stat-label">Paid Students</p>
+              <p id="paidStudents" class="stat-value">—</p>
             </article>
 
             <article class="stat-card">
-              <h3>Pending Payments</h3>
-              <p class="stat-value" id="statPendingPayments">—</p>
-              <p class="stat-description">Awaiting Admin review</p>
+              <p class="stat-label">Pending Payment Approvals</p>
+              <p id="pendingPayments" class="stat-value">—</p>
             </article>
 
             <article class="stat-card">
-              <h3>Total Chapters</h3>
-              <p class="stat-value" id="statChapters">—</p>
-              <p class="stat-description">Course chapters</p>
+              <p class="stat-label">Total Chapters</p>
+              <p id="totalChapters" class="stat-value">—</p>
             </article>
 
             <article class="stat-card">
-              <h3>Total Topics</h3>
-              <p class="stat-value" id="statTopics">—</p>
-              <p class="stat-description">Chapter topics</p>
+              <p class="stat-label">Total Topics</p>
+              <p id="totalTopics" class="stat-value">—</p>
             </article>
 
             <article class="stat-card">
-              <h3>Quiz Attempts</h3>
-              <p class="stat-value" id="statQuizAttempts">—</p>
-              <p class="stat-description">Recorded attempts</p>
+              <p class="stat-label">Quiz Attempts</p>
+              <p id="totalQuizAttempts" class="stat-value">—</p>
             </article>
 
             <article class="stat-card">
-              <h3>Quiz Results</h3>
-              <p class="stat-value" id="statQuizResults">—</p>
-              <p class="stat-description">Recorded results</p>
+              <p class="stat-label">Quiz Results</p>
+              <p id="totalQuizResults" class="stat-value">—</p>
             </article>
-
           </div>
 
-          <div class="dashboard-grid">
-
-            <article class="module-card">
-              <h2>Firebase & Access Status</h2>
-
-              <ul class="status-list">
-                <li class="status-item">
-                  <span class="status-label">Firebase Connection</span>
-                  <span class="status-value" id="firebaseStatus">Checking...</span>
-                </li>
-
-                <li class="status-item">
-                  <span class="status-label">Authentication</span>
-                  <span class="status-value" id="authStatus">Checking...</span>
-                </li>
-
-                <li class="status-item">
-                  <span class="status-label">Admin Access</span>
-                  <span class="status-value" id="adminAccessStatus">Checking...</span>
-                </li>
-              </ul>
-            </article>
-
-            <article class="module-card">
-              <h2>Recent Payment Requests</h2>
-
-              <div class="table-wrapper">
-                <table class="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Student</th>
-                      <th>Course</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-
-                  <tbody id="recentPaymentsBody">
-                    <tr>
-                      <td colspan="3" class="empty-table-message">
-                        Payment information will appear here.
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </article>
-
+          <div class="panel">
+            <h2>Admin Overview</h2>
+            <p>
+              Select a section from the sidebar to manage the corresponding
+              mNEET content.
+            </p>
+            <div id="dashboardMessage" class="empty-state">
+              Dashboard metrics will appear here when connected to the
+              corresponding Firestore data.
+            </div>
           </div>
         </section>
 
-        <!-- ADMIN MODULES -->
-
-        <section class="admin-page" id="coursesModule" data-module="courses" hidden>
-          <div class="page-heading">
-            <h1>Courses</h1>
-            <p>Create, edit and manage mNEET courses.</p>
+        <section id="section-courses" class="admin-section" hidden>
+          <h1 class="page-heading">Courses</h1>
+          <p class="page-description">Create and manage courses.</p>
+          <div id="coursesModule" class="panel">
+            <div class="empty-state">
+              Course management module will load here.
+            </div>
           </div>
-          <div class="module-content" id="coursesContent"></div>
         </section>
 
-        <section class="admin-page" id="subjectsModule" data-module="subjects" hidden>
-          <div class="page-heading">
-            <h1>Subjects</h1>
-            <p>Manage subjects within each course.</p>
+        <section id="section-subjects" class="admin-section" hidden>
+          <h1 class="page-heading">Subjects</h1>
+          <p class="page-description">Manage subjects within courses.</p>
+          <div id="subjectsModule" class="panel">
+            <div class="empty-state">
+              Subject management module will load here.
+            </div>
           </div>
-          <div class="module-content" id="subjectsContent"></div>
         </section>
 
-        <section class="admin-page" id="chaptersModule" data-module="chapters" hidden>
-          <div class="page-heading">
-            <h1>Chapters</h1>
-            <p>Manage chapters within each subject.</p>
+        <section id="section-chapters" class="admin-section" hidden>
+          <h1 class="page-heading">Chapters</h1>
+          <p class="page-description">Manage chapters under subjects.</p>
+          <div id="chaptersModule" class="panel">
+            <div class="empty-state">
+              Chapter management module will load here.
+            </div>
           </div>
-          <div class="module-content" id="chaptersContent"></div>
         </section>
 
-        <section class="admin-page" id="topicsModule" data-module="topics" hidden>
-          <div class="page-heading">
-            <h1>Topics</h1>
-            <p>Organize topics within each chapter.</p>
+        <section id="section-topics" class="admin-section" hidden>
+          <h1 class="page-heading">Topics</h1>
+          <p class="page-description">Manage topics within chapters.</p>
+          <div id="topicsModule" class="panel">
+            <div class="empty-state">
+              Topic management module will load here.
+            </div>
           </div>
-          <div class="module-content" id="topicsContent"></div>
         </section>
 
-        <section class="admin-page" id="quizzesModule" data-module="quizzes" hidden>
-          <div class="page-heading">
-            <h1>Quizzes</h1>
-            <p>Manage topic quizzes and chapter practice types.</p>
+        <section id="section-quizzes" class="admin-section" hidden>
+          <h1 class="page-heading">Quizzes</h1>
+          <p class="page-description">Manage topic-wise and chapter-wise quizzes.</p>
+          <div id="quizzesModule" class="panel">
+            <div class="empty-state">
+              Quiz management module will load here.
+            </div>
           </div>
-          <div class="module-content" id="quizzesContent"></div>
         </section>
 
-        <section class="admin-page" id="questionsModule" data-module="questions" hidden>
-          <div class="page-heading">
-            <h1>Questions</h1>
-            <p>Manage question text, images, options, answers and solutions.</p>
+        <section id="section-questions" class="admin-section" hidden>
+          <h1 class="page-heading">Questions</h1>
+          <p class="page-description">Manage questions, answers and solutions.</p>
+          <div id="questionsModule" class="panel">
+            <div class="empty-state">
+              Question management module will load here.
+            </div>
           </div>
-          <div class="module-content" id="questionsContent"></div>
         </section>
 
-        <section class="admin-page" id="notesModule" data-module="notes" hidden>
-          <div class="page-heading">
-            <h1>Notes</h1>
-            <p>Manage topic-wise Notes PDFs.</p>
+        <section id="section-notes" class="admin-section" hidden>
+          <h1 class="page-heading">Notes</h1>
+          <p class="page-description">Upload and manage topic notes PDFs.</p>
+          <div id="notesModule" class="panel">
+            <div class="empty-state">
+              Notes management module will load here.
+            </div>
           </div>
-          <div class="module-content" id="notesContent"></div>
         </section>
 
-        <section class="admin-page" id="ncertModule" data-module="ncert" hidden>
-          <div class="page-heading">
-            <h1>NCERT</h1>
-            <p>Manage chapter-wise NCERT reading PDFs.</p>
+        <section id="section-ncert" class="admin-section" hidden>
+          <h1 class="page-heading">NCERT</h1>
+          <p class="page-description">Manage chapter-wise NCERT resources.</p>
+          <div id="ncertModule" class="panel">
+            <div class="empty-state">
+              NCERT management module will load here.
+            </div>
           </div>
-          <div class="module-content" id="ncertContent"></div>
         </section>
 
-        <section class="admin-page" id="pyqModule" data-module="pyq" hidden>
-          <div class="page-heading">
-            <h1>Previous Year Questions</h1>
-            <p>Manage chapter-wise PYQ PDFs and practice content.</p>
+        <section id="section-pyq" class="admin-section" hidden>
+          <h1 class="page-heading">PYQ</h1>
+          <p class="page-description">Manage previous-year questions and PDFs.</p>
+          <div id="pyqModule" class="panel">
+            <div class="empty-state">
+              PYQ management module will load here.
+            </div>
           </div>
-          <div class="module-content" id="pyqContent"></div>
         </section>
 
-        <section class="admin-page" id="studentsModule" data-module="students" hidden>
-          <div class="page-heading">
-            <h1>Students</h1>
-            <p>Review student accounts, purchases and progress.</p>
+        <section id="section-students" class="admin-section" hidden>
+          <h1 class="page-heading">Students</h1>
+          <p class="page-description">View students, access and progress.</p>
+          <div id="studentsModule" class="panel">
+            <div class="empty-state">
+              Student management module will load here.
+            </div>
           </div>
-          <div class="module-content" id="studentsContent"></div>
         </section>
 
-        <section class="admin-page" id="purchasesModule" data-module="purchases" hidden>
-          <div class="page-heading">
-            <h1>Purchases & Payment Approvals</h1>
-            <p>Review payment references and approve or reject requests.</p>
+        <section id="section-purchases" class="admin-section" hidden>
+          <h1 class="page-heading">Purchases</h1>
+          <p class="page-description">Review and approve payment requests.</p>
+          <div id="purchasesModule" class="panel">
+            <div class="empty-state">
+              Purchase management module will load here.
+            </div>
           </div>
-          <div class="module-content" id="purchasesContent"></div>
         </section>
 
-        <section class="admin-page" id="notificationsModule" data-module="notifications" hidden>
-          <div class="page-heading">
-            <h1>Notifications</h1>
-            <p>Manage announcements and student notifications.</p>
+        <section id="section-notifications" class="admin-section" hidden>
+          <h1 class="page-heading">Notifications</h1>
+          <p class="page-description">Publish and manage announcements.</p>
+          <div id="notificationsModule" class="panel">
+            <div class="empty-state">
+              Notifications module will load here.
+            </div>
           </div>
-          <div class="module-content" id="notificationsContent"></div>
         </section>
 
-        <section class="admin-page" id="profileModule" data-module="profile" hidden>
-          <div class="page-heading">
-            <h1>Admin Profile</h1>
-            <p>View and manage your Admin profile information.</p>
+        <section id="section-profile" class="admin-section" hidden>
+          <h1 class="page-heading">Profile</h1>
+          <p class="page-description">View your administrator profile.</p>
+          <div id="profileModule" class="panel">
+            <p id="profileName">Name: —</p>
+            <p id="profileEmail">Email: —</p>
+            <p id="profilePhone">Phone: —</p>
           </div>
-          <div class="module-content" id="profileContent"></div>
         </section>
 
-        <section class="admin-page" id="settingsModule" data-module="settings" hidden>
-          <div class="page-heading">
-            <h1>Settings</h1>
-            <p>Manage platform defaults, quiz settings and social links.</p>
+        <section id="section-settings" class="admin-section" hidden>
+          <h1 class="page-heading">Settings</h1>
+          <p class="page-description">Manage platform settings.</p>
+          <div id="settingsModule" class="panel">
+            <div class="empty-state">
+              Settings module will load here.
+            </div>
           </div>
-          <div class="module-content" id="settingsContent"></div>
         </section>
 
-        <footer class="admin-footer">
-          &copy; <span id="adminCurrentYear"></span> mNEET.
-          All rights reserved.
-        </footer>
-
-      </div>
-    </main>
+      </main>
+    </div>
   </div>
-
-  <!-- Firebase Compat SDK -->
 
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
-  <!-- Initialize Firebase before authorization guard -->
-
+  <!-- Firebase must load before auth-guard.js. -->
   <script src="firebase.js"></script>
   <script src="firebase-helpers.js"></script>
   <script src="auth-guard.js"></script>
 
-  <!-- Admin interface -->
+  <script>
+    (function () {
+      "use strict";
 
+      const verification = document.getElementById("adminVerification");
+      const verificationMessage =
+        document.getElementById("verificationMessage");
+      const application = document.getElementById("adminApplication");
+
+      function showAuthorizedDashboard(user) {
+        if (!user || !user.uid) {
+          return;
+        }
+
+        verification.hidden = true;
+        application.hidden = false;
+
+        const services = window.MNEETFirebase;
+
+        if (!services || !services.db) {
+          verification.hidden = false;
+          application.hidden = true;
+          verificationMessage.textContent =
+            "Firebase is unavailable. Reload the page and try again.";
+          return;
+        }
+
+        services.db.collection("users").doc(user.uid).get()
+          .then(function (snapshot) {
+            const data = snapshot.exists ? snapshot.data() : {};
+            const name =
+              data.fullName ||
+              data.name ||
+              user.displayName ||
+              "Admin";
+
+            document.getElementById("topbarAdminName").textContent = name;
+            document.getElementById("sidebarAdminName").textContent = name;
+            document.getElementById("sidebarAdminEmail").textContent =
+              user.email || "Email not available";
+            document.getElementById("sidebarAdminPhone").textContent =
+              data.phone || "Phone not set";
+            document.getElementById("adminAvatar").textContent =
+              name.trim().charAt(0).toUpperCase() || "A";
+
+            document.getElementById("profileName").textContent =
+              "Name: " + name;
+            document.getElementById("profileEmail").textContent =
+              "Email: " + (user.email || "Not available");
+            document.getElementById("profilePhone").textContent =
+              "Phone: " + (data.phone || "Not set");
+          })
+          .catch(function (error) {
+            console.error("Admin profile loading failed:", error);
+          });
+      }
+
+      window.addEventListener("mneet:admin-authorized", function (event) {
+        const uid = event.detail && event.detail.uid;
+
+        if (!uid || !window.MNEETFirebase ||
+            !window.MNEETFirebase.auth) {
+          return;
+        }
+
+        const user = window.MNEETFirebase.auth.currentUser;
+
+        if (user && user.uid === uid) {
+          showAuthorizedDashboard(user);
+        }
+      });
+
+      // Handle the case where authorization completed before this listener.
+      if (
+        document.documentElement.getAttribute("data-admin-authorized") ===
+        "true"
+      ) {
+        const services = window.MNEETFirebase;
+
+        if (services && services.auth && services.auth.currentUser) {
+          showAuthorizedDashboard(services.auth.currentUser);
+        }
+      }
+
+      document.getElementById("sidebarToggle")
+        .addEventListener("click", function () {
+          const opened = document.body.classList.toggle("sidebar-open");
+          this.setAttribute("aria-expanded", String(opened));
+        });
+
+      document.getElementById("mobileOverlay")
+        .addEventListener("click", function () {
+          document.body.classList.remove("sidebar-open");
+          document.getElementById("sidebarToggle")
+            .setAttribute("aria-expanded", "false");
+        });
+
+      document.getElementById("adminNavigation")
+        .addEventListener("click", function (event) {
+          const button = event.target.closest("[data-section]");
+
+          if (!button) {
+            return;
+          }
+
+          const sectionName = button.dataset.section;
+          const section = document.getElementById(
+            "section-" + sectionName
+          );
+
+          if (!section) {
+            return;
+          }
+
+          document.querySelectorAll(".admin-section").forEach(function (item) {
+            item.hidden = true;
+          });
+
+          section.hidden = false;
+
+          document.querySelectorAll(".nav-item").forEach(function (item) {
+            item.classList.toggle("active", item === button);
+          });
+
+          document.body.classList.remove("sidebar-open");
+          document.getElementById("sidebarToggle")
+            .setAttribute("aria-expanded", "false");
+        });
+
+      document.getElementById("notificationButton")
+        .addEventListener("click", function () {
+          const button = document.querySelector(
+            '[data-section="notifications"]'
+          );
+
+          if (button) button.click();
+        });
+
+      document.getElementById("adminLogout")
+        .addEventListener("click", async function () {
+          if (!window.confirm("Are you sure you want to log out?")) {
+            return;
+          }
+
+          try {
+            const services = window.MNEETFirebase;
+
+            if (!services || !services.auth) {
+              throw new Error("Firebase Auth is unavailable.");
+            }
+
+            await services.auth.signOut();
+            window.location.replace("admin-login.html");
+          } catch (error) {
+            console.error("Admin logout failed:", error);
+            verification.hidden = false;
+            verificationMessage.textContent =
+              "Logout failed. Please check your connection and try again.";
+          }
+        });
+
+    })();
+  </script>
+
+  <!-- Existing admin modules; keep these filenames in the repository. -->
   <script src="admin-sidebar.js" defer></script>
   <script src="admin-profile.js" defer></script>
   <script src="admin.js" defer></script>
-
-  <!-- Admin content modules -->
-
   <script src="admin-courses.js" defer></script>
   <script src="admin-subjects.js" defer></script>
   <script src="admin-chapters.js" defer></script>
@@ -1195,66 +946,6 @@
   <script src="admin-notifications.js" defer></script>
   <script src="admin-settings.js" defer></script>
   <script src="admin-dashboard-data.js" defer></script>
-
-  <script>
-    (function () {
-      "use strict";
-
-      var verification = document.getElementById("adminVerification");
-      var application = document.getElementById("adminApplication");
-
-      var title = document.getElementById("verificationTitle");
-      var message = document.getElementById("verificationMessage");
-
-      /*
-       * Do not grant access from this script.
-       * The existing auth-guard.js must perform the real
-       * Firebase Authentication and Firestore authorization.
-       *
-       * This listener only reveals the interface when the
-       * existing guard explicitly marks the admin as verified.
-       */
-
-      window.MNEETAdminUI = Object.freeze({
-        showAuthorizedApplication: function (user) {
-          if (!user || !user.uid) {
-            return false;
-          }
-
-          application.hidden = false;
-          verification.hidden = true;
-
-          return true;
-        },
-
-        showVerificationMessage: function (heading, text) {
-          title.textContent = heading || "Verifying Admin Access";
-          message.textContent = text || "Please wait while your account is checked.";
-        },
-
-        showVerificationFailure: function (text) {
-          title.textContent = "Admin Access Not Verified";
-          message.textContent = text ||
-            "Your administrator permission could not be verified.";
-
-          var spinner = verification.querySelector(".verification-spinner");
-
-          if (spinner) {
-            spinner.hidden = true;
-          }
-
-          application.hidden = true;
-          verification.hidden = false;
-        }
-      });
-
-      var year = document.getElementById("adminCurrentYear");
-
-      if (year) {
-        year.textContent = String(new Date().getFullYear());
-      }
-    })();
-  </script>
 
 </body>
 </html>
