@@ -1,20 +1,15 @@
 /* =========================================================
    mNEET — Firebase Helpers
    File: firebase-helpers.js
+   Firebase SDK: Compat 10.14.1
 
-   Purpose:
-   - Firebase Authentication helpers
+   Features:
+   - Firebase Auth helpers
    - Firestore read/write helpers
-   - Admin authorization checks
-   - Approved course-access verification
-   - Safe error handling
-   - Server timestamps and document utilities
-
-   Security:
-   - Admin access requires admins/{uid}.active === true
-   - Students cannot approve purchases
-   - Students cannot unlock courses themselves
-   - Correct answers must be handled by secure backend functions
+   - Admin authorization
+   - Student profile helpers
+   - Secure course-access verification
+   - Cloud Functions support
    ========================================================= */
 
 (function (window, document) {
@@ -41,7 +36,6 @@
     QUIZ_ATTEMPTS: "quizAttempts",
     QUIZ_RESULTS: "quizResults",
     NOTIFICATIONS: "notifications",
-    STUDENT_NOTIFICATION_READS: "studentNotificationReads",
     SETTINGS: "settings"
   });
 
@@ -56,21 +50,38 @@
     lastError: null
   };
 
-  /* ---------------------------------------------------------
-     1. FIREBASE INSTANCE
-     --------------------------------------------------------- */
+  /* =====================================================
+     FIREBASE SERVICES
+     ===================================================== */
+
+  function createError(code, message, originalError) {
+    const error = new Error(message);
+
+    error.name = "MNEETFirebaseError";
+    error.code = code;
+
+    if (originalError) {
+      error.originalError = originalError;
+    }
+
+    return error;
+  }
 
   function getFirebase() {
+    const instance = window.MNEETFirebase;
+
     if (
-      window.MNEETFirebase &&
-      window.MNEETFirebase.auth &&
-      window.MNEETFirebase.db
+      instance &&
+      instance.ready === true &&
+      instance.auth &&
+      instance.db
     ) {
       return {
-        app: window.MNEETFirebase.app || null,
-        auth: window.MNEETFirebase.auth,
-        db: window.MNEETFirebase.db,
-        projectId: window.MNEETFirebase.projectId || "mneet-spark"
+        app: instance.app || null,
+        auth: instance.auth,
+        db: instance.db,
+        functions: instance.functions || null,
+        projectId: instance.projectId || "mneet-spark"
       };
     }
 
@@ -79,15 +90,19 @@
       typeof window.firebase.auth === "function" &&
       typeof window.firebase.firestore === "function"
     ) {
-      return {
-        app: typeof window.firebase.app === "function"
-          ? window.firebase.app()
-          : null,
+      try {
+        const app = window.firebase.app();
 
-        auth: window.firebase.auth(),
-        db: window.firebase.firestore(),
-        projectId: "mneet-spark"
-      };
+        return {
+          app: app,
+          auth: app.auth(),
+          db: app.firestore(),
+          functions: null,
+          projectId: app.options.projectId
+        };
+      } catch (error) {
+        rememberError(error);
+      }
     }
 
     return null;
@@ -99,7 +114,7 @@
     if (!services) {
       throw createError(
         "firebase/not-initialized",
-        "Firebase is not initialized. Please refresh the page."
+        "Firebase চালু হয়নি। পেজটি Refresh করো।"
       );
     }
 
@@ -124,32 +139,18 @@
 
   function getCurrentUserId() {
     const user = getCurrentUser();
-
     return user ? user.uid : null;
   }
 
-  /* ---------------------------------------------------------
-     2. ERROR HELPERS
-     --------------------------------------------------------- */
-
-  function createError(code, message, originalError) {
-    const error = new Error(message);
-
-    error.name = "MNEETFirebaseError";
-    error.code = code;
-
-    if (originalError) {
-      error.originalError = originalError;
-    }
-
-    return error;
-  }
+  /* =====================================================
+     ERROR HANDLING
+     ===================================================== */
 
   function rememberError(error) {
     state.lastError = error
       ? {
           code: error.code || "unknown",
-          message: error.message || "An unexpected error occurred."
+          message: error.message || "Unknown error"
         }
       : null;
   }
@@ -157,67 +158,71 @@
   function normalizeError(error) {
     rememberError(error);
 
-    const code = error && error.code
-      ? String(error.code)
-      : "unknown";
+    const code = String(
+      error && error.code ? error.code : "unknown"
+    );
 
     const messages = {
       "auth/user-not-found":
-        "No account was found with these details.",
+        "এই ইমেইলে কোনো অ্যাকাউন্ট পাওয়া যায়নি।",
 
       "auth/wrong-password":
-        "The email or password is incorrect.",
+        "ইমেইল অথবা পাসওয়ার্ড ভুল।",
 
       "auth/invalid-credential":
-        "The email or password is incorrect.",
+        "ইমেইল অথবা পাসওয়ার্ড ভুল।",
 
       "auth/email-already-in-use":
-        "An account already exists with this email.",
+        "এই ইমেইল দিয়ে আগে থেকেই অ্যাকাউন্ট রয়েছে।",
 
       "auth/weak-password":
-        "Please choose a stronger password.",
+        "আরও শক্তিশালী পাসওয়ার্ড ব্যবহার করো।",
 
       "auth/invalid-email":
-        "Please enter a valid email address.",
+        "সঠিক ইমেইল অ্যাড্রেস দাও।",
 
       "auth/too-many-requests":
-        "Too many attempts. Please try again later.",
+        "অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পরে চেষ্টা করো।",
+
+      "auth/network-request-failed":
+        "ইন্টারনেট সংযোগ পরীক্ষা করো।",
 
       "permission-denied":
-        "You do not have permission to perform this action.",
+        "এই কাজটি করার অনুমতি নেই।",
 
-      "unavailable":
-        "The service is temporarily unavailable. Please try again.",
+      "unauthenticated":
+        "প্রথমে Login করো।",
 
       "not-found":
-        "The requested information could not be found.",
+        "তথ্যটি পাওয়া যায়নি।",
+
+      "unavailable":
+        "সার্ভিস সাময়িকভাবে বন্ধ। পরে চেষ্টা করো।",
 
       "firebase/not-initialized":
-        "Firebase is not ready. Please refresh the page."
-    };
+        "Firebase চালু হয়নি। পেজ Refresh করো।",
 
-    const message = messages[code] ||
-      (
-        error && error.message
-          ? error.message
-          : "Something went wrong. Please try again."
-      );
+      "functions/not-available":
+        "নিরাপদ Backend Function কনফিগার করা নেই।"
+    };
 
     return {
       code: code,
-      message: message,
+      message:
+        messages[code] ||
+        (error && error.message
+          ? error.message
+          : "সমস্যা হয়েছে। আবার চেষ্টা করো।"),
       originalError: error || null
     };
   }
 
-  /* ---------------------------------------------------------
-     3. AUTHENTICATION
-     --------------------------------------------------------- */
+  /* =====================================================
+     AUTHENTICATION
+     ===================================================== */
 
   async function signIn(email, password) {
     try {
-      const auth = getAuth();
-
       const cleanEmail = String(email || "")
         .trim()
         .toLowerCase();
@@ -225,19 +230,16 @@
       if (!cleanEmail || !password) {
         throw createError(
           "validation/required",
-          "Email and password are required."
+          "ইমেইল ও পাসওয়ার্ড দিতে হবে।"
         );
       }
 
-      const result = await auth.signInWithEmailAndPassword(
-        cleanEmail,
-        password
-      );
+      const result = await getAuth()
+        .signInWithEmailAndPassword(cleanEmail, password);
 
       rememberError(null);
 
       return result.user;
-
     } catch (error) {
       throw createError(
         error.code || "auth/sign-in-failed",
@@ -250,11 +252,8 @@
   async function signOut() {
     try {
       await getAuth().signOut();
-
       rememberError(null);
-
       return true;
-
     } catch (error) {
       throw createError(
         error.code || "auth/sign-out-failed",
@@ -273,16 +272,14 @@
       if (!cleanEmail) {
         throw createError(
           "validation/email-required",
-          "Please enter your email address."
+          "ইমেইল অ্যাড্রেস দিতে হবে।"
         );
       }
 
       await getAuth().sendPasswordResetEmail(cleanEmail);
 
       rememberError(null);
-
       return true;
-
     } catch (error) {
       throw createError(
         error.code || "auth/password-reset-failed",
@@ -292,9 +289,9 @@
     }
   }
 
-  /* ---------------------------------------------------------
-     4. AUTHORIZATION
-     --------------------------------------------------------- */
+  /* =====================================================
+     AUTHORIZATION
+     ===================================================== */
 
   async function isAdmin(user) {
     try {
@@ -317,14 +314,10 @@
       const data = snapshot.data() || {};
 
       return data.active === true;
-
     } catch (error) {
       rememberError(error);
 
-      /*
-       * Fail closed: if authorization cannot be verified,
-       * never assume the user is an administrator.
-       */
+      // Authorization যাচাই করা না গেলে Admin access দেওয়া হবে না।
       return false;
     }
   }
@@ -335,16 +328,14 @@
     if (!currentUser) {
       throw createError(
         "auth/unauthenticated",
-        "Please sign in first."
+        "প্রথমে Login করো।"
       );
     }
 
-    const authorized = await isAdmin(currentUser);
-
-    if (!authorized) {
+    if (!(await isAdmin(currentUser))) {
       throw createError(
         "permission-denied",
-        "Administrator permission is required."
+        "Admin permission প্রয়োজন।"
       );
     }
 
@@ -357,21 +348,19 @@
     if (!user) {
       throw createError(
         "auth/unauthenticated",
-        "Please sign in first."
+        "প্রথমে Login করো।"
       );
     }
 
     return user;
   }
 
-  /* ---------------------------------------------------------
-     5. DOCUMENT HELPERS
-     --------------------------------------------------------- */
+  /* =====================================================
+     DOCUMENT UTILITIES
+     ===================================================== */
 
   function getDocumentId(snapshot) {
-    return snapshot && snapshot.id
-      ? snapshot.id
-      : "";
+    return snapshot && snapshot.id ? snapshot.id : "";
   }
 
   function documentToObject(snapshot) {
@@ -379,42 +368,23 @@
       return null;
     }
 
-    return {
-      ...snapshot.data(),
-      id: snapshot.id
-    };
+    return Object.assign(
+      { id: snapshot.id },
+      snapshot.data()
+    );
   }
 
   function serverTimestamp() {
-    const services = requireFirebase();
+    requireFirebase();
 
-    if (
-      window.firebase &&
-      window.firebase.firestore &&
-      window.firebase.firestore.FieldValue
-    ) {
-      return window.firebase.firestore.FieldValue.serverTimestamp();
-    }
-
-    if (
-      services.db &&
-      services.db.constructor &&
-      services.db.constructor.FieldValue
-    ) {
-      return services.db.constructor.FieldValue.serverTimestamp();
-    }
-
-    throw createError(
-      "firebase/timestamp-unavailable",
-      "Firebase server timestamps are unavailable."
-    );
+    return window.firebase.firestore.FieldValue.serverTimestamp();
   }
 
   function createDocumentId(collectionName) {
     if (!collectionName) {
       throw createError(
         "validation/collection-required",
-        "Collection name is required."
+        "Collection name প্রয়োজন।"
       );
     }
 
@@ -424,15 +394,15 @@
       .id;
   }
 
-  /* ---------------------------------------------------------
-     6. FIRESTORE READ HELPERS
-     --------------------------------------------------------- */
+  /* =====================================================
+     FIRESTORE READ
+     ===================================================== */
 
   async function getDocument(collectionName, documentId) {
     if (!collectionName || !documentId) {
       throw createError(
         "validation/document-required",
-        "Collection name and document ID are required."
+        "Collection ও document ID প্রয়োজন।"
       );
     }
 
@@ -445,7 +415,6 @@
       rememberError(null);
 
       return documentToObject(snapshot);
-
     } catch (error) {
       throw createError(
         error.code || "firestore/read-failed",
@@ -455,33 +424,33 @@
     }
   }
 
-  async function queryDocuments(collectionName, filters, options) {
+  async function queryDocuments(
+    collectionName,
+    filters,
+    options
+  ) {
     if (!collectionName) {
       throw createError(
         "validation/collection-required",
-        "Collection name is required."
+        "Collection name প্রয়োজন।"
       );
     }
 
     try {
-      const db = getDB();
-
-      let query = db.collection(collectionName);
+      let query = getDB().collection(collectionName);
 
       (Array.isArray(filters) ? filters : [])
         .forEach(function (filter) {
           if (
-            !Array.isArray(filter) ||
-            filter.length !== 3
+            Array.isArray(filter) &&
+            filter.length === 3
           ) {
-            return;
+            query = query.where(
+              filter[0],
+              filter[1],
+              filter[2]
+            );
           }
-
-          query = query.where(
-            filter[0],
-            filter[1],
-            filter[2]
-          );
         });
 
       const settings = options || {};
@@ -506,16 +475,14 @@
       const results = [];
 
       snapshot.forEach(function (doc) {
-        results.push({
-          ...doc.data(),
-          id: doc.id
-        });
+        results.push(
+          Object.assign({ id: doc.id }, doc.data())
+        );
       });
 
       rememberError(null);
 
       return results;
-
     } catch (error) {
       throw createError(
         error.code || "firestore/query-failed",
@@ -525,15 +492,20 @@
     }
   }
 
-  /* ---------------------------------------------------------
-     7. FIRESTORE WRITE HELPERS
-     --------------------------------------------------------- */
+  /* =====================================================
+     FIRESTORE WRITE
+     ===================================================== */
 
   async function createDocument(collectionName, data) {
-    if (!collectionName || !data || typeof data !== "object") {
+    if (
+      !collectionName ||
+      !data ||
+      typeof data !== "object" ||
+      Array.isArray(data)
+    ) {
       throw createError(
         "validation/invalid-document",
-        "A collection name and document data are required."
+        "সঠিক collection ও document data প্রয়োজন।"
       );
     }
 
@@ -548,7 +520,6 @@
         id: reference.id,
         path: reference.path
       };
-
     } catch (error) {
       throw createError(
         error.code || "firestore/create-failed",
@@ -558,11 +529,21 @@
     }
   }
 
-  async function updateDocument(collectionName, documentId, data) {
-    if (!collectionName || !documentId || !data) {
+  async function updateDocument(
+    collectionName,
+    documentId,
+    data
+  ) {
+    if (
+      !collectionName ||
+      !documentId ||
+      !data ||
+      typeof data !== "object" ||
+      Array.isArray(data)
+    ) {
       throw createError(
         "validation/invalid-update",
-        "Collection, document ID and update data are required."
+        "সঠিক update data প্রয়োজন।"
       );
     }
 
@@ -573,9 +554,7 @@
         .update(data);
 
       rememberError(null);
-
       return true;
-
     } catch (error) {
       throw createError(
         error.code || "firestore/update-failed",
@@ -589,7 +568,7 @@
     if (!collectionName || !documentId) {
       throw createError(
         "validation/document-required",
-        "Collection name and document ID are required."
+        "Collection ও document ID প্রয়োজন।"
       );
     }
 
@@ -600,9 +579,7 @@
         .delete();
 
       rememberError(null);
-
       return true;
-
     } catch (error) {
       throw createError(
         error.code || "firestore/delete-failed",
@@ -612,108 +589,36 @@
     }
   }
 
-  /* ---------------------------------------------------------
-     8. COURSE ACCESS
-     --------------------------------------------------------- */
-
-  function isApprovedPurchaseStatus(status) {
-    return APPROVED_PURCHASE_STATUSES.includes(
-      String(status || "").toLowerCase()
-    );
-  }
-
-  async function checkCourseAccess(courseId) {
-    const user = requireSignedIn();
-
-    if (!courseId) {
-      return false;
-    }
-
-    /*
-     * Use the trusted backend callable function when available.
-     * Course access must be granted by the backend after Admin
-     * approval, not by trusting a client-side purchase record.
-     */
-    const functionsService = getFunctionsService();
-
-    if (functionsService) {
-      try {
-        const callable = functionsService.httpsCallable(
-          "checkCourseAccess"
-        );
-
-        const response = await callable({
-          courseId: String(courseId)
-        });
-
-        return Boolean(
-          response &&
-          response.data &&
-          response.data.hasAccess === true
-        );
-
-      } catch (error) {
-        rememberError(error);
-
-        /*
-         * Do not fall back to client-side approval checks after
-         * a backend authorization failure.
-         */
-        throw createError(
-          error.code || "permission-denied",
-          normalizeError(error).message,
-          error
-        );
-      }
-    }
-
-    /*
-     * Without the trusted backend, do not grant access based
-     * only on a student-editable purchase record.
-     */
-    throw createError(
-      "functions/not-available",
-      "Secure course verification is unavailable. Please try again later."
-    );
-  }
-
-  /* ---------------------------------------------------------
-     9. CLOUD FUNCTIONS
-     --------------------------------------------------------- */
+  /* =====================================================
+     CLOUD FUNCTIONS
+     ===================================================== */
 
   function getFunctionsService() {
-    if (
-      window.MNEETFirebase &&
-      window.MNEETFirebase.functions
-    ) {
-      return window.MNEETFirebase.functions;
+    const services = getFirebase();
+
+    if (!services) {
+      return null;
     }
 
-    if (
-      window.firebase &&
-      typeof window.firebase.app === "function" &&
-      typeof window.firebase.app().functions === "function"
-    ) {
-      try {
-        return window.firebase.app().functions("asia-south1");
-      } catch (error) {
-        return null;
+    if (services.functions) {
+      return services.functions;
+    }
+
+    try {
+      if (
+        services.app &&
+        typeof services.app.functions === "function"
+      ) {
+        return services.app.functions("asia-south1");
       }
+    } catch (error) {
+      rememberError(error);
     }
 
     return null;
   }
 
   async function callFunction(functionName, payload) {
-    const functionsService = getFunctionsService();
-
-    if (!functionsService) {
-      throw createError(
-        "functions/not-available",
-        "Secure backend functions are not configured."
-      );
-    }
-
     if (
       !/^[A-Za-z][A-Za-z0-9_-]*$/.test(
         String(functionName || "")
@@ -721,7 +626,16 @@
     ) {
       throw createError(
         "validation/invalid-function",
-        "Invalid backend function name."
+        "Function name সঠিক নয়।"
+      );
+    }
+
+    const functionsService = getFunctionsService();
+
+    if (!functionsService) {
+      throw createError(
+        "functions/not-available",
+        "Cloud Functions SDK ও configuration প্রয়োজন।"
       );
     }
 
@@ -735,7 +649,6 @@
       rememberError(null);
 
       return response.data;
-
     } catch (error) {
       throw createError(
         error.code || "functions/call-failed",
@@ -745,9 +658,37 @@
     }
   }
 
-  /* ---------------------------------------------------------
-     10. USER PROFILE
-     --------------------------------------------------------- */
+  /* =====================================================
+     COURSE ACCESS
+     ===================================================== */
+
+  async function checkCourseAccess(courseId) {
+    requireSignedIn();
+
+    if (!courseId) {
+      throw createError(
+        "validation/course-required",
+        "Course ID প্রয়োজন।"
+      );
+    }
+
+    /*
+     * Access will only be granted by a trusted backend.
+     * A client-side purchase record is not proof of payment.
+     */
+    const result = await callFunction(
+      "checkCourseAccess",
+      { courseId: String(courseId) }
+    );
+
+    return Boolean(
+      result && result.hasAccess === true
+    );
+  }
+
+  /* =====================================================
+     STUDENT PROFILE
+     ===================================================== */
 
   async function getOwnProfile() {
     const user = requireSignedIn();
@@ -761,25 +702,25 @@
   async function updateOwnProfile(changes) {
     const user = requireSignedIn();
 
-    if (!changes || typeof changes !== "object") {
+    if (
+      !changes ||
+      typeof changes !== "object" ||
+      Array.isArray(changes)
+    ) {
       throw createError(
         "validation/invalid-profile",
-        "Profile information is invalid."
+        "Profile data সঠিক নয়।"
       );
     }
 
-    /*
-     * Only these profile fields may be updated through this
-     * helper. Firestore Rules must enforce the same restrictions.
-     */
     const allowedFields = [
       "name",
       "fullName",
       "phone",
-      "target",
-      "examTarget",
+      "city",
       "photoURL",
-      "updatedAt"
+      "target",
+      "examTarget"
     ];
 
     const safeChanges = {};
@@ -793,13 +734,11 @@
     if (Object.keys(safeChanges).length === 0) {
       throw createError(
         "validation/no-valid-fields",
-        "No valid profile fields were provided."
+        "পরিবর্তন করার মতো বৈধ তথ্য পাওয়া যায়নি।"
       );
     }
 
-    if (!("updatedAt" in safeChanges)) {
-      safeChanges.updatedAt = serverTimestamp();
-    }
+    safeChanges.updatedAt = serverTimestamp();
 
     await updateDocument(
       COLLECTIONS.USERS,
@@ -810,19 +749,16 @@
     return true;
   }
 
-  /* ---------------------------------------------------------
-     11. PUBLIC API
-     --------------------------------------------------------- */
+  /* =====================================================
+     PUBLIC API
+     ===================================================== */
 
   window.MNEETFirebaseHelpers = Object.freeze({
     collections: COLLECTIONS,
     approvedPurchaseStatuses: APPROVED_PURCHASE_STATUSES,
 
     initialize: function () {
-      const services = getFirebase();
-
-      state.initialized = Boolean(services);
-
+      state.initialized = Boolean(getFirebase());
       return state.initialized;
     },
 
@@ -852,9 +788,7 @@
     updateDocument: updateDocument,
     deleteDocument: deleteDocument,
 
-    isApprovedPurchaseStatus: isApprovedPurchaseStatus,
     checkCourseAccess: checkCourseAccess,
-
     callFunction: callFunction,
 
     getOwnProfile: getOwnProfile,
@@ -875,20 +809,18 @@
     }
   });
 
-  /*
-   * Do not initialize Firebase here.
-   * firebase.js remains responsible for initialization.
-   */
+  function initializeHelpers() {
+    window.MNEETFirebaseHelpers.initialize();
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener(
       "DOMContentLoaded",
-      function () {
-        window.MNEETFirebaseHelpers.initialize();
-      },
+      initializeHelpers,
       { once: true }
     );
   } else {
-    window.MNEETFirebaseHelpers.initialize();
+    initializeHelpers();
   }
 
 })(window, document);
