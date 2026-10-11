@@ -1,10 +1,12 @@
-/* =====================================================
+/* =========================================
    mNEET AUTH GUARD
-   Firebase project: mneet-spark
-   ===================================================== */
+   Firebase Project: mneet-spark
+========================================= */
 
 (function (window, document) {
   "use strict";
+
+  const PROJECT_ID = "mneet-spark";
 
   const ADMIN_LOGIN = "admin-login.html";
   const ADMIN_DASHBOARD = "admin.html";
@@ -30,16 +32,14 @@
   const isAdminDashboard = currentPage === ADMIN_DASHBOARD;
   const isStudentPage = STUDENT_PAGES.includes(currentPage);
 
-  /*
-   * অন্য public page-এ এই guard কোনো পরিবর্তন করবে না।
-   */
   if (!isAdminLogin && !isAdminDashboard && !isStudentPage) {
     return;
   }
 
-  let running = false;
+  let processing = false;
+  let lastUser = null;
 
-  function firebase() {
+  function getFirebase() {
     const f = window.MNEETFirebase;
 
     if (
@@ -47,18 +47,14 @@
       f.ready !== true ||
       !f.auth ||
       !f.db ||
-      f.projectId !== "mneet-spark"
+      f.projectId !== PROJECT_ID
     ) {
-      throw new Error("Firebase initialization failed.");
+      throw new Error(
+        "Firebase initialize হয়নি। firebase.js পরীক্ষা করো।"
+      );
     }
 
     return f;
-  }
-
-  function redirect(page) {
-    if (currentPage !== page) {
-      window.location.replace(page);
-    }
   }
 
   function showMessage(text) {
@@ -70,63 +66,59 @@
     ];
 
     for (const id of ids) {
-      const el = document.getElementById(id);
+      const element = document.getElementById(id);
 
-      if (el) {
-        el.textContent = text;
-        el.hidden = false;
+      if (element) {
+        element.textContent = text;
+        element.hidden = false;
         return;
       }
     }
 
-    console.error("[mNEET Auth]", text);
+    console.error("[mNEET Auth Guard]", text);
   }
 
-  async function isAdmin(user) {
-    if (
-      !user ||
-      user.uid !== ADMIN_UID ||
-      user.email !== ADMIN_EMAIL
-    ) {
+  function isConfiguredAdmin(user) {
+    return Boolean(
+      user &&
+      user.uid === ADMIN_UID &&
+      user.email &&
+      user.email.toLowerCase() === ADMIN_EMAIL
+    );
+  }
+
+  /*
+   * Firestore document remains mandatory.
+   * Read errors are reported rather than silently ignored.
+   */
+  async function verifyAdmin(user) {
+    if (!isConfiguredAdmin(user)) {
       return false;
     }
 
-    const f = firebase();
+    const f = getFirebase();
 
-    const doc = await f.db
+    const snapshot = await f.db
       .collection("admins")
       .doc(ADMIN_UID)
       .get();
 
-    if (!doc.exists) return false;
+    if (!snapshot.exists) {
+      throw new Error(
+        "admins/" + ADMIN_UID +
+        " document পাওয়া যায়নি। সঠিক Firebase project পরীক্ষা করো।"
+      );
+    }
 
-    return doc.data().active === true;
-  }
+    const data = snapshot.data() || {};
 
-  async function verifyStudent(user) {
-    if (!user) return false;
-
-    const f = firebase();
-
-    const doc = await f.db
-      .collection("users")
-      .doc(user.uid)
-      .get();
-
-    if (!doc.exists) return false;
-
-    const profile = doc.data() || {};
-
-    if (profile.accountStatus === "disabled") {
+    if (data.active !== true) {
       return false;
     }
 
-    /*
-     * The configured Admin must never enter the student dashboard.
-     */
     if (
-      user.uid === ADMIN_UID &&
-      user.email === ADMIN_EMAIL
+      data.email &&
+      data.email.toLowerCase() !== ADMIN_EMAIL
     ) {
       return false;
     }
@@ -134,12 +126,48 @@
     return true;
   }
 
+  async function verifyStudent(user) {
+    if (!user || isConfiguredAdmin(user)) {
+      return false;
+    }
+
+    const f = getFirebase();
+
+    const snapshot = await f.db
+      .collection("users")
+      .doc(user.uid)
+      .get();
+
+    if (!snapshot.exists) {
+      return false;
+    }
+
+    const data = snapshot.data() || {};
+
+    if (
+      data.accountStatus === "disabled" ||
+      data.status === "disabled"
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function redirect(page) {
+    if (currentPage !== page) {
+      window.location.replace(page);
+    }
+  }
+
   async function handleAuth(user) {
-    if (running) return;
-    running = true;
+    if (processing) return;
+
+    processing = true;
+    lastUser = user ? user.uid : null;
 
     try {
-      const f = firebase();
+      const f = getFirebase();
 
       if (!user) {
         if (isAdminDashboard) {
@@ -151,49 +179,54 @@
         return;
       }
 
-      /*
-       * Admin login page:
-       * Do not redirect an unverified signed-in account away.
-       * Keep the login page available to display an error.
-       */
-      if (isAdminLogin) {
-        try {
-          if (await isAdmin(user)) {
-            redirect(ADMIN_DASHBOARD);
+      if (isAdminLogin || isAdminDashboard) {
+        if (!isConfiguredAdmin(user)) {
+          if (isAdminDashboard) {
+            await f.auth.signOut();
+            redirect(ADMIN_LOGIN);
           } else {
             showMessage(
-              "এই account-এর সক্রিয় Admin permission নেই।"
+              "এই account অনুমোদিত Admin account নয়।"
             );
           }
-        } catch (error) {
-          console.error("Admin login-page verification:", error);
-
-          showMessage(
-            "Admin যাচাই করা যায়নি। Firebase Rules ও সংযোগ পরীক্ষা করো।"
-          );
-        }
-
-        return;
-      }
-
-      if (isAdminDashboard) {
-        let authorized = false;
-
-        try {
-          authorized = await isAdmin(user);
-        } catch (error) {
-          console.error("Dashboard Admin verification:", error);
-
-          showMessage(
-            "Admin যাচাই ব্যর্থ হয়েছে। Firebase Rules পরীক্ষা করো।"
-          );
 
           return;
         }
 
+        let authorized;
+
+        try {
+          authorized = await verifyAdmin(user);
+        } catch (error) {
+          console.error("Admin verification failed:", error);
+
+          showMessage(
+            error.message ||
+            "Admin verification ব্যর্থ হয়েছে। Firebase পরীক্ষা করো।"
+          );
+
+          /*
+           * Do not automatically sign out on a database read error.
+           * Keep the error visible so the real issue can be diagnosed.
+           */
+          return;
+        }
+
         if (!authorized) {
-          await f.auth.signOut();
-          redirect(ADMIN_LOGIN);
+          showMessage(
+            "Admin account active নয় অথবা অনুমতি পাওয়া যায়নি।"
+          );
+
+          if (isAdminDashboard) {
+            await f.auth.signOut();
+            redirect(ADMIN_LOGIN);
+          }
+
+          return;
+        }
+
+        if (isAdminLogin) {
+          redirect(ADMIN_DASHBOARD);
           return;
         }
 
@@ -212,15 +245,15 @@
       }
 
       if (isStudentPage) {
-        let allowed = false;
+        let allowed;
 
         try {
           allowed = await verifyStudent(user);
         } catch (error) {
-          console.error("Student verification:", error);
+          console.error("Student verification failed:", error);
 
           showMessage(
-            "Student account যাচাই করা যায়নি। Refresh করে আবার চেষ্টা করো।"
+            "Student account যাচাই করা যায়নি। Firebase Rules পরীক্ষা করো।"
           );
 
           return;
@@ -244,27 +277,28 @@
         );
       }
     } catch (error) {
-      console.error("mNEET Auth Guard:", error);
-
-      showMessage(
-        "Firebase চালু হয়নি। firebase.js ও Firebase SDK পরীক্ষা করো।"
-      );
+      console.error("mNEET Auth Guard error:", error);
+      showMessage(error.message || "Firebase error হয়েছে।");
     } finally {
-      running = false;
+      processing = false;
     }
   }
 
   try {
-    const f = firebase();
+    const f = getFirebase();
 
     f.auth.onAuthStateChanged(function (user) {
+      /*
+       * Ignore duplicate events for the same user while processing.
+       */
+      if (processing && lastUser === (user ? user.uid : null)) {
+        return;
+      }
+
       handleAuth(user);
     });
   } catch (error) {
-    console.error("Auth Guard initialization:", error);
-
-    showMessage(
-      "Firebase initialization failed। পেজ Refresh করো।"
-    );
+    console.error("Auth Guard initialization failed:", error);
+    showMessage("Firebase initialize হয়নি। পেজ Refresh করো।");
   }
 })(window, document);
