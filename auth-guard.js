@@ -1,490 +1,252 @@
-/* =====================================================
-   mNEET AUTHENTICATION GUARD
-   File: auth-guard.js
-
-   Responsibilities:
-   1. Protect Admin and Student pages.
-   2. Verify Admin using admins/{uid}.active === true.
-   3. Route Admin to admin.html.
-   4. Route Student to student.html.
-   5. Prevent unauthorized access.
-   6. Never treat a Firebase verification error as Student.
-===================================================== */
-
-(function (window, document) {
+(function () {
   "use strict";
 
-  const LOGIN_PAGE = "index.html";
-  const ADMIN_PAGE = "admin.html";
-  const STUDENT_PAGE = "student.html";
+  const ADMIN_LOGIN_PAGE = "admin-login.html";
+  const STUDENT_LOGIN_PAGE = "index.html";
+  const ADMIN_DASHBOARD_PAGE = "admin.html";
+  const STUDENT_DASHBOARD_PAGE = "student.html";
 
-  let started = false;
-  let auth = null;
-  let db = null;
-  let currentUser = null;
-  let currentRole = null;
-  let checkVersion = 0;
+  const currentPage = (
+    window.location.pathname.split("/").pop() || "index.html"
+  ).toLowerCase();
 
-  /* =====================================================
-     PAGE DETECTION
-  ===================================================== */
+  const isAdminLoginPage = currentPage === ADMIN_LOGIN_PAGE;
+  const isAdminDashboardPage = currentPage === ADMIN_DASHBOARD_PAGE;
 
-  function getCurrentPage() {
-    const path = window.location.pathname || "/";
-    const filename = path.split("/").pop().toLowerCase();
+  const studentPages = [
+    "student.html",
+    "course.html",
+    "chapter.html",
+    "topic.html",
+    "ncert.html",
+    "video.html"
+  ];
 
-    return filename || LOGIN_PAGE;
+  const isStudentPage = studentPages.includes(currentPage);
+
+  // অন্য পেজে এই guard-এর কাজ নেই।
+  if (
+    !isAdminLoginPage &&
+    !isAdminDashboardPage &&
+    !isStudentPage
+  ) {
+    return;
   }
 
-  function isLoginPage(page) {
-    return page === "" || page === LOGIN_PAGE;
-  }
+  let verificationInProgress = false;
 
-  function isAdminPage(page) {
-    return (
-      page === ADMIN_PAGE ||
-      page.startsWith("admin-") ||
-      page.startsWith("admin_")
-    );
-  }
-
-  function isStudentPage(page) {
-    return [
-      "student.html",
-      "course.html",
-      "chapter.html",
-      "topic.html",
-      "ncert.html",
-      "video.html"
-    ].includes(page);
-  }
-
-  function isProtectedPage(page) {
-    return isAdminPage(page) || isStudentPage(page);
-  }
-
-  /* =====================================================
-     FIREBASE SERVICES
-  ===================================================== */
-
-  function getFirebaseServices() {
+  function getFirebase() {
     const services = window.MNEETFirebase;
 
     if (
       !services ||
-      services.ready !== true ||
+      !services.ready ||
       !services.auth ||
-      !services.db
+      !services.db ||
+      services.projectId !== "mneet-spark"
     ) {
-      throw new Error(
-        "Firebase প্রস্তুত নয়। firebase.js এবং Firebase SDK পরীক্ষা করো।"
-      );
+      throw new Error("Firebase is not ready or project is incorrect.");
     }
 
-    auth = services.auth;
-    db = services.db;
-
-    return {
-      auth: auth,
-      db: db
-    };
+    return services;
   }
 
-  /* =====================================================
-     SAFE NAVIGATION
-  ===================================================== */
-
-  function redirectTo(page) {
-    const currentPage = getCurrentPage();
-
-    if (currentPage !== page.toLowerCase()) {
-      console.info(
-        "mNEET navigation:",
-        currentPage,
-        "→",
-        page
-      );
-
+  function redirect(page) {
+    if (currentPage !== page) {
       window.location.replace(page);
     }
   }
 
-  /* =====================================================
-     DISPLAY ERROR
-  ===================================================== */
-
-  function showError(message) {
-    console.error("mNEET Access Error:", message);
-
-    const element = document.getElementById("authMessage");
-
-    if (element) {
-      element.textContent = message;
-      element.classList.add("show");
-    }
-  }
-
-  /* =====================================================
-     ADMIN VERIFICATION
-  ===================================================== */
-
-  async function verifyAdmin(user) {
+  async function isAuthorizedAdmin(user) {
     if (!user || !user.uid) {
       return false;
     }
 
-    const services = getFirebaseServices();
+    const services = getFirebase();
 
-    console.info(
-      "mNEET Admin verification started."
-    );
-
-    console.info(
-      "Current UID:",
-      user.uid
-    );
-
-    console.info(
-      "Firebase project:",
-      services.db.app.options.projectId
-    );
-
-    const snapshot = await services.db
+    const adminDoc = await services.db
       .collection("admins")
       .doc(user.uid)
       .get();
 
-    console.info(
-      "Admin document exists:",
-      snapshot.exists
-    );
-
-    if (!snapshot.exists) {
+    if (!adminDoc.exists) {
       return false;
     }
 
-    const data = snapshot.data() || {};
+    const adminData = adminDoc.data();
 
-    console.info(
-      "Admin active:",
-      data.active
-    );
-
-    /*
-     * Only a Boolean true authorizes an Admin.
-     * The string "true" is not sufficient.
-     */
-
-    return data.active === true;
+    return adminData.active === true;
   }
 
-  /* =====================================================
-     AUTHENTICATED USER HANDLER
-  ===================================================== */
-
-  async function handleUser(user, version) {
-    const page = getCurrentPage();
-
-    function isLatestCheck() {
-      return version === checkVersion;
+  async function hasActiveStudentProfile(user) {
+    if (!user || !user.uid) {
+      return false;
     }
 
-    /*
-     * Signed-out users cannot access protected pages.
-     */
+    const services = getFirebase();
 
-    if (!user) {
-      currentUser = null;
-      currentRole = null;
+    const userDoc = await services.db
+      .collection("users")
+      .doc(user.uid)
+      .get();
 
-      if (isProtectedPage(page)) {
-        redirectTo(LOGIN_PAGE);
-      }
+    if (!userDoc.exists) {
+      return false;
+    }
 
+    const profile = userDoc.data();
+
+    return profile.accountStatus !== "disabled";
+  }
+
+  async function handleAuthState(user) {
+    if (verificationInProgress) {
       return;
     }
 
-    currentUser = user;
-
-    /*
-     * Verify the current user's Admin status.
-     *
-     * A successful verification returning false means
-     * the user is not an active Admin.
-     *
-     * A rejected Firestore request is an ERROR and must
-     * not be treated as a Student account.
-     */
-
-    let adminAuthorized;
+    verificationInProgress = true;
 
     try {
-      adminAuthorized = await verifyAdmin(user);
+      const services = getFirebase();
+
+      // No signed-in user: protected pages are inaccessible.
+      if (!user) {
+        if (isAdminDashboardPage) {
+          redirect(ADMIN_LOGIN_PAGE);
+        } else if (isStudentPage) {
+          redirect(STUDENT_LOGIN_PAGE);
+        }
+
+        return;
+      }
+
+      // ADMIN LOGIN PAGE
+      if (isAdminLoginPage) {
+        let admin;
+
+        try {
+          admin = await isAuthorizedAdmin(user);
+        } catch (error) {
+          console.error("Admin verification failed:", error);
+          return;
+        }
+
+        if (admin) {
+          redirect(ADMIN_DASHBOARD_PAGE);
+          return;
+        }
+
+        // Only an account with a valid student profile goes to student.
+        let student;
+
+        try {
+          student = await hasActiveStudentProfile(user);
+        } catch (error) {
+          console.error("Student profile verification failed:", error);
+          return;
+        }
+
+        if (student) {
+          redirect(STUDENT_DASHBOARD_PAGE);
+        }
+
+        return;
+      }
+
+      // ADMIN DASHBOARD
+      if (isAdminDashboardPage) {
+        let admin;
+
+        try {
+          admin = await isAuthorizedAdmin(user);
+        } catch (error) {
+          console.error("Admin dashboard verification failed:", error);
+          document.body.innerHTML =
+            "<main style='padding:24px;font-family:Arial'>" +
+            "<h2>Admin verification failed</h2>" +
+            "<p>Check your internet connection and Firebase Security Rules, then reload.</p>" +
+            "<a href='admin-login.html'>Return to Admin Login</a>" +
+            "</main>";
+          return;
+        }
+
+        if (!admin) {
+          let student = false;
+
+          try {
+            student = await hasActiveStudentProfile(user);
+          } catch (error) {
+            console.error("Student profile verification failed:", error);
+          }
+
+          if (student) {
+            redirect(STUDENT_DASHBOARD_PAGE);
+          } else {
+            await services.auth.signOut();
+            redirect(ADMIN_LOGIN_PAGE);
+          }
+
+          return;
+        }
+
+        // Authorized admin stays on admin.html.
+        document.documentElement.setAttribute(
+          "data-admin-authorized",
+          "true"
+        );
+
+        window.dispatchEvent(
+          new CustomEvent("mneet:admin-authorized", {
+            detail: { uid: user.uid }
+          })
+        );
+
+        return;
+      }
+
+      // STUDENT PAGES
+      if (isStudentPage) {
+        let admin = false;
+
+        try {
+          admin = await isAuthorizedAdmin(user);
+        } catch (error) {
+          console.error("Admin role check failed:", error);
+        }
+
+        if (admin) {
+          redirect(ADMIN_DASHBOARD_PAGE);
+          return;
+        }
+
+        let student;
+
+        try {
+          student = await hasActiveStudentProfile(user);
+        } catch (error) {
+          console.error("Student profile verification failed:", error);
+          return;
+        }
+
+        if (!student) {
+          await services.auth.signOut();
+          redirect(STUDENT_LOGIN_PAGE);
+        }
+      }
     } catch (error) {
-      if (!isLatestCheck()) return;
-
-      currentRole = null;
-
-      console.error(
-        "mNEET Admin verification failed:",
-        error
-      );
-
-      const message =
-        "Account যাচাই করা যায়নি। Internet connection এবং Firebase Security Rules পরীক্ষা করে আবার চেষ্টা করো।";
-
-      if (isLoginPage(page)) {
-        showError(message);
-      } else if (isAdminPage(page)) {
-        showError(message);
-      } else if (isStudentPage(page)) {
-        showError(message);
-      }
-
-      /*
-       * Do not redirect to Student on verification errors.
-       * Fail closed on protected pages.
-       */
-
-      if (isProtectedPage(page)) {
-        redirectTo(LOGIN_PAGE);
-      }
-
-      return;
-    }
-
-    if (!isLatestCheck()) return;
-
-    /*
-     * LOGIN PAGE
-     */
-
-    if (isLoginPage(page)) {
-      if (adminAuthorized) {
-        currentRole = "admin";
-        redirectTo(ADMIN_PAGE);
-        return;
-      }
-
-      /*
-       * A successful Admin check that returns false
-       * means the account is not an active Admin.
-       *
-       * Continue only if the user has a valid Student
-       * profile. Never grant Admin access through users/.
-       */
-
-      try {
-        const studentSnapshot = await db
-          .collection("users")
-          .doc(user.uid)
-          .get();
-
-        if (!isLatestCheck()) return;
-
-        if (!studentSnapshot.exists) {
-          currentRole = null;
-
-          showError(
-            "এই অ্যাকাউন্টের Student Profile পাওয়া যায়নি। Admin হলে admins/{uid} পরীক্ষা করো; Student হলে Registration সম্পূর্ণ করো।"
-          );
-
-          await auth.signOut();
-          return;
-        }
-
-        const studentData = studentSnapshot.data() || {};
-
-        if (studentData.accountStatus === "disabled") {
-          currentRole = null;
-
-          showError(
-            "এই Student Account নিষ্ক্রিয় করা হয়েছে।"
-          );
-
-          await auth.signOut();
-          return;
-        }
-
-        currentRole = "student";
-        redirectTo(STUDENT_PAGE);
-
-      } catch (error) {
-        if (!isLatestCheck()) return;
-
-        currentRole = null;
-
-        console.error(
-          "mNEET Student profile verification failed:",
-          error
-        );
-
-        showError(
-          "Student Profile যাচাই করা যায়নি। Firestore Security Rules পরীক্ষা করো।"
-        );
-      }
-
-      return;
-    }
-
-    /*
-     * ADMIN PAGE
-     */
-
-    if (isAdminPage(page)) {
-      if (adminAuthorized) {
-        currentRole = "admin";
-        return;
-      }
-
-      /*
-       * Admin document is missing or inactive.
-       * Do not allow the account to remain on Admin pages.
-       */
-
-      currentRole = null;
-
-      showError(
-        "এই অ্যাকাউন্টের Admin Access নেই।"
-      );
-
-      redirectTo(STUDENT_PAGE);
-      return;
-    }
-
-    /*
-     * STUDENT PAGE
-     */
-
-    if (isStudentPage(page)) {
-      if (adminAuthorized) {
-        /*
-         * An active Admin should not remain on Student pages.
-         */
-
-        currentRole = "admin";
-        redirectTo(ADMIN_PAGE);
-        return;
-      }
-
-      try {
-        const studentSnapshot = await db
-          .collection("users")
-          .doc(user.uid)
-          .get();
-
-        if (!isLatestCheck()) return;
-
-        if (!studentSnapshot.exists) {
-          currentRole = null;
-          redirectTo(LOGIN_PAGE);
-          return;
-        }
-
-        const studentData = studentSnapshot.data() || {};
-
-        if (studentData.accountStatus === "disabled") {
-          currentRole = null;
-          await auth.signOut();
-          redirectTo(LOGIN_PAGE);
-          return;
-        }
-
-        currentRole = "student";
-
-      } catch (error) {
-        if (!isLatestCheck()) return;
-
-        currentRole = null;
-
-        console.error(
-          "mNEET Student access verification failed:",
-          error
-        );
-
-        redirectTo(LOGIN_PAGE);
-      }
+      console.error("Authentication guard error:", error);
+    } finally {
+      verificationInProgress = false;
     }
   }
 
-  /* =====================================================
-     AUTH STATE LISTENER
-  ===================================================== */
+  try {
+    const services = getFirebase();
 
-  function start() {
-    if (started) return;
-
-    let services;
-
-    try {
-      services = getFirebaseServices();
-    } catch (error) {
-      console.error(
-        "mNEET Auth Guard initialization failed:",
-        error
-      );
-
-      if (isProtectedPage(getCurrentPage())) {
-        redirectTo(LOGIN_PAGE);
-      }
-
-      return;
-    }
-
-    started = true;
-
-    services.auth.onAuthStateChanged(async function (user) {
-      const version = ++checkVersion;
-
-      try {
-        await handleUser(user, version);
-      } catch (error) {
-        if (version !== checkVersion) return;
-
-        console.error(
-          "mNEET Auth Guard error:",
-          error
-        );
-
-        currentRole = null;
-
-        if (isProtectedPage(getCurrentPage())) {
-          redirectTo(LOGIN_PAGE);
-        } else {
-          showError(
-            "Account যাচাই করতে সমস্যা হয়েছে। আবার চেষ্টা করো।"
-          );
-        }
-      }
+    services.auth.onAuthStateChanged(function (user) {
+      handleAuthState(user);
     });
+  } catch (error) {
+    console.error("Unable to initialize authentication guard:", error);
   }
-
-  /* =====================================================
-     PUBLIC API
-  ===================================================== */
-
-  window.MNEETAuthGuard = Object.freeze({
-    start: start,
-
-    getCurrentUser: function () {
-      return currentUser;
-    },
-
-    getCurrentRole: function () {
-      return currentRole;
-    },
-
-    isAdmin: function () {
-      return currentRole === "admin";
-    },
-
-    verifyAdmin: verifyAdmin
-  });
-
-  /*
-   * Start the guard.
-   */
-
-  start();
-
-})(window, document);
+})();
