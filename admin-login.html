@@ -247,7 +247,8 @@
       if (user.uid !== ADMIN_UID) {
         throw new Error("Admin UID মেলেনি।");
       }
-
+console.log("Firebase project:", db.app.options.projectId);
+console.log("Admin UID:", ADMIN_UID);
       const snapshot = await db
         .collection("admins")
         .doc(ADMIN_UID)
