@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#071A12">
+
+  <title>Admin Login | mNEET</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #071A12;
+      --card: #0D2419;
+      --green: #16A34A;
+      --light-green: #22C55E;
+      --white: #FFFFFF;
+      --muted: #D1D5DB;
+      --input: #10291D;
+      --border: #28513A;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      color: var(--white);
+      font-family: Arial, sans-serif;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 410px;
+      padding: 30px 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+    }
+
+    .logo {
+      margin: 0;
+      text-align: center;
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .logo span {
+      color: var(--light-green);
+    }
+
+    .badge {
+      width: fit-content;
+      margin: 12px auto 24px;
+      padding: 7px 13px;
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      color: var(--light-green);
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      text-align: center;
+      font-size: 23px;
+    }
+
+    .subtitle {
+      margin: 0 0 25px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    label {
+      display: block;
+      margin: 17px 0 8px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      min-height: 48px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      background: var(--input);
+      color: var(--white);
+      font-size: 15px;
+    }
+
+    input:focus {
+      border-color: var(--light-green);
+    }
+
+    input::placeholder {
+      color: var(--muted);
+      opacity: 0.75;
+    }
+
+    button {
+      width: 100%;
+      min-height: 49px;
+      margin-top: 23px;
+      border: none;
+      border-radius: 10px;
+      background: var(--green);
+      color: var(--white);
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    .forgot {
+      display: block;
+      margin-top: 18px;
+      text-align: center;
+      color: var(--light-green);
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .forgot:hover {
+      text-decoration: underline;
+    }
+
+    .message {
+      display: none;
+      margin-top: 18px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--white);
+      font-size: 14px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .back-link {
+      display: block;
+      margin-top: 25px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      color: var(--light-green);
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="login-card">
+    <h1 class="logo">m<span>NEET</span></h1>
+
+    <div class="badge">ADMIN ACCESS</div>
+
+    <h2>Admin Login</h2>
+
+    <p class="subtitle">
+      Sign in with your authorized administrator account.
+    </p>
+
+    <form id="adminLoginForm">
+      <label for="adminEmail">Email Address</label>
+
+      <input
+        type="email"
+        id="adminEmail"
+        name="email"
+        placeholder="Enter admin email"
+        autocomplete="username"
+        required
+      >
+
+      <label for="adminPassword">Password</label>
+
+      <input
+        type="password"
+        id="adminPassword"
+        name="password"
+        placeholder="Enter password"
+        autocomplete="current-password"
+        required
+      >
+
+      <button type="submit" id="loginButton">
+        Sign In to Admin
+      </button>
+    </form>
+
+    <a href="#" class="forgot" id="forgotPassword">
+      Forgot Password?
+    </a>
+
+    <div id="message" class="message" role="status"
+         aria-live="polite"></div>
+
+    <a href="index.html" class="back-link">
+      ← Back to Student Login
+    </a>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+  <script src="firebase.js"></script>
+
+  <script>
+    (function () {
+      const form = document.getElementById("adminLoginForm");
+      const emailInput = document.getElementById("adminEmail");
+      const passwordInput = document.getElementById("adminPassword");
+      const button = document.getElementById("loginButton");
+      const message = document.getElementById("message");
+      const forgotLink = document.getElementById("forgotPassword");
+
+      let busy = false;
+
+      function showMessage(text) {
+        message.textContent = text;
+        message.classList.add("show");
+      }
+
+      function getFirebase() {
+        const services = window.MNEETFirebase;
+
+        if (
+          !services ||
+          !services.ready ||
+          !services.auth ||
+          !services.db
+        ) {
+          throw new Error(
+            "Firebase is not ready. Check firebase.js and your connection."
+          );
+        }
+
+        return services;
+      }
+
+      function friendlyError(error) {
+        const code = error && error.code;
+
+        if (
+          code === "auth/invalid-credential" ||
+          code === "auth/wrong-password" ||
+          code === "auth/user-not-found"
+        ) {
+          return "Email or password is incorrect.";
+        }
+
+        if (code === "auth/too-many-requests") {
+          return "Too many attempts. Please try again later.";
+        }
+
+        if (code === "auth/network-request-failed") {
+          return "Network error. Check your internet connection.";
+        }
+
+        if (code === "permission-denied" ||
+            code === "firestore/permission-denied") {
+          return "Admin verification was blocked by Firebase rules.";
+        }
+
+        return error && error.message
+          ? error.message
+          : "Login failed. Please try again.";
+      }
+
+      async function verifyAdmin(user) {
+        const services = getFirebase();
+
+        const snapshot = await services.db
+          .collection("admins")
+          .doc(user.uid)
+          .get();
+
+        if (!snapshot.exists || snapshot.data().active !== true) {
+          throw new Error(
+            "This account is not an active administrator. Contact the system owner."
+          );
+        }
+
+        return true;
+      }
+
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        if (busy) return;
+
+        busy = true;
+        button.disabled = true;
+        button.textContent = "Verifying...";
+        message.classList.remove("show");
+
+        let signedInUser = null;
+
+        try {
+          const services = getFirebase();
+
+          const credential = await services.auth
+            .signInWithEmailAndPassword(
+              emailInput.value.trim(),
+              passwordInput.value
+            );
+
+          signedInUser = credential.user;
+
+          await verifyAdmin(signedInUser);
+
+          showMessage("Admin verified. Opening dashboard...");
+
+          window.location.replace("admin.html");
+
+        } catch (error) {
+          console.error("Admin login error:", error);
+
+          if (signedInUser) {
+            try {
+              await getFirebase().auth.signOut();
+            } catch (signOutError) {
+              console.error("Sign out error:", signOutError);
+            }
+          }
+
+          showMessage(friendlyError(error));
+
+          busy = false;
+          button.disabled = false;
+          button.textContent = "Sign In to Admin";
+        }
+      });
+
+      forgotLink.addEventListener("click", async function (event) {
+        event.preventDefault();
+
+        const email = emailInput.value.trim();
+
+        if (!email) {
+          showMessage("Enter your email address first.");
+          emailInput.focus();
+          return;
+        }
+
+        try {
+          await getFirebase().auth.sendPasswordResetEmail(email);
+
+          showMessage(
+            "If this email is registered, a password reset email will be sent."
+          );
+        } catch (error) {
+          console.error("Password reset error:", error);
+          showMessage(friendlyError(error));
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>
