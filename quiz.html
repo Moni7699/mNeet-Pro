@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#e8f7ee">
+<title>Quiz | mNEET</title>
+
+<style>
+:root {
+  --bg:#f5faf6;
+  --card:#fff;
+  --text:#26372d;
+  --muted:#748278;
+  --green:#71c995;
+  --green-dark:#328b59;
+  --green-light:#e8f7ee;
+  --border:#dcebe0;
+  --red:#d95d65;
+  --red-light:#fff0f0;
+  --yellow:#fff8df;
+  --shadow:0 3px 14px rgba(45,100,65,.06);
+}
+
+body.dark {
+  --bg:#111914;
+  --card:#1d2921;
+  --text:#edf5ef;
+  --muted:#a6b7aa;
+  --green:#71c995;
+  --green-dark:#8ce0aa;
+  --green-light:#253b2d;
+  --border:#34483a;
+  --red:#ff8585;
+  --red-light:#452727;
+  --yellow:#40391f;
+  --shadow:0 3px 14px rgba(0,0,0,.15);
+}
+
+* {
+  box-sizing:border-box;
+}
+
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,sans-serif;
+  font-size:15px;
+  line-height:1.5;
+}
+
+button {
+  font:inherit;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+
+button:disabled {
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+.topbar {
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+}
+
+.toprow {
+  max-width:720px;
+  margin:auto;
+  padding:11px 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+.brand {
+  color:var(--green-dark);
+  font-size:22px;
+  font-weight:800;
+  line-height:1.2;
+}
+
+.brand small {
+  display:block;
+  font-size:11px;
+  font-weight:500;
+  color:var(--muted);
+  margin-top:3px;
+}
+
+.iconbtn {
+  padding:8px 11px;
+  background:var(--bg);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:10px;
+  font-size:13px;
+}
+
+.container {
+  width:100%;
+  max-width:720px;
+  margin:auto;
+  padding:15px 12px 28px;
+}
+
+.message {
+  padding:16px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:13px;
+  line-height:1.7;
+  overflow-wrap:anywhere;
+}
+
+.hidden {
+  display:none!important;
+}
+
+.info-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.quiz-name {
+  font-size:15px;
+  font-weight:700;
+  overflow-wrap:anywhere;
+}
+
+.question-count {
+  color:var(--muted);
+  font-size:12px;
+  margin-top:4px;
+}
+
+.attempt-badge {
+  display:inline-flex;
+  margin-top:6px;
+  padding:4px 9px;
+  border-radius:20px;
+  background:var(--green-light);
+  color:var(--green-dark);
+  font-size:11px;
+  font-weight:700;
+}
+
+.timer-card {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:13px;
+  padding:12px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:13px;
+  box-shadow:var(--shadow);
+}
+
+.timer-label {
+  color:var(--muted);
+  font-size:10px;
+}
+
+.timer {
+  margin-top:3px;
+  font-size:clamp(19px,5vw,23px);
+  font-weight:800;
+  color:var(--green-dark);
+  font-variant-numeric:tabular-nums;
+}
+
+.timer.warning {
+  color:var(--red);
+}
+
+.progress-track {
+  height:5px;
+  background:var(--border);
+  border-radius:20px;
+  overflow:hidden;
+  margin-bottom:14px;
+}
+
+.progress-bar {
+  height:100%;
+  width:0;
+  background:var(--green);
+  transition:width .2s;
+}
+
+.card {
+  padding:clamp(13px,4vw,22px);
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:15px;
+  box-shadow:var(--shadow);
+}
+
+.q-label {
+  color:var(--green-dark);
+  font-size:11px;
+  font-weight:800;
+  margin-bottom:10px;
+  letter-spacing:.3px;
+}
+
+.question {
+  font-size:clamp(15px,4vw,18px);
+  font-weight:600;
+  line-height:1.7;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+.question-image {
+  display:none;
+  width:100%;
+  max-height:300px;
+  object-fit:contain;
+  margin-top:13px;
+  border-radius:10px;
+  background:var(--bg);
+}
+
+.options {
+  display:grid;
+  grid-template-columns:1fr;
+  gap:9px;
+  margin-top:18px;
+}
+
+.option {
+  width:100%;
+  min-width:0;
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:11px;
+  border:1px solid var(--border);
+  background:var(--bg);
+  color:var(--text);
+  text-align:left;
+  border-radius:11px;
+  line-height:1.5;
+  font-size:14px;
+}
+
+.option-letter {
+  flex:0 0 27px;
+  height:27px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--border);
+  border-radius:8px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.option-text {
+  min-width:0;
+  padding-top:3px;
+  overflow-wrap:anywhere;
+}
+
+.option.selected {
+  border:1.5px solid var(--green-dark);
+  background:var(--green-light);
+}
+
+.option.correct {
+  border:1.5px solid #16803d;
+  background:#b8edc9;
+  color:#164c2a;
+}
+
+.option.wrong {
+  border:1.5px solid #bd2638;
+  background:#ffd4d8;
+  color:#801724;
+}
+
+body.dark .option.correct {
+  background:#254633;
+  color:#e3ffeb;
+}
+
+body.dark .option.wrong {
+  background:#452727;
+  color:#ffe9e9;
+}
+
+.option:disabled {
+  opacity:1;
+  cursor:default;
+}
+
+.feedback {
+  display:none;
+  padding:12px;
+  border-radius:11px;
+  margin-top:13px;
+  font-size:13px;
+  line-height:1.7;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+.feedback.show {
+  display:block;
+}
+
+.feedback.good {
+  background:var(--green-light);
+  border:1px solid var(--green);
+}
+
+.feedback.bad {
+  background:var(--yellow);
+  border:1px solid #e1cb79;
+}
+
+.action-row,
+.navigation {
+  display:flex;
+  gap:9px;
+  margin-top:14px;
+}
+
+.btn {
+  min-width:0;
+  min-height:42px;
+  padding:10px 12px;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:700;
+  border:1px solid transparent;
+  transition:background .15s, transform .1s;
+}
+
+.btn:active {
+  transform:scale(.98);
+}
+
+#answerBtn {
+  background:#176b35;
+  color:#fff;
+  border-color:#10572a;
+}
+
+#answerBtn:active {
+  background:#105528;
+}
+
+#clearBtn {
+  background:#174ea6;
+  color:#fff;
+  border-color:#123e85;
+}
+
+#clearBtn:active {
+  background:#123b7d;
+}
+
+#prevBtn,
+#nextBtn {
+  background:#a66b00;
+  color:#fff;
+  border-color:#855500;
+}
+
+#prevBtn:active,
+#nextBtn:active {
+  background:#805200;
+}
+
+#submitQuizBtn {
+  background:#b71c2c;
+  color:#fff;
+  border-color:#8f1421;
+}
+
+#submitQuizBtn:active {
+  background:#8f1421;
+}
+
+body.dark #answerBtn {
+  background:#176b35;
+  color:#fff;
+  border-color:#10572a;
+}
+
+body.dark #clearBtn {
+  background:#174ea6;
+  color:#fff;
+  border-color:#123e85;
+}
+
+body.dark #prevBtn,
+body.dark #nextBtn {
+  background:#a66b00;
+  color:#fff;
+  border-color:#855500;
+}
+
+body.dark #submitQuizBtn {
+  background:#b71c2c;
+  color:#fff;
+  border-color:#8f1421;
+}
+
+.action-row .btn,
+.navigation .btn {
+  flex:1;
+}
+
+.submit-area {
+  margin-top:17px;
+  padding-top:15px;
+  border-top:1px solid var(--border);
+}
+
+.submit-area .btn {
+  width:100%;
+}
+
+.note {
+  text-align:center;
+  font-size:11px;
+  color:var(--muted);
+  margin-top:9px;
+  line-height:1.6;
+}
+
+.footer {
+  text-align:center;
+  font-size:11px;
+  color:var(--muted);
+  padding:18px 0 4px;
+}
+
+@media(min-width:560px) {
+  .container {
+    padding-top:22px;
+  }
+
+  .options {
+    grid-template-columns:1fr 1fr;
+  }
+
+  .question-image {
+    max-height:340px;
+  }
+}
+
+@media(max-width:340px) {
+  .toprow {
+    padding-left:10px;
+    padding-right:10px;
+  }
+
+  .container {
+    padding-left:9px;
+    padding-right:9px;
+  }
+
+  .action-row {
+    flex-direction:column;
+  }
+
+  .btn {
+    font-size:12px;
+  }
+}
+</style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="toprow">
+    <div class="brand">
+      mNEET
+      <small>Practice · Improve · Succeed</small>
+    </div>
+
+    <button class="iconbtn" id="themeBtn" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<main class="container">
+  <div id="loading" class="message">Loading quiz...</div>
+  <div id="errorBox" class="message hidden"></div>
+
+  <section id="quizArea" class="hidden">
+    <div class="info-row">
+      <div>
+        <div class="quiz-name" id="quizTitle">Practice Quiz</div>
+        <div class="question-count" id="questionCount"></div>
+        <div class="attempt-badge" id="attemptBadge">Attempt No. 1</div>
+      </div>
+
+      <button class="iconbtn" id="exitBtn" type="button">Exit</button>
+    </div>
+
+    <div class="timer-card">
+      <div>
+        <div class="timer-label">TIME LEFT FOR THIS QUESTION</div>
+        <div class="timer" id="questionTimer">01:00</div>
+      </div>
+
+      <div>
+        <div class="timer-label">TOTAL TIME</div>
+        <div class="timer" id="totalTimer">00:00</div>
+      </div>
+    </div>
+
+    <div class="progress-track">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="card">
+      <div class="q-label" id="questionLabel">QUESTION 1</div>
+
+      <div class="question" id="questionText"></div>
+      <img id="questionImage" class="question-image" alt="Question diagram">
+
+      <div class="options" id="options"></div>
+      <div id="feedback" class="feedback"></div>
+
+      <div class="action-row">
+        <button class="btn" id="answerBtn" type="button">
+          Submit Answer
+        </button>
+
+        <button class="btn" id="clearBtn" type="button">
+          Clear
+        </button>
+      </div>
+
+      <div class="navigation">
+        <button class="btn" id="prevBtn" type="button">
+          ← Previous
+        </button>
+
+        <button class="btn" id="nextBtn" type="button">
+          Next →
+        </button>
+      </div>
+
+      <div class="submit-area">
+        <button class="btn" id="submitQuizBtn" type="button">
+          Submit Quiz
+        </button>
+
+        <div class="note">
+          Submit your answer to check it. Submit the quiz when you finish.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">mNEET · Practice. Improve. Succeed.</div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+
+  const KEYS = {
+    subject: "activeSubject",
+    chapter: "activeChapter",
+    quizType: "activeQuizType",
+    result: "mneetQuizResult"
+  };
+
+  let questions = [];
+  let answers = {};
+  let currentIndex = 0;
+  let questionSeconds = 60;
+  let totalSeconds = 0;
+  let questionInterval = null;
+  let totalInterval = null;
+  let quizSubmitted = false;
+  let quizTitle = "Practice Quiz";
+  let sessionKey = "";
+  let attemptNo = 1;
+  let questionTimedOut = false;
+  let answerRevealed = false;
+  let initializing = false;
+  let attemptCounterKey = "";
+  let attemptBaseSeconds = 60;
+  let attemptToken = "";
+
+  function getTheme() {
+    return localStorage.getItem("mneetTheme") || "light";
+  }
+
+  function applyTheme() {
+    const dark = getTheme() === "dark";
+    document.body.classList.toggle("dark", dark);
+    $("themeBtn").textContent = dark ? "☀️ Light" : "🌙 Dark";
+  }
+
+  $("themeBtn").addEventListener("click", () => {
+    localStorage.setItem(
+      "mneetTheme",
+      getTheme() === "dark" ? "light" : "dark"
+    );
+    applyTheme();
+  });
+
+  applyTheme();
+
+  function showError(message) {
+    stopQuestionTimer();
+    stopTotalTimer();
+    $("loading").classList.add("hidden");
+    $("quizArea").classList.add("hidden");
+    $("errorBox").classList.remove("hidden");
+    $("errorBox").textContent = message;
+  }
+
+  function formatTime(seconds) {
+    seconds = Math.max(0, Math.floor(Number(seconds) || 0));
+
+    return String(Math.floor(seconds / 60)).padStart(2, "0") +
+      ":" +
+      String(seconds % 60).padStart(2, "0");
+  }
+
+  function stopQuestionTimer() {
+    if (questionInterval !== null) {
+      clearInterval(questionInterval);
+      questionInterval = null;
+    }
+  }
+
+  function stopTotalTimer() {
+    if (totalInterval !== null) {
+      clearInterval(totalInterval);
+      totalInterval = null;
+    }
+  }
+
+  function stopAllTimers() {
+    stopQuestionTimer();
+    stopTotalTimer();
+  }
+
+  function getAttemptSeconds(number) {
+    if (number <= 1) return 60;
+    if (number === 2) return 50;
+    if (number === 3) return 40;
+    return 30;
+  }
+
+  function getAttemptCounterKey() {
+    return "mneetAttemptCount_" +
+      localStorage.getItem(KEYS.subject) + "_" +
+      localStorage.getItem(KEYS.chapter) + "_" +
+      localStorage.getItem(KEYS.quizType);
+  }
+
+  function getLaunchKey() {
+    return "mneetQuizLaunch_" +
+      localStorage.getItem(KEYS.subject) + "_" +
+      localStorage.getItem(KEYS.chapter) + "_" +
+      localStorage.getItem(KEYS.quizType);
+  }
+
+  function getQuizTypeProgressKey() {
+    return "mneetQuizTypeProgress_" +
+      localStorage.getItem(KEYS.subject) + "_" +
+      localStorage.getItem(KEYS.chapter) + "_" +
+      localStorage.getItem(KEYS.quizType);
+  }
+
+  function getChapterProgressKey() {
+    return "mneetChapterProgress_" +
+      localStorage.getItem(KEYS.subject) + "_" +
+      localStorage.getItem(KEYS.chapter);
+  }
+
+  function startNewAttempt() {
+    attemptNo = (Number(localStorage.getItem(attemptCounterKey)) || 0) + 1;
+    localStorage.setItem(attemptCounterKey, String(attemptNo));
+
+    attemptBaseSeconds = getAttemptSeconds(attemptNo);
+
+    answers = {};
+    currentIndex = 0;
+    totalSeconds = 0;
+    questionSeconds = attemptBaseSeconds;
+    quizSubmitted = false;
+    questionTimedOut = false;
+    answerRevealed = false;
+
+    attemptToken = Date.now().toString() + "_" +
+      Math.random().toString(36).slice(2);
+
+    localStorage.setItem(sessionKey, JSON.stringify({
+      attemptToken,
+      attemptNo,
+      answers,
+      currentIndex,
+      totalSeconds,
+      questionSeconds,
+      quizSubmitted: false,
+      updatedAt: Date.now()
+    }));
+
+    $("attemptBadge").textContent = "Attempt No. " + attemptNo;
+  }
+
+  function saveProgress() {
+    if (!sessionKey || quizSubmitted) return;
+
+    try {
+      const q = questions[currentIndex];
+
+      if (q && !answers[q.id]?.submitted &&
+          !answers[q.id]?.timedOut && !answers[q.id]?.revealed) {
+        answers[q.id] = {
+          ...(answers[q.id] || {}),
+          secondsLeft: questionSeconds
+        };
+      }
+
+      localStorage.setItem(sessionKey, JSON.stringify({
+        attemptToken,
+        attemptNo,
+        answers,
+        currentIndex,
+        totalSeconds,
+        questionSeconds,
+        quizSubmitted: false,
+        updatedAt: Date.now()
+      }));
+    } catch (error) {
+      console.warn("Could not save quiz progress:", error);
+    }
+  }
+
+  function normalizeQuestion(doc) {
+    const data = doc.data() || {};
+    const raw = data.options || {};
+    let options;
+
+    if (Array.isArray(raw)) {
+      options = raw.map((value, index) => ({
+        letter: ["A", "B", "C", "D"][index] || String(index + 1),
+        text: typeof value === "object"
+          ? String(value.text ?? value.label ?? "")
+          : String(value ?? "")
+      }));
+    } else {
+      options = ["A", "B", "C", "D"].map(letter => ({
+        letter,
+        text: raw[letter] == null ? "" :
+          String(typeof raw[letter] === "object"
+            ? raw[letter].text ?? raw[letter].label ?? ""
+            : raw[letter])
+      }));
+    }
+
+    let correct = String(
+      data.correctOption ?? data.correctAnswer ?? ""
+    ).trim().toUpperCase();
+
+    if (["0", "1", "2", "3"].includes(correct)) {
+      correct = ["A", "B", "C", "D"][Number(correct)];
+    }
+
+    return {
+      id: doc.id,
+      question: String(
+        data.question || data.questionText || data.text || ""
+      ),
+      imageUrl: String(data.imageUrl || ""),
+      options,
+      correctOption: correct,
+      solution: String(data.solution || data.explanation || ""),
+      order: Number(data.order) || 0
+    };
+  }
+
+  async function initQuiz() {
+    if (initializing) return;
+    initializing = true;
+
+    try {
+      if (!window.mneetFirebaseReady || !window.auth || !window.db) {
+        throw new Error(
+          window.mneetFirebaseError ||
+          "Firebase failed to initialize. Check js/firebase.js."
+        );
+      }
+
+      const user = window.auth.currentUser;
+
+      if (!user) {
+        window.location.replace("index.html");
+        return;
+      }
+
+      const subjectId = localStorage.getItem(KEYS.subject);
+      const chapterId = localStorage.getItem(KEYS.chapter);
+      const quizTypeId = localStorage.getItem(KEYS.quizType);
+
+      if (!subjectId || !chapterId || !quizTypeId) {
+        throw new Error(
+          "Quiz selection is missing. Please select a quiz again."
+        );
+      }
+
+      const profileDoc = await window.db
+        .collection("users")
+        .doc(user.uid)
+        .get();
+
+      if (
+        !profileDoc.exists ||
+        profileDoc.data().role !== "student" ||
+        profileDoc.data().status !== "active"
+      ) {
+        await window.auth.signOut();
+        window.location.replace("index.html");
+        return;
+      }
+
+      const subjectRef = window.db
+        .collection("subjects")
+        .doc(subjectId);
+
+      const chapterRef = subjectRef
+        .collection("chapters")
+        .doc(chapterId);
+
+      const quizRef = chapterRef
+        .collection("quizTypes")
+        .doc(quizTypeId);
+
+      let subjectDoc, chapterDoc, quizDoc;
+
+      try {
+        [subjectDoc, chapterDoc, quizDoc] = await Promise.all([
+          subjectRef.get(),
+          chapterRef.get(),
+          quizRef.get()
+        ]);
+      } catch (error) {
+        throw new Error(
+          "Cannot read Subject, Chapter or Quiz Type. Check Firestore Rules and document paths. Details: " +
+          error.message
+        );
+      }
+
+      if (!subjectDoc.exists || subjectDoc.data().published !== true) {
+        throw new Error("Subject not found or not published.");
+      }
+
+      if (!chapterDoc.exists || chapterDoc.data().published !== true) {
+        throw new Error("Chapter not found or not published.");
+      }
+
+      if (!quizDoc.exists || quizDoc.data().published !== true) {
+        throw new Error("Quiz type not found or not published.");
+      }
+
+      quizTitle = quizDoc.data().name ||
+        quizDoc.data().title ||
+        "Practice Quiz";
+
+      $("quizTitle").textContent = quizTitle;
+
+      let snapshot;
+
+      try {
+        snapshot = await quizRef
+          .collection("questions")
+          .where("published", "==", true)
+          .get();
+      } catch (error) {
+        throw new Error(
+          "Cannot read quiz questions. Check Firestore Rules and published fields. Details: " +
+          error.message
+        );
+      }
+
+      questions = snapshot.docs
+        .map(normalizeQuestion)
+        .filter(q => q.question || q.imageUrl)
+        .sort((a, b) => a.order - b.order);
+
+      if (!questions.length) {
+        throw new Error("No published questions found in this quiz.");
+      }
+
+      sessionKey = "mneetQuiz_" +
+        user.uid + "_" +
+        subjectId + "_" +
+        chapterId + "_" +
+        quizTypeId;
+
+      attemptCounterKey = getAttemptCounterKey();
+
+      const launchKey = getLaunchKey();
+      const launchToken = sessionStorage.getItem(launchKey);
+      const saved = readSavedProgress();
+
+      if (launchToken) {
+        sessionStorage.removeItem(launchKey);
+        startNewAttempt();
+      } else if (saved && saved.attemptToken && !saved.quizSubmitted) {
+        restoreProgress(saved);
+      } else {
+        startNewAttempt();
+      }
+
+      $("loading").classList.add("hidden");
+      $("errorBox").classList.add("hidden");
+      $("quizArea").classList.remove("hidden");
+
+      renderQuestion();
+      startTotalTimer();
+      startQuestionTimer();
+
+    } catch (error) {
+      console.error("Quiz loading error:", error);
+      showError(error.message || "Failed to load quiz.");
+    } finally {
+      initializing = false;
+    }
+  }
+
+  function readSavedProgress() {
+    try {
+      const raw = localStorage.getItem(sessionKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function restoreProgress(saved) {
+    attemptToken = saved.attemptToken;
+    attemptNo = Number(saved.attemptNo) || 1;
+    attemptBaseSeconds = getAttemptSeconds(attemptNo);
+    answers = saved.answers || {};
+    currentIndex = Number(saved.currentIndex) || 0;
+    totalSeconds = Number(saved.totalSeconds) || 0;
+
+    questionSeconds = Number.isFinite(saved.questionSeconds)
+      ? Math.max(0, saved.questionSeconds)
+      : attemptBaseSeconds;
+
+    quizSubmitted = false;
+
+    if (currentIndex < 0 || currentIndex >= questions.length) {
+      currentIndex = 0;
+    }
+
+    const q = questions[currentIndex];
+
+    questionTimedOut = !!(q && answers[q.id]?.timedOut);
+    answerRevealed = !!(q && answers[q.id]?.revealed);
+
+    $("attemptBadge").textContent = "Attempt No. " + attemptNo;
+  }
+
+  function renderQuestion() {
+    const q = questions[currentIndex];
+    if (!q) return;
+
+    const saved = answers[q.id] || {};
+    const answered = saved.submitted === true;
+
+    questionTimedOut = saved.timedOut === true;
+    answerRevealed = saved.revealed === true;
+
+    questionSeconds = Number.isFinite(saved.secondsLeft)
+      ? Math.max(0, saved.secondsLeft)
+      : attemptBaseSeconds;
+
+    $("questionCount").textContent =
+      "Question " + (currentIndex + 1) + " of " + questions.length;
+
+    $("questionLabel").textContent =
+      "QUESTION " + (currentIndex + 1);
+
+    $("questionText").textContent = q.question;
+
+    $("attemptBadge").textContent = "Attempt No. " + attemptNo;
+
+    const image = $("questionImage");
+
+    if (q.imageUrl && /^https?:\/\//i.test(q.imageUrl)) {
+      image.src = q.imageUrl;
+      image.style.display = "block";
+
+      image.onerror = () => {
+        image.style.display = "none";
+      };
+    } else {
+      image.removeAttribute("src");
+      image.style.display = "none";
+    }
+
+    $("progressBar").style.width =
+      ((currentIndex + 1) / questions.length * 100) + "%";
+
+    $("prevBtn").disabled = currentIndex === 0;
+
+    $("nextBtn").textContent =
+      currentIndex === questions.length - 1
+        ? "Last Question"
+        : "Next →";
+
+    const locked = answered || (questionTimedOut && answerRevealed);
+    const selected = saved.selected || "";
+    const optionBox = $("options");
+
+    optionBox.replaceChildren();
+
+    q.options.forEach(option => {
+      if (!option.text) return;
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "option";
+
+      const letter = document.createElement("span");
+      letter.className = "option-letter";
+      letter.textContent = option.letter;
+
+      const text = document.createElement("span");
+      text.className = "option-text";
+      text.textContent = option.text;
+
+      button.append(letter, text);
+
+      if (selected === option.letter) {
+        button.classList.add("selected");
+      }
+
+      if (locked) {
+        button.disabled = true;
+
+        if (option.letter === q.correctOption) {
+          button.classList.add("correct");
+        }
+
+        if (
+          selected === option.letter &&
+          selected !== q.correctOption
+        ) {
+          button.classList.add("wrong");
+        }
+      } else {
+        button.addEventListener("click", () => {
+          selectOption(q.id, option.letter);
+        });
+      }
+
+      optionBox.appendChild(button);
+    });
+
+    if (questionTimedOut && !answerRevealed && !answered) {
+      $("answerBtn").textContent = "Show Answer";
+      $("answerBtn").disabled = false;
+      $("clearBtn").disabled = true;
+    } else if (answered || answerRevealed) {
+      $("answerBtn").textContent = "Answer Submitted";
+      $("answerBtn").disabled = true;
+      $("clearBtn").disabled = true;
+    } else {
+      $("answerBtn").textContent = "Submit Answer";
+      $("answerBtn").disabled = false;
+      $("clearBtn").disabled = false;
+    }
+
+    showFeedback(q);
+    updateQuestionTimer();
+    $("totalTimer").textContent = formatTime(totalSeconds);
+
+    saveProgress();
+  }
+
+  function selectOption(questionId, letter) {
+    const saved = answers[questionId] || {};
+
+    if (
+      saved.submitted ||
+      saved.timedOut ||
+      saved.revealed ||
+      quizSubmitted
+    ) {
+      return;
+    }
+
+    answers[questionId] = {
+      ...saved,
+      selected: letter,
+      submitted: false,
+      secondsLeft: questionSeconds
+    };
+
+    $("options").querySelectorAll(".option").forEach(button => {
+      button.classList.remove("selected");
+
+      if (
+        button.querySelector(".option-letter").textContent === letter
+      ) {
+        button.classList.add("selected");
+      }
+    });
+
+    saveProgress();
+  }
+
+  function showFeedback(q) {
+    const box = $("feedback");
+
+    box.replaceChildren();
+    box.className = "feedback";
+
+    const saved = answers[q.id] || {};
+
+    if (!saved.submitted && !saved.revealed) {
+      return;
+    }
+
+    const selected = saved.selected || "";
+    const isCorrect = !!selected && selected === q.correctOption;
+
+    box.classList.add("show", isCorrect ? "good" : "bad");
+
+    const heading = document.createElement("strong");
+
+    heading.textContent = isCorrect
+      ? "Correct Answer ✓"
+      : selected
+        ? "Incorrect Answer"
+        : "Time expired — answer revealed";
+
+    box.appendChild(heading);
+
+    const correctLine = document.createElement("div");
+
+    correctLine.textContent =
+      "Correct Answer: " + (q.correctOption || "Not provided");
+
+    box.appendChild(correctLine);
+
+    if (q.solution) {
+      const solution = document.createElement("p");
+      solution.textContent = "Explanation: " + q.solution;
+      box.appendChild(solution);
+    }
+  }
+
+  function submitAnswer() {
+    const q = questions[currentIndex];
+
+    if (!q || quizSubmitted) return;
+
+    const saved = answers[q.id] || {};
+
+    if (saved.timedOut && !saved.revealed) {
+      revealAnswer(q);
+      return;
+    }
+
+    if (saved.submitted || saved.revealed) {
+      return;
+    }
+
+    if (questionSeconds <= 0) {
+      handleQuestionTimeout();
+      return;
+    }
+
+    const selected = saved.selected;
+
+    if (!selected) {
+      alert("Please select an answer first.");
+      return;
+    }
+
+    if (!["A", "B", "C", "D"].includes(q.correctOption)) {
+      alert("The correct option has not been configured for this question.");
+      return;
+    }
+
+    answers[q.id] = {
+      ...saved,
+      selected,
+      submitted: true,
+      correct: selected === q.correctOption,
+      secondsLeft: questionSeconds
+    };
+
+    stopQuestionTimer();
+    renderQuestion();
+    saveProgress();
+  }
+
+  function revealAnswer(q) {
+    const saved = answers[q.id] || {};
+
+    if (!["A", "B", "C", "D"].includes(q.correctOption)) {
+      alert("The correct option has not been configured for this question.");
+      return;
+    }
+
+    answers[q.id] = {
+      ...saved,
+      submitted: false,
+      timedOut: true,
+      revealed: true,
+      secondsLeft: 0
+    };
+
+    questionSeconds = 0;
+    questionTimedOut = true;
+    answerRevealed = true;
+
+    stopQuestionTimer();
+
+    renderQuestion();
+    saveProgress();
+  }
+
+  function clearAnswer() {
+    const q = questions[currentIndex];
+
+    if (!q || quizSubmitted) return;
+
+    const saved = answers[q.id] || {};
+
+    if (saved.submitted || saved.timedOut || saved.revealed) {
+      return;
+    }
+
+    delete answers[q.id];
+
+    $("options").querySelectorAll(".option").forEach(button => {
+      button.classList.remove("selected");
+    });
+
+    saveProgress();
+  }
+
+  function updateQuestionTimer() {
+    $("questionTimer").textContent = formatTime(questionSeconds);
+
+    $("questionTimer").classList.toggle(
+      "warning",
+      questionSeconds <= 10
+    );
+  }
+
+  function startQuestionTimer() {
+    stopQuestionTimer();
+
+    const q = questions[currentIndex];
+
+    if (!q || quizSubmitted) return;
+
+    const saved = answers[q.id] || {};
+
+    if (saved.submitted || saved.timedOut || saved.revealed) {
+      return;
+    }
+
+    if (questionSeconds <= 0) {
+      handleQuestionTimeout();
+      return;
+    }
+
+    updateQuestionTimer();
+
+    questionInterval = setInterval(() => {
+      questionSeconds = Math.max(0, questionSeconds - 1);
+
+      answers[q.id] = {
+        ...(answers[q.id] || {}),
+        secondsLeft: questionSeconds
+      };
+
+      updateQuestionTimer();
+      saveProgress();
+
+      if (questionSeconds <= 0) {
+        handleQuestionTimeout();
+      }
+    }, 1000);
+  }
+
+  function handleQuestionTimeout() {
+    stopQuestionTimer();
+
+    const q = questions[currentIndex];
+
+    if (!q || quizSubmitted) return;
+
+    const saved = answers[q.id] || {};
+
+    if (saved.submitted || saved.revealed) {
+      return;
+    }
+
+    answers[q.id] = {
+      ...saved,
+      secondsLeft: 0,
+      timedOut: true,
+      submitted: false,
+      revealed: false
+    };
+
+    questionSeconds = 0;
+    questionTimedOut = true;
+    answerRevealed = false;
+
+    updateQuestionTimer();
+    saveProgress();
+    renderQuestion();
+  }
+
+  function startTotalTimer() {
+    if (totalInterval !== null || quizSubmitted) return;
+
+    $("totalTimer").textContent = formatTime(totalSeconds);
+
+    totalInterval = setInterval(() => {
+      if (quizSubmitted) return;
+
+      totalSeconds++;
+      $("totalTimer").textContent = formatTime(totalSeconds);
+      saveProgress();
+    }, 1000);
+  }
+
+  function goToQuestion(index) {
+    if (
+      index < 0 ||
+      index >= questions.length ||
+      quizSubmitted
+    ) {
+      return;
+    }
+
+    stopQuestionTimer();
+
+    const oldQ = questions[currentIndex];
+
+    if (
+      oldQ &&
+      !answers[oldQ.id]?.submitted &&
+      !answers[oldQ.id]?.timedOut &&
+      !answers[oldQ.id]?.revealed
+    ) {
+      answers[oldQ.id] = {
+        ...(answers[oldQ.id] || {}),
+        secondsLeft: questionSeconds
+      };
+    }
+
+    currentIndex = index;
+
+    const q = questions[currentIndex];
+    const saved = q ? answers[q.id] || {} : {};
+
+    questionSeconds = Number.isFinite(saved.secondsLeft)
+      ? Math.max(0, saved.secondsLeft)
+      : attemptBaseSeconds;
+
+    questionTimedOut = !!saved.timedOut;
+    answerRevealed = !!saved.revealed;
+
+    renderQuestion();
+    startTotalTimer();
+    startQuestionTimer();
+    saveProgress();
+  }
+
+  /*
+   * Completion is based on the number of questions submitted by the student.
+   * A question revealed after timeout is not counted as attempted.
+   * Progress is kept at the highest completion reached across attempts.
+   */
+  async function updateCompletionProgress(result) {
+    const subjectId = localStorage.getItem(KEYS.subject);
+    const chapterId = localStorage.getItem(KEYS.chapter);
+    const quizTypeId = localStorage.getItem(KEYS.quizType);
+
+    if (!subjectId || !chapterId || !quizTypeId) return;
+
+    const currentCompletion = result.totalQuestions > 0
+      ? Math.round(
+          (result.attempted / result.totalQuestions) * 100
+        )
+      : 0;
+
+    const typeProgressKey =
+      "mneetQuizTypeProgress_" +
+      subjectId + "_" + chapterId + "_" + quizTypeId;
+
+    const previousTypeProgress =
+      Number(localStorage.getItem(typeProgressKey)) || 0;
+
+    const typeCompletion = Math.max(
+      previousTypeProgress,
+      currentCompletion
+    );
+
+    localStorage.setItem(
+      typeProgressKey,
+      String(typeCompletion)
+    );
+
+    /*
+     * Recalculate chapter completion from all published quiz types.
+     * This matches quiz-types.html, which averages published quiz types.
+     */
+    try {
+      const chapterRef = window.db
+        .collection("subjects")
+        .doc(subjectId)
+        .collection("chapters")
+        .doc(chapterId);
+
+      const typesSnapshot = await chapterRef
+        .collection("quizTypes")
+        .where("published", "==", true)
+        .get();
+
+      const publishedTypes = typesSnapshot.docs;
+
+      const progressValues = publishedTypes.map(typeDoc => {
+        const key =
+          "mneetQuizTypeProgress_" +
+          subjectId + "_" + chapterId + "_" + typeDoc.id;
+
+        return Math.max(
+          0,
+          Math.min(100, Number(localStorage.getItem(key)) || 0)
+        );
+      });
+
+      const chapterCompletion = progressValues.length
+        ? Math.round(
+            progressValues.reduce((sum, value) => sum + value, 0) /
+            progressValues.length
+          )
+        : 0;
+
+      localStorage.setItem(
+        "mneetChapterProgress_" + subjectId + "_" + chapterId,
+        String(chapterCompletion)
+      );
+
+      /*
+       * Recalculate subject completion from all published chapters.
+       */
+      const subjectRef = window.db
+        .collection("subjects")
+        .doc(subjectId);
+
+      const chaptersSnapshot = await subjectRef
+        .collection("chapters")
+        .where("published", "==", true)
+        .get();
+
+      const chapterValues = chaptersSnapshot.docs.map(chapterDoc => {
+        const key =
+          "mneetChapterProgress_" +
+          subjectId + "_" + chapterDoc.id;
+
+        return Math.max(
+          0,
+          Math.min(100, Number(localStorage.getItem(key)) || 0)
+        );
+      });
+
+      const subjectCompletion = chapterValues.length
+        ? Math.round(
+            chapterValues.reduce((sum, value) => sum + value, 0) /
+            chapterValues.length
+          )
+        : 0;
+
+      localStorage.setItem(
+        "mneetSubjectProgress_" + subjectId,
+        String(subjectCompletion)
+      );
+
+    } catch (error) {
+      /*
+       * Quiz type completion has already been saved locally.
+       * Chapter and subject completion can be recalculated when
+       * the chapter or quiz-type page loads.
+       */
+      console.warn("Could not recalculate chapter/subject progress:", error);
+    }
+  }
+
+  async function submitQuiz() {
+    if (quizSubmitted) return;
+
+    const unanswered = questions.filter(q => {
+      const answer = answers[q.id] || {};
+      return !answer.submitted && !answer.revealed;
+    }).length;
+
+    const message = unanswered > 0
+      ? unanswered +
+        " question(s) remain unanswered. Submit the quiz anyway?"
+      : "Are you sure you want to submit the quiz?";
+
+    if (!confirm(message)) return;
+
+    stopAllTimers();
+
+    let correct = 0;
+    let incorrect = 0;
+    let skipped = 0;
+
+    const resultQuestions = questions.map(q => {
+      const answer = answers[q.id] || {};
+      const submitted = answer.submitted === true;
+      const selected = answer.selected || "";
+      const isCorrect = submitted && selected === q.correctOption;
+
+      if (!submitted) {
+        skipped++;
+      } else if (isCorrect) {
+        correct++;
+      } else {
+        incorrect++;
+      }
+
+      return {
+        id: q.id,
+        question: q.question,
+        questionText: q.question,
+        imageUrl: q.imageUrl,
+        options: q.options.map(o => ({
+          letter: o.letter,
+          text: o.text
+        })),
+        selectedAnswer: selected,
+        correctAnswer: q.correctOption,
+        selected,
+        correctOption: q.correctOption,
+        submitted,
+        correct: isCorrect,
+        solution: q.solution,
+        secondsLeft: answer.secondsLeft ?? 0,
+        timedOut: !!answer.timedOut,
+        revealed: !!answer.revealed
+      };
+    });
+
+    const attempted = correct + incorrect;
+
+    const result = {
+      quizTitle,
+      quizTypeName: quizTitle,
+      subjectId: localStorage.getItem(KEYS.subject) || "",
+      chapterId: localStorage.getItem(KEYS.chapter) || "",
+      quizTypeId: localStorage.getItem(KEYS.quizType) || "",
+      attemptNo,
+      totalQuestions: questions.length,
+      attempted,
+      correct,
+      incorrect,
+      skipped,
+      score: correct,
+      accuracy: attempted
+        ? Math.round(correct / attempted * 100)
+        : 0,
+      totalTimeSeconds: totalSeconds,
+      totalTime: totalSeconds,
+      submittedAt: new Date().toISOString(),
+      questions: resultQuestions
+    };
+
+    try {
+      /*
+       * Save result first so that a progress-update problem
+       * does not prevent the student from viewing the result.
+       */
+      localStorage.setItem(KEYS.result, JSON.stringify(result));
+
+      quizSubmitted = true;
+
+      localStorage.setItem(sessionKey, JSON.stringify({
+        attemptToken,
+        attemptNo,
+        answers,
+        currentIndex,
+        totalSeconds,
+        questionSeconds,
+        quizSubmitted: true,
+        updatedAt: Date.now()
+      }));
+
+      await updateCompletionProgress(result);
+
+      window.location.href = "result.html";
+
+    } catch (error) {
+      console.error("Quiz submission error:", error);
+
+      if (localStorage.getItem(KEYS.result)) {
+        window.location.href = "result.html";
+      } else {
+        quizSubmitted = false;
+        alert("Could not save the result. Please check browser storage.");
+        startTotalTimer();
+      }
+    }
+  }
+
+  $("answerBtn").addEventListener("click", submitAnswer);
+  $("clearBtn").addEventListener("click", clearAnswer);
+
+  $("prevBtn").addEventListener("click", () => {
+    goToQuestion(currentIndex - 1);
+  });
+
+  $("nextBtn").addEventListener("click", () => {
+    if (currentIndex < questions.length - 1) {
+      goToQuestion(currentIndex + 1);
+    } else {
+      alert("This is the last question. Press Submit Quiz to finish.");
+    }
+  });
+
+  $("submitQuizBtn").addEventListener("click", submitQuiz);
+
+  $("exitBtn").addEventListener("click", () => {
+    if (confirm("Exit the quiz? Your progress will be saved.")) {
+      saveProgress();
+      stopAllTimers();
+      window.location.href = "quiz-types.html";
+    }
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      saveProgress();
+    }
+  });
+
+  window.addEventListener("beforeunload", () => {
+    saveProgress();
+    stopAllTimers();
+  });
+
+  if (window.auth) {
+    window.auth.onAuthStateChanged(user => {
+      if (user) {
+        initQuiz();
+      } else {
+        window.location.replace("index.html");
+      }
+    });
+  } else {
+    showError("Firebase SDK is unavailable. Check js/firebase.js.");
+  }
+})();
+</script>
+</body>
+</html>
