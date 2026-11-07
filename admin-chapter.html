@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Chapters | mNEET Admin</title>
+
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase.js"></script>
+
+  <style>
+    :root {
+      --bg: #f1f7f2;
+      --card: #fff;
+      --text: #173d2b;
+      --muted: #718176;
+      --green: #16834a;
+      --light-green: #e0f5e7;
+      --border: #dce9df;
+      --red: #dc3545;
+      --input: #fff;
+    }
+
+    body.dark {
+      --bg: #101a14;
+      --card: #1b2a20;
+      --text: #e9f5ec;
+      --muted: #a5b6aa;
+      --green: #35c477;
+      --light-green: #203e2c;
+      --border: #304537;
+      --red: #ff6875;
+      --input: #142019;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    .brand { font-size: 23px; font-weight: 900; }
+    .brand span { color: var(--green); }
+    .header-actions { display: flex; gap: 7px; }
+
+    .small-btn {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 9px 11px;
+    }
+
+    .container {
+      max-width: 850px;
+      width: calc(100% - 26px);
+      margin: 20px auto 40px;
+    }
+
+    .back-btn {
+      border: 0;
+      background: transparent;
+      color: var(--green);
+      font-weight: 800;
+      margin-bottom: 18px;
+      padding: 5px 0;
+    }
+
+    .heading { margin-bottom: 20px; }
+    .heading h1 { font-size: 25px; margin-bottom: 8px; }
+    .heading p { color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      padding: 18px;
+      margin-bottom: 17px;
+    }
+
+    .panel h2 { font-size: 18px; margin-bottom: 15px; }
+
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    .field input, .field select, .field textarea {
+      width: 100%;
+      background: var(--input);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      outline: none;
+    }
+
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--green);
+    }
+
+    .field textarea { min-height: 75px; resize: vertical; }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 13px;
+      margin: 12px 0 17px;
+    }
+
+    .checkbox-row input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--green);
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 13px;
+      font-weight: 800;
+    }
+
+    .primary {
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+    }
+
+    .secondary {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .danger {
+      background: transparent;
+      color: var(--red);
+      border-color: var(--red);
+    }
+
+    .form-actions, .item-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .toolbar { margin-bottom: 13px; }
+
+    .toolbar input {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--input);
+      color: var(--text);
+    }
+
+    .chapter-item {
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 15px;
+      margin-top: 11px;
+    }
+
+    .chapter-name { font-size: 16px; font-weight: 800; }
+    .chapter-description {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-top: 6px;
+      overflow-wrap: anywhere;
+    }
+
+    .meta { color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      margin-top: 9px;
+    }
+
+    .published { background: var(--light-green); color: var(--green); }
+    .draft { border: 1px solid var(--border); color: var(--muted); }
+
+    .item-actions { margin-top: 13px; }
+    .item-actions .btn { font-size: 12px; }
+
+    .message {
+      display: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .message.show { display: block; }
+    .message.success { background: var(--light-green); color: var(--green); }
+    .message.error { color: var(--red); border: 1px solid var(--red); }
+
+    .empty {
+      padding: 22px 8px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 15px;
+    }
+
+    @media (min-width: 600px) {
+      .heading h1 { font-size: 30px; }
+      .panel { padding: 22px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="brand">m<span>NEET</span></div>
+    <div class="header-actions">
+      <button class="small-btn" id="themeBtn" type="button">🌙</button>
+      <button class="small-btn" id="logoutBtn" type="button">Logout</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <button class="back-btn" id="backBtn" type="button">← Admin Dashboard</button>
+
+    <section class="heading">
+      <h1>📖 Manage Chapters</h1>
+      <p>Create and organize chapters inside each subject.</p>
+    </section>
+
+    <div class="message" id="message" role="status"></div>
+
+    <section class="panel" id="formPanel">
+      <h2 id="formTitle">➕ Add New Chapter</h2>
+
+      <form id="chapterForm">
+        <div class="field">
+          <label for="subjectSelect">Select Subject *</label>
+          <select id="subjectSelect" required>
+            <option value="">Loading subjects...</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="chapterName">Chapter Name *</label>
+          <input id="chapterName" maxlength="120"
+            placeholder="e.g. The Living World" required>
+        </div>
+
+        <div class="field">
+          <label for="chapterDescription">Description</label>
+          <textarea id="chapterDescription" maxlength="500"
+            placeholder="Optional chapter description"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="chapterOrder">Display Order *</label>
+          <input id="chapterOrder" type="number" min="1"
+            max="9999" value="1" required>
+        </div>
+
+        <label class="checkbox-row">
+          <input id="chapterPublished" type="checkbox">
+          <span>Publish this chapter for students</span>
+        </label>
+
+        <div class="form-actions">
+          <button class="btn primary" id="saveBtn" type="submit">
+            Save Chapter
+          </button>
+          <button class="btn secondary" id="cancelBtn"
+            type="button" hidden>Cancel Edit</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>📋 Existing Chapters</h2>
+
+      <div class="field">
+        <label for="filterSubject">Filter by Subject</label>
+        <select id="filterSubject">
+          <option value="">All Subjects</option>
+        </select>
+      </div>
+
+      <div class="toolbar">
+        <input id="searchInput" type="search"
+          placeholder="Search chapters...">
+      </div>
+
+      <div id="chapterList">
+        <div class="empty">Loading chapters...</div>
+      </div>
+    </section>
+
+    <div class="footer">mNEET · Admin Content Management</div>
+  </main>
+
+  <script>
+    "use strict";
+
+    const $ = id => document.getElementById(id);
+
+    let currentUser = null;
+    let editingId = null;
+    let editingSubjectId = null;
+    let subjects = [];
+    let chapters = [];
+    let saving = false;
+
+    function applyTheme() {
+      const dark = localStorage.getItem("mneetTheme") === "dark";
+      document.body.classList.toggle("dark", dark);
+      $("themeBtn").textContent = dark ? "☀️" : "🌙";
+    }
+
+    $("themeBtn").addEventListener("click", () => {
+      const dark = document.body.classList.contains("dark");
+      localStorage.setItem("mneetTheme", dark ? "light" : "dark");
+      applyTheme();
+    });
+
+    applyTheme();
+
+    function safe(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#39;"
+      })[char]);
+    }
+
+    function message(text, type = "success") {
+      $("message").textContent = text;
+      $("message").className = "message show " + type;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function clearMessage() {
+      $("message").textContent = "";
+      $("message").className = "message";
+    }
+
+    async function verifyAdmin(user) {
+      if (!user) {
+        location.replace("index.html");
+        return false;
+      }
+
+      try {
+        const profile = await db.collection("users").doc(user.uid).get();
+
+        if (
+          !profile.exists ||
+          profile.data().role !== "admin" ||
+          profile.data().status === "disabled"
+        ) {
+          alert("Admin access required.");
+          await auth.signOut();
+          location.replace("index.html");
+          return false;
+        }
+
+        currentUser = user;
+        return true;
+      } catch (error) {
+        console.error(error);
+        message("Could not verify admin access. Check Firebase settings.", "error");
+        return false;
+      }
+    }
+
+    function fillSubjectSelects() {
+      const options = subjects.map(subject =>
+        `<option value="${safe(subject.id)}">${safe(subject.name || subject.id)}</option>`
+      ).join("");
+
+      $("subjectSelect").innerHTML =
+        '<option value="">Select a subject</option>' + options;
+
+      const oldFilter = $("filterSubject").value;
+
+      $("filterSubject").innerHTML =
+        '<option value="">All Subjects</option>' + options;
+
+      if (subjects.some(s => s.id === oldFilter)) {
+        $("filterSubject").value = oldFilter;
+      }
+    }
+
+    async function loadSubjects() {
+      const snapshot = await db.collection("subjects").get();
+
+      subjects = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      subjects.sort((a, b) =>
+        (Number(a.order) || 9999) - (Number(b.order) || 9999)
+      );
+
+      fillSubjectSelects();
+    }
+
+    async function loadChapters() {
+      $("chapterList").innerHTML =
+        '<div class="empty">Loading chapters...</div>';
+
+      try {
+        const all = [];
+
+        for (const subject of subjects) {
+          const snapshot = await db.collection("subjects")
+            .doc(subject.id)
+            .collection("chapters")
+            .get();
+
+          snapshot.docs.forEach(doc => {
+            all.push({
+              id: doc.id,
+              subjectId: subject.id,
+              subjectName: subject.name || subject.id,
+              ...doc.data()
+            });
+          });
+        }
+
+        chapters = all;
+
+        chapters.sort((a, b) =>
+          (Number(a.order) || 9999) - (Number(b.order) || 9999)
+        );
+
+        renderChapters();
+
+        if (!editingId) {
+          setNextOrder();
+        }
+      } catch (error) {
+        console.error(error);
+        $("chapterList").innerHTML =
+          '<div class="empty">Unable to load chapters. Check Firestore permissions.</div>';
+      }
+    }
+
+    function setNextOrder() {
+      const subjectId = $("subjectSelect").value;
+
+      const items = chapters.filter(c => c.subjectId === subjectId);
+
+      $("chapterOrder").value = items.length
+        ? Math.max(...items.map(c => Number(c.order) || 0)) + 1
+        : 1;
+    }
+
+    function renderChapters() {
+      const subjectFilter = $("filterSubject").value;
+      const search = $("searchInput").value.trim().toLowerCase();
+
+      const filtered = chapters.filter(chapter => {
+        const matchesSubject =
+          !subjectFilter || chapter.subjectId === subjectFilter;
+
+        const text = `${chapter.name || ""} ${chapter.description || ""} ${chapter.subjectName || ""}`.toLowerCase();
+
+        return matchesSubject && text.includes(search);
+      });
+
+      if (!filtered.length) {
+        $("chapterList").innerHTML =
+          '<div class="empty">No chapters found. Create a chapter above.</div>';
+        return;
+      }
+
+      $("chapterList").innerHTML = filtered.map(chapter => {
+        const isPublished = chapter.published === true;
+
+        return `
+          <article class="chapter-item">
+            <div class="chapter-name">${safe(chapter.name || "Unnamed Chapter")}</div>
+            <div class="chapter-description">${safe(chapter.description || "No description added.")}</div>
+            <div class="meta">Subject: ${safe(chapter.subjectName)}</div>
+            <div class="meta">Order: ${Number(chapter.order) || 0} · ID: ${safe(chapter.id)}</div>
+            <span class="badge ${isPublished ? "published" : "draft"}">
+              ${isPublished ? "PUBLISHED" : "DRAFT / UNPUBLISHED"}
+            </span>
+
+            <div class="item-actions">
+              <button class="btn secondary" data-action="edit"
+                data-id="${safe(chapter.id)}"
+                data-subject="${safe(chapter.subjectId)}">✏️ Edit</button>
+
+              <button class="btn secondary" data-action="toggle"
+                data-id="${safe(chapter.id)}"
+                data-subject="${safe(chapter.subjectId)}">
+                ${isPublished ? "Unpublish" : "Publish"}
+              </button>
+
+              <button class="btn danger" data-action="delete"
+                data-id="${safe(chapter.id)}"
+                data-subject="${safe(chapter.subjectId)}">Delete</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function resetForm() {
+      editingId = null;
+      editingSubjectId = null;
+
+      $("chapterForm").reset();
+      $("formTitle").textContent = "➕ Add New Chapter";
+      $("saveBtn").textContent = "Save Chapter";
+      $("cancelBtn").hidden = true;
+
+      setNextOrder();
+    }
+
+    function editChapter(id, subjectId) {
+      const chapter = chapters.find(c =>
+        c.id === id && c.subjectId === subjectId
+      );
+
+      if (!chapter) return;
+
+      editingId = id;
+      editingSubjectId = subjectId;
+
+      $("subjectSelect").value = subjectId;
+      $("chapterName").value = chapter.name || "";
+      $("chapterDescription").value = chapter.description || "";
+      $("chapterOrder").value = Number(chapter.order) || 1;
+      $("chapterPublished").checked = chapter.published === true;
+
+      $("formTitle").textContent = "✏️ Edit Chapter";
+      $("saveBtn").textContent = "Update Chapter";
+      $("cancelBtn").hidden = false;
+
+      clearMessage();
+      $("formPanel").scrollIntoView({ behavior: "smooth" });
+    }
+
+    async function saveChapter(event) {
+      event.preventDefault();
+
+      if (!currentUser || saving) return;
+
+      clearMessage();
+
+      const subjectId = $("subjectSelect").value;
+      const name = $("chapterName").value.trim();
+      const description = $("chapterDescription").value.trim();
+      const order = Number($("chapterOrder").value);
+      const published = $("chapterPublished").checked;
+
+      if (!subjectId || !subjects.some(s => s.id === subjectId)) {
+        message("Please select a valid subject.", "error");
+        return;
+      }
+
+      if (!name) {
+        message("Please enter a chapter name.", "error");
+        return;
+      }
+
+      if (!Number.isInteger(order) || order < 1 || order > 9999) {
+        message("Order must be between 1 and 9999.", "error");
+        return;
+      }
+
+      const duplicate = chapters.some(c =>
+        c.subjectId === subjectId &&
+        c.id !== editingId &&
+        String(c.name || "").trim().toLowerCase() === name.toLowerCase()
+      );
+
+      if (duplicate) {
+        message("This chapter already exists in the selected subject.", "error");
+        return;
+      }
+
+      saving = true;
+      $("saveBtn").disabled = true;
+      $("saveBtn").textContent = "Saving...";
+
+      try {
+        const data = {
+          name,
+          description,
+          order,
+          published,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if (editingId) {
+          if (editingSubjectId !== subjectId) {
+            message(
+              "Changing a chapter's parent subject is not supported here. Create it under the new subject instead.",
+              "error"
+            );
+            return;
+          }
+
+          await db.collection("subjects")
+            .doc(subjectId)
+            .collection("chapters")
+            .doc(editingId)
+            .update(data);
+
+          message("Chapter updated successfully.");
+        } else {
+          data.createdAt =
+            firebase.firestore.FieldValue.serverTimestamp();
+
+          await db.collection("subjects")
+            .doc(subjectId)
+            .collection("chapters")
+            .add(data);
+
+          message("Chapter created successfully.");
+        }
+
+        resetForm();
+        await loadChapters();
+
+      } catch (error) {
+        console.error(error);
+        message(
+          "Could not save chapter. Check Firebase configuration and Firestore rules.",
+          "error"
+        );
+      } finally {
+        saving = false;
+        $("saveBtn").disabled = false;
+        $("saveBtn").textContent = editingId
+          ? "Update Chapter"
+          : "Save Chapter";
+      }
+    }
+
+    async function toggleChapter(id, subjectId) {
+      const chapter = chapters.find(c =>
+        c.id === id && c.subjectId === subjectId
+      );
+
+      if (!chapter) return;
+
+      const next = chapter.published !== true;
+
+      if (!confirm(`${next ? "Publish" : "Unpublish"} "${chapter.name}"?`)) {
+        return;
+      }
+
+      try {
+        await db.collection("subjects")
+          .doc(subjectId)
+          .collection("chapters")
+          .doc(id)
+          .update({
+            published: next,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+        message(next ? "Chapter published." : "Chapter unpublished.");
+        await loadChapters();
+      } catch (error) {
+        console.error(error);
+        message("Could not update chapter. Check Firestore rules.", "error");
+      }
+    }
+
+    async function deleteChapter(id, subjectId) {
+      const chapter = chapters.find(c =>
+        c.id === id && c.subjectId === subjectId
+      );
+
+      if (!chapter) return;
+
+      if (!confirm(
+        `Delete "${chapter.name}"?\n\nFirestore does not automatically delete subcollections. Make sure this chapter has no quiz types or questions you need.`
+      )) return;
+
+      try {
+        await db.collection("subjects")
+          .doc(subjectId)
+          .collection("chapters")
+          .doc(id)
+          .delete();
+
+        if (editingId === id && editingSubjectId === subjectId) {
+          resetForm();
+        }
+
+        message(
+          "Chapter document deleted. Check for remaining subcollection data."
+        );
+
+        await loadChapters();
+      } catch (error) {
+        console.error(error);
+        message("Could not dele
