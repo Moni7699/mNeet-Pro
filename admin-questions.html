@@ -126,6 +126,37 @@ textarea{min-height:95px;resize:vertical}
 }
 .preview img{max-width:100%;max-height:220px;object-fit:contain}
 .footer-note{font-size:12px;line-height:1.7;color:var(--muted);margin-top:15px}
+
+/* Added: solution image preview */
+.solution-preview{
+  display:none;
+  margin-top:10px;
+  padding:10px;
+  border:1px dashed var(--border);
+  border-radius:9px
+}
+.solution-preview img{
+  display:block;
+  max-width:100%;
+  max-height:280px;
+  object-fit:contain;
+  border-radius:8px
+}
+.solution-preview-caption{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:7px;
+  line-height:1.6
+}
+.solution-image-preview{
+  display:block;
+  max-width:100%;
+  max-height:280px;
+  object-fit:contain;
+  border:1px solid var(--border);
+  border-radius:8px;
+  margin-top:10px
+}
 @media(max-width:600px){
   .grid,.option-grid,.filters{grid-template-columns:1fr}
   .full,.filters .full{grid-column:auto}
@@ -150,8 +181,8 @@ textarea{min-height:95px;resize:vertical}
   <a class="back" href="admin.html">← Back to Admin Dashboard</a>
   <h1>Manage Questions</h1>
   <p class="subtitle">
-    Create questions with text, an image, or both. Add options, correct answers
-    and explanations for your NEET students.
+    Create questions and solutions with text, an image, or both.
+    Add options, correct answers and explanations for your NEET students.
   </p>
 
   <div id="notice" class="notice" role="status"></div>
@@ -273,9 +304,37 @@ textarea{min-height:95px;resize:vertical}
         </div>
 
         <div class="field full">
-          <label for="solution">Solution / Explanation</label>
+          <label for="solution">Solution / Explanation Text</label>
           <textarea id="solution" maxlength="10000"
-            placeholder="Explain why the correct answer is right."></textarea>
+            placeholder="Explain why the correct answer is right. You may leave this blank if you use a solution image."></textarea>
+          <div class="help">
+            Optional when a Solution Image URL is provided. You can use text and image together.
+          </div>
+        </div>
+
+        <!-- Added: Solution Image URL -->
+        <div class="field full">
+          <label for="solutionImageUrl">Solution Image URL</label>
+          <input id="solutionImageUrl" type="url"
+            placeholder="https://example.com/solution.jpg">
+          <div class="help">
+            Optional. Add a publicly accessible image URL for the explanation.
+            You may use a solution image alone or together with solution text.
+          </div>
+
+          <div class="btn-row" style="margin-top:9px">
+            <button class="btn btn-muted" id="previewSolutionBtn" type="button">
+              Preview Solution Image
+            </button>
+            <button class="btn btn-muted" id="clearSolutionImageBtn" type="button">
+              Clear Solution Image URL
+            </button>
+          </div>
+
+          <div class="solution-preview" id="solutionImagePreview">
+            <img id="previewSolutionImg" alt="Solution image preview">
+            <div class="solution-preview-caption">Solution image preview</div>
+          </div>
         </div>
       </div>
 
@@ -292,6 +351,7 @@ textarea{min-height:95px;resize:vertical}
       <p class="footer-note">
         At least one of Question Text or Question Image URL is required.
         Options A–D and a correct answer are required.
+        Solution Text and Solution Image URL are optional.
       </p>
     </form>
   </section>
@@ -431,6 +491,17 @@ textarea{min-height:95px;resize:vertical}
       .collection("chapters").doc(chapterId)
       .collection("quizTypes").doc(typeId)
       .collection("questions");
+  }
+
+  function isValidImageUrl(value) {
+    if (!value) return true;
+
+    try {
+      const url = new URL(value);
+      return ["http:", "https:"].includes(url.protocol);
+    } catch {
+      return false;
+    }
   }
 
   async function verifyAdmin(user) {
@@ -624,6 +695,12 @@ textarea{min-height:95px;resize:vertical}
                 options: d.options || {},
                 correctAnswer: safeText(d.correctAnswer),
                 solution: safeText(d.solution),
+
+                /* Added: read solution image URL from Firestore */
+                solutionImageUrl: safeText(
+                  d.solutionImageUrl || d.solutionImage || d.solutionImageURL || ""
+                ),
+
                 ncertReference: safeText(d.ncertReference),
                 difficulty: safeText(d.difficulty || "medium"),
                 order: Number(d.order) || 1,
@@ -653,8 +730,8 @@ textarea{min-height:95px;resize:vertical}
 
     const filtered = questions.filter(q => {
       const searchable = [
-        q.text, q.solution, q.subjectName, q.chapterName,
-        q.typeName, q.ncertReference
+        q.text, q.solution, q.solutionImageUrl,
+        q.subjectName, q.chapterName, q.typeName, q.ncertReference
       ].join(" ").toLowerCase();
 
       return searchable.includes(query);
@@ -735,6 +812,21 @@ textarea{min-height:95px;resize:vertical}
         card.appendChild(sol);
       }
 
+      /* Added: display solution image in the existing question card */
+      if (q.solutionImageUrl && isValidImageUrl(q.solutionImageUrl)) {
+        const solutionImg = document.createElement("img");
+        solutionImg.className = "solution-image-preview";
+        solutionImg.alt = "Solution explanation image";
+        solutionImg.loading = "lazy";
+        solutionImg.src = q.solutionImageUrl;
+
+        solutionImg.addEventListener("error", () => {
+          solutionImg.style.display = "none";
+        });
+
+        card.appendChild(solutionImg);
+      }
+
       const actions = document.createElement("div");
       actions.className = "card-actions";
 
@@ -784,6 +876,10 @@ textarea{min-height:95px;resize:vertical}
     $("imagePreview").style.display = "none";
     $("previewImg").removeAttribute("src");
 
+    /* Added: reset solution image preview */
+    $("solutionImagePreview").style.display = "none";
+    $("previewSolutionImg").removeAttribute("src");
+
     setOptions(chapterSelect, [], "Select subject first");
     setOptions(typeSelect, [], "Select chapter first");
     chapterSelect.disabled = true;
@@ -820,10 +916,17 @@ textarea{min-height:95px;resize:vertical}
     $("marks").value = q.marks;
     $("negativeMarks").value = q.negativeMarks;
     $("solution").value = q.solution;
+
+    /* Added: load saved solution image URL for editing */
+    $("solutionImageUrl").value = q.solutionImageUrl || "";
+
     $("ncertReference").value = q.ncertReference;
     $("published").checked = q.published;
 
     if (q.imageUrl) previewImage();
+
+    /* Added: preview saved solution image while editing */
+    if (q.solutionImageUrl) previewSolutionImage();
 
     $("formTitle").textContent = "✏️ Edit Question";
     saveBtn.textContent = "Update Question";
@@ -843,6 +946,9 @@ textarea{min-height:95px;resize:vertical}
     const text = $("questionText").value.trim();
     const imageUrl = $("imageUrl").value.trim();
 
+    /* Added: get solution image URL */
+    const solutionImageUrl = $("solutionImageUrl").value.trim();
+
     if (!subjectId || !chapterId || !typeId) {
       showNotice("Please select a subject, chapter, and quiz type.", "error");
       return;
@@ -853,14 +959,15 @@ textarea{min-height:95px;resize:vertical}
       return;
     }
 
-    if (imageUrl) {
-      try {
-        const url = new URL(imageUrl);
-        if (!["http:", "https:"].includes(url.protocol)) throw new Error();
-      } catch {
-        showNotice("Please enter a valid HTTP or HTTPS image URL.", "error");
-        return;
-      }
+    if (!isValidImageUrl(imageUrl)) {
+      showNotice("Please enter a valid HTTP or HTTPS question image URL.", "error");
+      return;
+    }
+
+    /* Added: validate solution image URL */
+    if (!isValidImageUrl(solutionImageUrl)) {
+      showNotice("Please enter a valid HTTP or HTTPS solution image URL.", "error");
+      return;
     }
 
     const options = {
@@ -909,6 +1016,10 @@ textarea{min-height:95px;resize:vertical}
         options,
         correctAnswer,
         solution: $("solution").value.trim(),
+
+        /* Added: save solution image URL in Firestore */
+        solutionImageUrl,
+
         ncertReference: $("ncertReference").value.trim(),
         difficulty: $("difficulty").value,
         order,
@@ -992,20 +1103,43 @@ textarea{min-height:95px;resize:vertical}
       return;
     }
 
-    try {
-      const parsed = new URL(url);
-      if (!["http:","https:"].includes(parsed.protocol)) throw new Error();
-    } catch {
+    if (!isValidImageUrl(url)) {
       showNotice("Please enter a valid HTTP or HTTPS image URL.", "error");
       return;
     }
 
     $("previewImg").src = url;
     $("imagePreview").style.display = "block";
+
     $("previewImg").onerror = () => {
-      showNotice("Image could not be loaded. Check the URL and image permissions.", "error");
+      showNotice("Question image could not be loaded. Check the URL and image permissions.", "error");
     };
+
     $("previewImg").onload = () => clearNotice();
+  }
+
+  /* Added: solution image preview */
+  function previewSolutionImage() {
+    const url = $("solutionImageUrl").value.trim();
+
+    if (!url) {
+      showNotice("Enter a solution image URL first.", "error");
+      return;
+    }
+
+    if (!isValidImageUrl(url)) {
+      showNotice("Please enter a valid HTTP or HTTPS solution image URL.", "error");
+      return;
+    }
+
+    $("previewSolutionImg").onerror = () => {
+      showNotice("Solution image could not be loaded. Check the URL and image permissions.", "error");
+    };
+
+    $("previewSolutionImg").onload = () => clearNotice();
+
+    $("previewSolutionImg").src = url;
+    $("solutionImagePreview").style.display = "block";
   }
 
   subjectSelect.addEventListener("change", async () => {
@@ -1024,6 +1158,15 @@ textarea{min-height:95px;resize:vertical}
     $("imageUrl").value = "";
     $("imagePreview").style.display = "none";
     $("previewImg").removeAttribute("src");
+  });
+
+  /* Added: solution image preview and clear controls */
+  $("previewSolutionBtn").addEventListener("click", previewSolutionImage);
+
+  $("clearSolutionImageBtn").addEventListener("click", () => {
+    $("solutionImageUrl").value = "";
+    $("solutionImagePreview").style.display = "none";
+    $("previewSolutionImg").removeAttribute("src");
   });
 
   cancelBtn.addEventListener("click", resetForm);
