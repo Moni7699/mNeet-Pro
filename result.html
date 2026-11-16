@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Result | mNEET</title>
+
+<style>
+:root {
+  --bg: #f3f7f4;
+  --card: #ffffff;
+  --text: #17251d;
+  --muted: #6c7b71;
+  --green: #168348;
+  --green-bg: #e2f5e9;
+  --red: #d83232;
+  --red-bg: #ffebeb;
+  --border: #dce6df;
+}
+
+body.dark {
+  --bg: #101713;
+  --card: #1b2620;
+  --text: #edf5ef;
+  --muted: #a5b6aa;
+  --green: #48c783;
+  --green-bg: #203d2d;
+  --red: #ff6868;
+  --red-bg: #512727;
+  --border: #34453a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+
+button, a {
+  font: inherit;
+}
+
+.topbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 14px;
+}
+
+.toprow {
+  max-width: 800px;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  color: var(--green);
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 12px;
+  min-height: 44px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--green);
+  color: white;
+  border-color: var(--green);
+}
+
+.secondary {
+  background: var(--card);
+  color: var(--text);
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 18px 13px 35px;
+}
+
+.hero {
+  background: linear-gradient(135deg, #126d3b, #1da15b);
+  color: white;
+  padding: 24px;
+  border-radius: 19px;
+}
+
+.hero h1 {
+  font-size: 24px;
+  margin: 9px 0;
+}
+
+.score {
+  font-size: 45px;
+  font-weight: 900;
+  margin-top: 20px;
+}
+
+.track {
+  height: 9px;
+  background: #ffffff50;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.track span {
+  display: block;
+  height: 100%;
+  background: white;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 13px;
+}
+
+.box, .panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  padding: 15px;
+}
+
+.label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.value {
+  font-size: 26px;
+  font-weight: 800;
+  margin-top: 7px;
+}
+
+.panel {
+  margin-top: 13px;
+}
+
+.panel h2 {
+  font-size: 17px;
+  margin: 0 0 14px;
+}
+
+.barrow {
+  display: grid;
+  grid-template-columns: 75px 1fr 35px;
+  align-items: center;
+  gap: 8px;
+  margin: 13px 0;
+  font-size: 12px;
+}
+
+.bar {
+  height: 9px;
+  background: var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  background: var(--green);
+}
+
+.bar.red span {
+  background: var(--red);
+}
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.comparebox {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px;
+}
+
+.comparebox strong {
+  display: block;
+  font-size: 22px;
+  margin: 8px 0;
+}
+
+.note {
+  padding: 13px;
+  border-radius: 11px;
+  background: var(--green-bg);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 12px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.actions > * {
+  width: 100%;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (min-width: 650px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 380px) {
+  .actions, .compare {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="toprow">
+    <div class="brand">mNEET</div>
+    <button class="btn secondary" id="themeBtn">🌙 Dark</button>
+  </div>
+</header>
+
+<main class="container">
+
+  <div id="errorBox" class="panel hidden"></div>
+
+  <div id="resultArea" class="hidden">
+
+    <section class="hero">
+      <div>QUIZ COMPLETED</div>
+      <h1 id="quizTitle">Quiz Result</h1>
+      <div id="submittedDate" class="muted"></div>
+
+      <div class="score" id="score">0</div>
+      <div id="maxScore">/ 0 marks</div>
+
+      <div class="track">
+        <span id="scoreBar" style="width:0"></span>
+      </div>
+
+      <div id="scorePercentage" style="margin-top:10px"></div>
+    </section>
+
+    <section class="grid">
+      <div class="box">
+        <div class="label">Correct (+4)</div>
+        <div class="value" id="correct">0</div>
+      </div>
+
+      <div class="box">
+        <div class="label">Incorrect (−1)</div>
+        <div class="value" id="incorrect">0</div>
+      </div>
+
+      <div class="box">
+        <div class="label">Skipped (0)</div>
+        <div class="value" id="skipped">0</div>
+      </div>
+
+      <div class="box">
+        <div class="label">Accuracy</div>
+        <div class="value" id="accuracy">0%</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>📊 Performance Analysis</h2>
+
+      <div class="barrow">
+        <span>Correct</span>
+        <div class="bar"><span id="correctBar"></span></div>
+        <b id="correctPercent">0%</b>
+      </div>
+
+      <div class="barrow">
+        <span>Incorrect</span>
+        <div class="bar red"><span id="incorrectBar"></span></div>
+        <b id="incorrectPercent">0%</b>
+      </div>
+
+      <div class="barrow">
+        <span>Skipped</span>
+        <div class="bar">
+          <span id="skippedBar" style="background:#89968e"></span>
+        </div>
+        <b id="skippedPercent">0%</b>
+      </div>
+
+      <div class="note" id="analysisText"></div>
+    </section>
+
+    <section class="panel">
+      <h2>🏆 Best vs Latest Attempt</h2>
+
+      <div class="compare">
+        <div class="comparebox">
+          <small>Latest Score</small>
+          <strong id="latestScore">—</strong>
+          <small id="latestDate">Current attempt</small>
+        </div>
+
+        <div class="comparebox">
+          <small>Best Score</small>
+          <strong id="bestScore">—</strong>
+          <small id="bestDate">Saved attempts</small>
+        </div>
+      </div>
+
+      <p class="muted" id="historyText"></p>
+    </section>
+
+    <section class="panel">
+      <h2>🥇 Compare With Topper</h2>
+
+      <div class="compare">
+        <div class="comparebox">
+          <small>Your Score</small>
+          <strong id="yourScore">0</strong>
+          <small>marks</small>
+        </div>
+
+        <div class="comparebox">
+          <small>Topper Score</small>
+          <strong id="topperScore">Not available</strong>
+          <small id="topperName">Waiting for class data</small>
+        </div>
+      </div>
+
+      <div class="note" id="topperMessage">
+        Topper comparison requires real student quiz results in a shared database.
+      </div>
+
+      <p class="muted">
+        When shared results are available, this section can display the topper's
+        score, your score gap, and your rank.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>⏱ Attempt Summary</h2>
+
+      <div class="compare">
+        <div class="comparebox">
+          <small>Total Time</small>
+          <strong id="totalTime">00:00</strong>
+        </div>
+
+        <div class="comparebox">
+          <small>Attempt Number</small>
+          <strong id="attemptNumber">1</strong>
+        </div>
+      </div>
+
+      <p class="muted">
+        Marking: Correct +4 • Incorrect −1 • Skipped 0
+      </p>
+    </section>
+
+    <div class="actions">
+      <a class="btn primary" href="review.html">Review Answers &amp; Solutions</a>
+      <button class="btn secondary" id="reattemptBtn">Reattempt Quiz</button>
+      <a class="btn secondary" href="quiz-types.html">Back to Quiz Types</a>
+      <a class="btn secondary" href="student.html">Student Dashboard</a>
+    </div>
+
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+
+  function applyTheme() {
+    const dark = localStorage.getItem("mneetTheme") === "dark";
+    document.body.classList.toggle("dark", dark);
+    $("themeBtn").textContent = dark ? "☀️ Light" : "🌙 Dark";
+  }
+
+  applyTheme();
+
+  $("themeBtn").onclick = function () {
+    localStorage.setItem(
+      "mneetTheme",
+      localStorage.getItem("mneetTheme") === "dark" ? "light" : "dark"
+    );
+    applyTheme();
+  };
+
+  function formatTime(seconds) {
+    seconds = Math.max(0, Number(seconds) || 0);
+
+    return String(Math.floor(seconds / 60)).padStart(2, "0") +
+      ":" + String(seconds % 60).padStart(2, "0");
+  }
+
+  function showError(message) {
+    $("errorBox").textContent = message;
+    $("errorBox").classList.remove("hidden");
+  }
+
+  let result;
+
+  try {
+    result = JSON.parse(localStorage.getItem("mneetQuizResult") || "null");
+  } catch (error) {
+    result = null;
+  }
+
+  if (!result || !Array.isArray(result.questions)) {
+    showError("Result not found. Please submit the quiz again.");
+    return;
+  }
+
+  const questions = result.questions;
+  const total = questions.length;
+
+  let correct = 0;
+  let incorrect = 0;
+  let skipped = 0;
+
+  questions.forEach(q => {
+    if (q.submitted === true) {
+      if (
+        String(q.selected || "").toUpperCase() ===
+        String(q.correctOption || "").toUpperCase()
+      ) {
+        correct++;
+      } else {
+        incorrect++;
+      }
+    } else {
+      skipped++;
+    }
+  });
+
+  const attempted = correct + incorrect;
+  const score = correct * 4 - incorrect;
+  const maximumMarks = total * 4;
+  const accuracy = attempted
+    ? Math.round(correct / attempted * 100)
+    : 0;
+
+  result.correct = correct;
+  result.incorrect = incorrect;
+  result.skipped = skipped;
+  result.attempted = attempted;
+  result.score = score;
+  result.maxScore = maximumMarks;
+  result.marksPerCorrect = 4;
+  result.negativeMarks = 1;
+  result.accuracy = accuracy;
+
+  $("quizTitle").textContent =
+    result.quizTitle || result.title || result.quizTypeName || "Quiz Result";
+
+  $("submittedDate").textContent = result.submittedAt
+    ? new Date(result.submittedAt).toLocaleString()
+    : "Quiz submitted";
+
+  $("score").textContent = score;
+  $("maxScore").textContent = "/ " + maximumMarks + " marks";
+
+  const percentage = maximumMarks
+    ? Math.round(score / maximumMarks * 100)
+    : 0;
+
+  $("scorePercentage").textContent =
+    percentage + "% of maximum marks";
+
+  $("scoreBar").style.width =
+    Math.max(0, Math.min(100, percentage)) + "%";
+
+  $("correct").textContent = correct;
+  $("incorrect").textContent = incorrect;
+  $("skipped").textContent = skipped;
+  $("accuracy").textContent = accuracy + "%";
+
+  const rows = [
+    [correct, "correctBar", "correctPercent"],
+    [incorrect, "incorrectBar", "incorrectPercent"],
+    [skipped, "skippedBar", "skippedPercent"]
+  ];
+
+  rows.forEach(([value, barId, percentId]) => {
+    $(barId).style.width =
+      (total ? value / total * 100 : 0) + "%";
+
+    $(percentId).textContent =
+      (total ? Math.round(value / total * 100) : 0) + "%";
+  });
+
+  $("analysisText").textContent =
+    accuracy >= 80
+      ? "Excellent! Revise the solutions for questions you answered incorrectly."
+      : accuracy >= 50
+        ? "Good effort. Review incorrect and skipped questions before practising again."
+        : "Revise the NCERT concepts and study the solutions carefully.";
+
+  $("totalTime").textContent =
+    formatTime(result.totalTimeSeconds ?? result.totalTime ?? 0);
+
+  $("attemptNumber").textContent = result.attemptNo || 1;
+  $("yourScore").textContent = score;
+
+  // Attempt history is stored locally on this device.
+  const historyKey = "mneetAttemptHistory";
+
+  const quizKey = [
+    result.subjectId || localStorage.getItem("activeSubject") || "",
+    result.chapterId || localStorage.getItem("activeChapter") || "",
+    result.quizTypeId || localStorage.getItem("activeQuizType") || "",
+    result.quizTitle || result.title || ""
+  ].join("|");
+
+  let history = [];
+
+  try {
+    history = JSON.parse(localStorage.getItem(historyKey) || "[]");
+
+    if (!Array.isArray(history)) history = [];
+  } catch (error) {
+    history = [];
+  }
+
+  const entry = {
+    key: quizKey,
+    score,
+    submittedAt: result.submittedAt || new Date().toISOString()
+  };
+
+  if (!history.some(item =>
+    item.key === entry.key &&
+    item.submittedAt === entry.submittedAt
+  )) {
+    history.push(entry);
+    localStorage.setItem(historyKey, JSON.stringify(history.slice(-300)));
+  }
+
+  const attempts = history.filter(item => item.key === quizKey);
+
+  const best = attempts.reduce((highest, item) => {
+    return !highest || Number(item.score) > Number(highest.score)
+      ? item
+      : highest;
+  }, null) || entry;
+
+  $("latestScore").textContent = score + " marks";
+  $("latestDate").textContent = "Attempt " + (result.attemptNo || 1);
+  $("bestScore").textContent = best.score + " marks";
+  $("bestDate").textContent =
+    new Date(best.submittedAt).toLocaleDateString();
+
+  $("historyText").textContent =
+    "Saved attempts on this device: " + attempts.length;
+
+  $("resultArea").classList.remove("hidden");
+
+  $("reattemptBtn").onclick = function () {
+    if (!confirm("Do you want to start this quiz again?")) return;
+
+    const uid = window.auth && window.auth.currentUser
+      ? window.auth.currentUser.uid
+      : "guest";
+
+    const subject = localStorage.getItem("activeSubject") || result.subjectId || "";
+    const chapter = localStorage.getItem("activeChapter") || result.chapterId || "";
+    const type = localStorage.getItem("activeQuizType") || result.quizTypeId || "";
+
+    localStorage.removeItem(
+      "mneetQuiz_" + uid + "_" + subject + "_" + chapter + "_" + type
+    );
+
+    localStorage.removeItem("mneetQuizResult");
+
+    window.location.href = "quiz.html";
+  };
+
+  // Uses real shared topper data if quizAttempts is configured.
+  async function loadTopper() {
+    try {
+      if (!window.db) return;
+
+      const snapshot = await window.db
+        .collection("quizAttempts")
+        .where("quizKey", "==", quizKey)
+        .orderBy("score", "desc")
+        .limit(1)
+        .get();
+
+      if (snapshot.empty) return;
+
+      const topper = snapshot.docs[0].data();
+
+      $("topperScore").textContent = topper.score + " marks";
+      $("topperName").textContent =
+        topper.displayName || "Top performer";
+
+      $("topperMessage").textContent =
+        "Score gap from the highest recorded attempt: " +
+        (Number(topper.score) - score) + " marks.";
+
+    } catch (error) {
+      console.info("Shared topper data is not configured yet.");
+    }
+  }
+
+  loadTopper();
+
+  localStorage.setItem("mneetQuizResult", JSON.stringify(result));
+})();
+</script>
+
+</body>
+</html>
