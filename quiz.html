@@ -796,7 +796,20 @@ body.dark #submitQuizBtn {
       imageUrl: String(data.imageUrl || ""),
       options,
       correctOption: correct,
-      solution: String(data.solution || data.explanation || ""),
+      solution: String(
+  typeof data.solution === "string"
+    ? data.solution
+    : data.explanation || ""
+),
+solutionImageUrl: String(
+  data.solutionImageUrl ||
+  data.solutionImage ||
+  (
+    data.solution && typeof data.solution === "object"
+      ? data.solution.imageUrl || data.solution.image || ""
+      : ""
+  )
+),
       order: Number(data.order) || 0
     };
   }
@@ -1136,45 +1149,73 @@ body.dark #submitQuizBtn {
   }
 
   function showFeedback(q) {
-    const box = $("feedback");
+  const box = $("feedback");
 
-    box.replaceChildren();
-    box.className = "feedback";
+  box.replaceChildren();
+  box.className = "feedback";
 
-    const saved = answers[q.id] || {};
+  const saved = answers[q.id] || {};
 
-    if (!saved.submitted && !saved.revealed) {
-      return;
-    }
-
-    const selected = saved.selected || "";
-    const isCorrect = !!selected && selected === q.correctOption;
-
-    box.classList.add("show", isCorrect ? "good" : "bad");
-
-    const heading = document.createElement("strong");
-
-    heading.textContent = isCorrect
-      ? "Correct Answer ✓"
-      : selected
-        ? "Incorrect Answer"
-        : "Time expired — answer revealed";
-
-    box.appendChild(heading);
-
-    const correctLine = document.createElement("div");
-
-    correctLine.textContent =
-      "Correct Answer: " + (q.correctOption || "Not provided");
-
-    box.appendChild(correctLine);
-
-    if (q.solution) {
-      const solution = document.createElement("p");
-      solution.textContent = "Explanation: " + q.solution;
-      box.appendChild(solution);
-    }
+  if (!saved.submitted && !saved.revealed) {
+    return;
   }
+
+  const selected = saved.selected || "";
+  const isCorrect = !!selected && selected === q.correctOption;
+
+  box.classList.add("show", isCorrect ? "good" : "bad");
+
+  const heading = document.createElement("strong");
+
+  heading.textContent = isCorrect
+    ? "Correct Answer ✓"
+    : selected
+      ? "Incorrect Answer"
+      : "Time expired — answer revealed";
+
+  box.appendChild(heading);
+
+  const correctLine = document.createElement("div");
+
+  correctLine.textContent =
+    "Correct Answer: " + (q.correctOption || "Not provided");
+
+  box.appendChild(correctLine);
+
+  // Solution Text
+  if (q.solution) {
+    const solution = document.createElement("p");
+    solution.textContent = "Explanation: " + q.solution;
+    box.appendChild(solution);
+  }
+
+  // Solution Image
+  if (
+    q.solutionImageUrl &&
+    /^https?:\/\//i.test(q.solutionImageUrl)
+  ) {
+    const image = document.createElement("img");
+
+    image.src = q.solutionImageUrl;
+    image.alt = "Solution explanation";
+    image.loading = "lazy";
+
+    image.style.display = "block";
+    image.style.width = "100%";
+    image.style.maxWidth = "100%";
+    image.style.maxHeight = "400px";
+    image.style.objectFit = "contain";
+    image.style.marginTop = "12px";
+    image.style.borderRadius = "10px";
+    image.style.background = "var(--bg)";
+
+    image.onerror = () => {
+      image.remove();
+    };
+
+    box.appendChild(image);
+  }
+}
 
   function submitAnswer() {
     const q = questions[currentIndex];
