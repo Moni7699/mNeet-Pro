@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Answer Review | mNEET</title>
-
-<style>
+<title>Answer Review | mNEET</title><style>
 :root {
   --bg: #f3f7f4;
   --card: #ffffff;
@@ -280,6 +277,27 @@ button {
   overflow-wrap: anywhere;
 }
 
+/* ADDED: Solution text and image support */
+.solution-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.solution-image {
+  display: none;
+  width: 100%;
+  max-width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  margin-top: 12px;
+  border-radius: 10px;
+  background: var(--card);
+}
+
+.solution-image.visible {
+  display: block;
+}
+
 .navigation {
   display: flex;
   gap: 9px;
@@ -323,83 +341,60 @@ button {
     grid-template-columns: 1fr 1fr;
   }
 }
-</style>
-</head>
-
-<body>
-
-<header class="topbar">
+</style></head><body><header class="topbar">
   <div class="toprow">
     <div>
       <div class="brand">mNEET</div>
       <div class="muted">Answer Review &amp; Solutions</div>
-    </div>
+    </div><button class="btn secondary" id="themeBtn" type="button">
+  🌙 Dark
+</button>
 
-    <button class="btn secondary" id="themeBtn" type="button">
-      🌙 Dark
-    </button>
   </div>
-</header>
-
-<main class="container">
-
-  <h2 id="pageTitle">Review Answers</h2>
-
-  <div class="muted" id="summary"></div>
-
-  <div class="filters" id="filters">
+</header><main class="container">  <h2 id="pageTitle">Review Answers</h2>  <div class="muted" id="summary"></div>  <div class="filters" id="filters">
     <button class="filter active" data-filter="all" type="button">All</button>
     <button class="filter" data-filter="correct" type="button">Correct</button>
     <button class="filter" data-filter="wrong" type="button">Incorrect</button>
     <button class="filter" data-filter="skipped" type="button">Skipped</button>
-  </div>
-
-  <div class="numbers" id="numbers"></div>
-
-  <div id="empty" class="card hidden">
+  </div>  <div class="numbers" id="numbers"></div>  <div id="empty" class="card hidden">
     No questions found for this filter.
-  </div>
+  </div>  <section class="card" id="questionCard"><div class="qtop">
+  <strong id="questionNumber">Question 1</strong>
+  <span class="badge" id="statusBadge"></span>
+</div>
 
-  <section class="card" id="questionCard">
+<div class="question" id="questionText"></div>
 
-    <div class="qtop">
-      <strong id="questionNumber">Question 1</strong>
-      <span class="badge" id="statusBadge"></span>
-    </div>
+<img
+  id="questionImage"
+  class="qimage"
+  alt="Question diagram"
+>
 
-    <div class="question" id="questionText"></div>
+<div class="options" id="options"></div>
 
-    <img
-      id="questionImage"
-      class="qimage"
-      alt="Question diagram"
-    >
+<div class="solution" id="solution">
+  <div id="solutionText" class="solution-text"></div>
 
-    <div class="options" id="options"></div>
+  <img
+    id="solutionImage"
+    class="solution-image"
+    alt="Solution explanation"
+  >
+</div>
 
-    <div class="solution" id="solution"></div>
-
-  </section>
-
-  <div class="navigation">
+  </section>  <div class="navigation">
     <button class="btn secondary" id="prevBtn" type="button">
       ← Previous
-    </button>
+    </button><button class="btn primary" id="nextBtn" type="button">
+  Next →
+</button>
 
-    <button class="btn primary" id="nextBtn" type="button">
-      Next →
-    </button>
-  </div>
-
-  <div class="back-area">
+  </div>  <div class="back-area">
     <a class="btn secondary" href="result.html">
       ← Back to Result
     </a>
-  </div>
-
-</main>
-
-<script>
+  </div></main><script>
 (function () {
   "use strict";
 
@@ -639,9 +634,84 @@ button {
       optionsBox.appendChild(row);
     });
 
-    $("solution").textContent = q.solution
-      ? "Solution: " + q.solution
-      : "No solution or NCERT reference is available for this question.";
+    /*
+     * ADDED: Solution supports text, image, or both.
+     *
+     * Supported solution text fields:
+     * solution, solutionText, explanation
+     *
+     * Supported solution image fields:
+     * solutionImageUrl, solutionImage, explanationImageUrl
+     *
+     * Also supports solution as an object:
+     * { text: "...", imageUrl: "..." }
+     */
+
+    const solutionTextBox = $("solutionText");
+    const solutionImage = $("solutionImage");
+
+    let solutionText = "";
+    let solutionImageUrl = "";
+
+    if (typeof q.solution === "string") {
+      solutionText = q.solution;
+    } else if (
+      q.solution &&
+      typeof q.solution === "object"
+    ) {
+      solutionText =
+        q.solution.text ||
+        q.solution.solutionText ||
+        q.solution.explanation ||
+        "";
+
+      solutionImageUrl =
+        q.solution.imageUrl ||
+        q.solution.image ||
+        q.solution.solutionImageUrl ||
+        "";
+    }
+
+    if (!solutionText) {
+      solutionText =
+        q.solutionText ||
+        q.explanation ||
+        "";
+    }
+
+    if (!solutionImageUrl) {
+      solutionImageUrl =
+        q.solutionImageUrl ||
+        q.solutionImage ||
+        q.explanationImageUrl ||
+        "";
+    }
+
+    solutionTextBox.textContent = solutionText
+      ? "Solution: " + solutionText
+      : "";
+
+    solutionImage.onerror = function () {
+      solutionImage.classList.remove("visible");
+      solutionImage.removeAttribute("src");
+    };
+
+    if (
+      typeof solutionImageUrl === "string" &&
+      solutionImageUrl.trim() &&
+      /^(https?:\/\/|data:image\/)/i.test(solutionImageUrl.trim())
+    ) {
+      solutionImage.src = solutionImageUrl.trim();
+      solutionImage.classList.add("visible");
+    } else {
+      solutionImage.removeAttribute("src");
+      solutionImage.classList.remove("visible");
+    }
+
+    if (!solutionText && !solutionImageUrl) {
+      solutionTextBox.textContent =
+        "No solution or NCERT reference is available for this question.";
+    }
 
     $("prevBtn").disabled = position === 0;
 
@@ -739,7 +809,5 @@ button {
   renderPage();
 
 })();
-</script>
-
-</body>
+</script></body>
 </html>
